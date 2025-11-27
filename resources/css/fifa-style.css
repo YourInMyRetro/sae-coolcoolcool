@@ -1,0 +1,224 @@
+/* public/css/fifa-style.css */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap');
+
+:root {
+    --fifa-dark-blue: #0f2d4a; /* Le bleu très foncé du header */
+    --fifa-blue: #326295;      /* Le bleu standard */
+    --fifa-cyan: #55e6c9;      /* Le cyan fluo typique FIFA 2026 */
+    --fifa-gold: #d4af37;
+    --grey-bg: #f3f4f6;
+    --white: #ffffff;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: var(--grey-bg);
+    color: #333;
+}
+
+/* --- HEADER IDENTIQUE FIFA --- */
+header {
+    background-color: var(--fifa-dark-blue);
+    color: var(--white);
+    padding: 0 40px;
+    height: 80px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    color: var(--white);
+    text-transform: uppercase;
+    text-decoration: none;
+}
+
+.nav-menu {
+    display: flex;
+    gap: 30px;
+    align-items: center;
+}
+
+.nav-link {
+    color: var(--white);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    text-transform: uppercase;
+    transition: color 0.3s;
+}
+
+.nav-link:hover {
+    color: var(--fifa-cyan);
+}
+
+/* Le fameux bouton FIFA STORE */
+.btn-store {
+    background-color: var(--fifa-cyan);
+    color: var(--fifa-dark-blue);
+    padding: 12px 25px;
+    border-radius: 50px;
+    font-weight: 800;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border: 2px solid var(--fifa-cyan);
+}
+
+.btn-store:hover {
+    background-color: transparent;
+    color: var(--fifa-cyan);
+}
+
+/* --- HERO SECTION (ACCUEIL) --- */
+.hero-section {
+    height: 85vh;
+    background: linear-gradient(rgba(15, 45, 74, 0.6), rgba(15, 45, 74, 0.8)), url('https://digitalhub.fifa.com/transform/4b179373-c7e6-42d4-a902-6034e38e5399/FIFA-World-Cup-2022-Final-Argentina-v-France');
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    color: var(--white);
+}
+
+.hero-title {
+    font-size: 4rem;
+    font-weight: 800;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    line-height: 1.1;
+}
+
+.hero-subtitle {
+    font-size: 1.5rem;
+    margin-bottom: 40px;
+    font-weight: 300;
+}
+
+.cta-big {
+    background-color: var(--fifa-cyan);
+    color: var(--fifa-dark-blue);
+    padding: 18px 50px;
+    font-size: 1.2rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    border-radius: 50px;
+    text-decoration: none;
+    transition: transform 0.2s;
+}
+
+.cta-big:hover {
+    transform: scale(1.05);
+}
+
+/* --- GRILLE PRODUITS (STORE) --- */
+.container {
+    max-width: 1300px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.section-title {
+    font-size: 2rem;
+    color: var(--fifa-dark-blue);
+    font-weight: 800;
+    margin-bottom: 30px;
+    border-left: 5px solid var(--fifa-cyan);
+    padding-left: 15px;
+}
+
+.grid-produits {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 30px;
+}
+
+.card-produit {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid #e5e7eb;
+    display: flex;
+    flex-direction: column;
+}
+
+.card-produit:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+}
+
+.img-container {
+    height: 250px;
+    background-color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.img-container img {
+    max-height: 100%;
+    max-width: 100%;
+    object-fit: contain;
+}
+
+.card-info {
+    padding: 20px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.prod-cat {
+    color: #888;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.prod-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--fifa-dark-blue);
+    margin-bottom: 15px;
+    line-height: 1.4;
+}
+
+.prod-price {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--fifa-dark-blue);
+    margin-top: auto;
+}
+
+.prod-btn {
+    display: block;
+    width: 100%;
+    text-align: center;
+    margin-top: 15px;
+    padding: 10px;
+    background-color: var(--fifa-dark-blue);
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+    border-radius: 6px;
+    transition: background 0.2s;
+}
+
+.prod-btn:hover {
+    background-color: #1a4b7c;
+}

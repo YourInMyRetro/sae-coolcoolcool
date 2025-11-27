@@ -1,0 +1,43 @@
+:root {
+    --fifa-blue: #326295;
+    --fifa-dark: #182e47;
+    --fifa-accent: #00cfb7; /* Cyan moderne FIFA */
+    --white: #ffffff;
+    --grey: #f4f4f4;
+}
+
+body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: var(--grey); color: #333; }
+a { text-decoration: none; color: inherit; }
+
+/* Header */
+.fifa-header { background-color: var(--fifa-blue); color: var(--white); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+.logo { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; }
+.nav-links a { margin-left: 20px; font-weight: 600; text-transform: uppercase; font-size: 0.9rem; }
+.btn-shop { background-color: var(--fifa-accent); color: var(--fifa-dark); padding: 8px 20px; border-radius: 20px; font-weight: bold; transition: 0.3s; }
+.btn-shop:hover { background-color: var(--white); }
+
+/* Hero Section (Accueil) */
+.hero { 
+    background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://digitalhub.fifa.com/transform/0883e072-2269-467b-8b42-029600572294/1930-FIFA-World-Cup-Poster-Uruguay'); 
+    background-size: cover; background-position: center; 
+    height: 60vh; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; text-align: center; 
+}
+.hero h1 { font-size: 3rem; margin-bottom: 1rem; text-transform: uppercase; }
+.cta-button { background-color: var(--fifa-accent); color: var(--fifa-dark); padding: 15px 40px; font-size: 1.2rem; border-radius: 30px; font-weight: bold; margin-top: 20px; display: inline-block; }
+
+/* Search Bar */
+.search-container { background: white; padding: 20px; margin: -30px auto 30px; max-width: 800px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); position: relative; display: flex; gap: 10px; }
+.search-input { flex-grow: 1; padding: 12px; border: 1px solid #ccc; border-radius: 4px; }
+.search-btn { background-color: var(--fifa-blue); color: white; border: none; padding: 0 25px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+
+/* Product Grid */
+.container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 2rem; }
+.card { background: white; border-radius: 8px; overflow: hidden; transition: transform 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+.card:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.15); }
+.card-img { height: 220px; background: #eee; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.card-img img { width: 100%; height: 100%; object-fit: cover; }
+.card-body { padding: 1.5rem; }
+.card-title { font-size: 1.1rem; font-weight: bold; margin: 0 0 10px; min-height: 50px; }
+.card-price { color: var(--fifa-blue); font-size: 1.2rem; font-weight: 700; }
+.card-btn { display: block; width: 100%; text-align: center; background: var(--fifa-dark); color: white; padding: 10px; margin-top: 15px; border-radius: 4px; font-size: 0.9rem; }
