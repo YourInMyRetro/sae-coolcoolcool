@@ -67,7 +67,7 @@
             @empty
                 <div style="grid-column: 1/-1; text-align: center; padding: 50px;">
                     <h3>Aucun produit trouvé </h3>
-                    <p>Essaie de modifier tes filtres ou ta recherche.</p>
+                    <p>Essaie de modifierr tes filtres ou ta recherche.</p>
                 </div>
             @endforelse
         </div>
