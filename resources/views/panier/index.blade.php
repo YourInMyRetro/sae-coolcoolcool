@@ -28,11 +28,11 @@
                             <img src="{{ asset($details['photo']) }}" width="50">
                             {{ $details['nom'] }}
                         </td>
-                        <td style="padding: 15px; text-align: center;">{{ $details['prix'] }} €</td>
-                        <td style="padding: 15px; text-align: center;">{{ $details['quantite'] }}</td>
-                        <td style="padding: 15px; text-align: center; font-weight: bold;">{{ $details['prix'] * $details['quantite'] }} €</td>
-                        <td style="padding: 15px; text-align: center;">
-                            <a href="{{ route('panier.supprimer', $id) }}" style="color: red; font-weight: bold;">X</a>
+                        <td style="padding: 15px;">{{ $details['prix'] }} €</td>
+                        <td style="padding: 15px;">{{ $details['quantite'] }}</td>
+                        <td style="padding: 15px;">{{ $details['prix'] * $details['quantite'] }} €</td>
+                        <td style="padding: 15px;">
+                            <a href="{{ route('panier.supprimer', $id) }}" style="color: red;">X</a>
                         </td>
                     </tr>
                 @endforeach
@@ -41,13 +41,11 @@
         
         <div style="text-align: right; margin-top: 20px;">
             <h3>Total : {{ $total }} €</h3>
-            <a href="{{ route('panier.vider') }}" style="color: #666; margin-right: 15px;">Vider le panier</a>
-            <button class="prod-btn" style="width: auto; padding: 10px 30px;">Commander</button>
+            <a href="{{ route('panier.vider') }}">Vider</a>
         </div>
     @else
         <div style="text-align: center; padding: 50px;">
             <h3>Votre panier est vide.</h3>
-            <a href="{{ route('produits.index') }}" class="prod-btn" style="width: auto; padding: 10px 20px;">Retourner à la boutique</a>
         </div>
     @endif
 </div>

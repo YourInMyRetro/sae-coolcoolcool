@@ -15,4 +15,4 @@ class StockArticle extends Model
     {
         return $this->belongsTo(Taille::class, 'id_taille', 'id_taille');
     }
-}
+}   

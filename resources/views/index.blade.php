@@ -1,68 +1,53 @@
 @extends('layout')
 
 @section('content')
-<div class="container">
-    <h2 class="section-title">Votre Panier</h2>
+<div class="container" style="padding-top: 40px;">
+    
+    <h2 class="section-title">Boutique Officielle</h2>
 
-    @if(session('success'))
-        <div style="background: #d4edda; color: #155724; padding: 15px; margin-bottom: 20px; border-radius: 5px; border: 1px solid #c3e6cb;">
-            {{ session('success') }}
+    <form action="{{ route('produits.index') }}" method="GET" class="mb-5" style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+        
+        <div class="search-container" style="margin: 0; max-width: 100%; box-shadow: none; padding: 0; margin-bottom: 20px;">
+            <input type="text" name="search" class="search-input" placeholder="Rechercher un maillot, une équipe..." value="{{ request('search') }}">
+            <button type="submit" class="search-btn"><i class="fas fa-search"></i></button>
         </div>
-    @endif
 
-    @if(count($panier) > 0)
-        <table style="width: 100%; border-collapse: collapse; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border-radius: 8px; overflow: hidden;">
-            <thead style="background: var(--fifa-dark-blue); color: white;">
-                <tr>
-                    <th style="padding: 15px; text-align: left;">Produit</th>
-                    <th style="padding: 15px;">Prix</th>
-                    <th style="padding: 15px;">Quantité</th>
-                    <th style="padding: 15px;">Total</th>
-                    <th style="padding: 15px;">Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($panier as $id => $details)
-                    <tr style="border-bottom: 1px solid #eee;">
-                        <td style="padding: 15px; display: flex; align-items: center; gap: 15px;">
-                            <img src="{{ asset($details['photo']) }}" width="60" height="60" style="object-fit: contain; background: #f4f4f4; border-radius: 4px;">
-                            <span style="font-weight: 600; color: #333;">{{ $details['nom'] }}</span>
-                        </td>
-                        <td style="padding: 15px; text-align: center;">{{ number_format($details['prix'], 2) }} €</td>
-                        <td style="padding: 15px; text-align: center;">
-                            <span style="background: #eee; padding: 5px 10px; border-radius: 4px;">{{ $details['quantite'] }}</span>
-                        </td>
-                        <td style="padding: 15px; text-align: center; font-weight: bold; color: var(--fifa-blue);">
-                            {{ number_format($details['prix'] * $details['quantite'], 2) }} €
-                        </td>
-                        <td style="padding: 15px; text-align: center;">
-                            <a href="{{ route('panier.supprimer', $id) }}" style="color: #e3342f; text-decoration: none; font-weight: bold; font-size: 1.2rem;">
-                                <i class="fas fa-trash-alt"></i> &times;
-                            </a>
-                        </td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-
-        <div style="display: flex; justify-content: flex-end; align-items: center; margin-top: 30px; gap: 20px;">
-            <h3 style="margin: 0; font-size: 1.5rem;">Total : <span style="color: var(--fifa-blue); font-weight: 800;">{{ number_format($total, 2) }} €</span></h3>
+        <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: center;">
+            <div style="flex: 1; min-width: 200px;">
+                <label for="sort" style="font-weight: 600; font-size: 0.9rem;">Trier par :</label>
+                <select name="sort" id="sort" onchange="this.form.submit()" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+                    <option value="">Pertinence</option>
+                    <option value="price_asc" {{ request('sort') == 'price_asc' ? 'selected' : '' }}>Prix croissant</option>
+                    <option value="price_desc" {{ request('sort') == 'price_desc' ? 'selected' : '' }}>Prix décroissant</option>
+                </select>
+            </div>
             
-            <a href="{{ route('panier.vider') }}" style="color: #666; text-decoration: underline;">Vider le panier</a>
-            
-            <button class="prod-btn" style="display: inline-block; width: auto; padding: 15px 40px; background-color: var(--fifa-cyan); color: var(--fifa-dark-blue); border: none; font-size: 1.1rem;">
-                PASSER COMMANDE
-            </button>
+            <div style="align-self: flex-end;">
+                <a href="{{ route('produits.index') }}" style="color: #666; text-decoration: underline; font-size: 0.9rem;">Réinitialiser</a>
+            </div>
         </div>
-    @else
-        <div style="text-align: center; padding: 80px 20px; background: white; border-radius: 8px;">
-            <i class="fas fa-shopping-basket" style="font-size: 4rem; color: #ccc; margin-bottom: 20px;"></i>
-            <h3 style="color: #555;">Votre panier est vide</h3>
-            <p style="color: #888; margin-bottom: 30px;">Découvrez nos nouveaux maillots et accessoires.</p>
-            <a href="{{ route('produits.index') }}" class="prod-btn" style="display: inline-block; width: auto; padding: 12px 30px;">
-                Retourner à la boutique
-            </a>
-        </div>
-    @endif
+    </form>
+
+    <div class="grid-produits">
+        @forelse($produits as $produit)
+            <div class="card-produit">
+                <div class="img-container">
+                    <img src="{{ asset($produit->premierePhoto->url_photo ?? 'img/placeholder.jpg') }}" alt="{{ $produit->nom_produit }}">
+                </div>
+                <div class="card-info">
+                    <span class="prod-cat">Officiel</span>
+                    <h3 class="prod-title">{{ $produit->nom_produit }}</h3>
+                    <div class="prod-price">
+                        {{ $produit->premierPrix->prix_total ?? '--' }} €
+                    </div>
+                    <a href="{{ route('panier.ajouter', $produit->id_produit) }}" class="prod-btn">Ajouter au panier</a>
+                </div>
+            </div>
+        @empty
+            <div style="grid-column: 1/-1; text-align: center; padding: 50px;">
+                <h3>Aucun produit trouvé</h3>
+            </div>
+        @endforelse
+    </div>
 </div>
 @endsection
