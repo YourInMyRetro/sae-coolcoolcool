@@ -1,43 +1,143 @@
-<form action="{{ route('produits.index') }}" method="GET" class="mb-5" style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+@extends('layout')
+
+@section('content')
+<div class="container shop-page-container">
+
+    {{-- Formulaire Global pour les filtres --}}
+    <form action="{{ route('produits.index') }}" method="GET" id="filterForm" class="shop-layout">
         
-        <div class="search-container" style="margin-bottom: 20px;">
-            <input type="text" name="search" class="search-input" placeholder="Rechercher..." value="{{ request('search') }}">
-            <button type="submit" class="search-btn"><i class="fas fa-search"></i></button>
-        </div>
+        {{-- Conservation du terme de recherche si existant --}}
+        @if(request('search'))
+            <input type="hidden" name="search" value="{{ request('search') }}">
+        @endif
 
-        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-            
-            <div style="flex: 1; min-width: 150px;">
-                <label style="font-weight: 600;">Couleur :</label>
-                <select name="couleur" onchange="this.form.submit()" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
-                    <option value="">Toutes</option>
+        {{-- COLONNE GAUCHE : FILTRES (Sidebar) --}}
+        <aside class="shop-sidebar">
+            <div class="sidebar-header">
+                <h3>Filtrer par</h3>
+                <a href="{{ route('produits.index') }}" class="reset-filters">Tout effacer</a>
+            </div>
+
+            {{-- Filtre : Catégories --}}
+            <div class="filter-group">
+                <h4 class="filter-title">Catégories</h4>
+                <div class="filter-options">
+                    <label class="custom-radio">
+                        <input type="radio" name="categorie" value="" onchange="this.form.submit()" {{ request('categorie') == '' ? 'checked' : '' }}>
+                        <span>Tout voir</span>
+                    </label>
+                    @foreach($allCategories as $cat)
+                    <label class="custom-radio">
+                        <input type="radio" name="categorie" value="{{ $cat->id_categorie }}" onchange="this.form.submit()" {{ request('categorie') == $cat->id_categorie ? 'checked' : '' }}>
+                        <span>{{ $cat->nom_categorie }}</span>
+                    </label>
+                    @endforeach
+                </div>
+            </div>
+
+            {{-- Filtre : Nations --}}
+            <div class="filter-group">
+                <h4 class="filter-title">Équipes / Nations</h4>
+                <div class="filter-options">
+                    <label class="custom-radio">
+                        <input type="radio" name="nation" value="" onchange="this.form.submit()" {{ request('nation') == '' ? 'checked' : '' }}>
+                        <span>Toutes les équipes</span>
+                    </label>
+                    @foreach($allNations as $nat)
+                    <label class="custom-radio">
+                        <input type="radio" name="nation" value="{{ $nat->id_nation }}" onchange="this.form.submit()" {{ request('nation') == $nat->id_nation ? 'checked' : '' }}>
+                        <span>{{ $nat->nom_nation }}</span>
+                    </label>
+                    @endforeach
+                </div>
+            </div>
+
+            {{-- Filtre : Couleurs --}}
+            <div class="filter-group">
+                <h4 class="filter-title">Couleurs</h4>
+                <div class="filter-options">
+                    <label class="custom-radio">
+                        <input type="radio" name="couleur" value="" onchange="this.form.submit()" {{ request('couleur') == '' ? 'checked' : '' }}>
+                        <span>Toutes</span>
+                    </label>
                     @foreach($allColors as $c)
-                        <option value="{{ $c }}" {{ request('couleur') == $c ? 'selected' : '' }}>{{ ucfirst($c) }}</option>
+                    <label class="custom-radio">
+                        <input type="radio" name="couleur" value="{{ $c }}" onchange="this.form.submit()" {{ request('couleur') == $c ? 'checked' : '' }}>
+                        <span style="display:inline-block; width:12px; height:12px; background-color: {{ $c == 'Or' ? 'gold' : ($c == 'Multicolore' ? 'linear-gradient(to right, red,blue)' : $c) }}; border-radius:50%; margin-right:5px; border:1px solid #ddd;"></span>
+                        <span>{{ ucfirst($c) }}</span>
+                    </label>
                     @endforeach
-                </select>
+                </div>
             </div>
 
-            <div style="flex: 1; min-width: 150px;">
-                <label style="font-weight: 600;">Taille :</label>
-                <select name="taille" onchange="this.form.submit()" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
-                    <option value="">Toutes</option>
+            {{-- Filtre : Tailles --}}
+            <div class="filter-group">
+                <h4 class="filter-title">Tailles</h4>
+                <div class="size-grid">
                     @foreach($allSizes as $t)
-                        <option value="{{ $t }}" {{ request('taille') == $t ? 'selected' : '' }}>{{ strtoupper($t) }}</option>
+                    <label class="size-box">
+                        <input type="radio" name="taille" value="{{ $t }}" onchange="this.form.submit()" {{ request('taille') == $t ? 'checked' : '' }}>
+                        <span>{{ strtoupper($t) }}</span>
+                    </label>
                     @endforeach
-                </select>
+                </div>
+            </div>
+        </aside>
+
+        {{-- COLONNE DROITE : RÉSULTATS --}}
+        <main class="shop-results">
+            
+            {{-- Barre supérieure (Titre + Tri) --}}
+            <div class="results-header">
+                <div class="results-count">
+                    @if(request('search'))
+                        Résultats pour "<strong>{{ request('search') }}</strong>" ({{ $produits->count() }})
+                    @else
+                        Tous les produits ({{ $produits->count() }})
+                    @endif
+                </div>
+                <div class="sort-wrapper">
+                    <label for="sort">Trier par :</label>
+                    <select name="sort" id="sort" onchange="this.form.submit()" class="sort-select">
+                        <option value="">Pertinence</option>
+                        <option value="price_asc" {{ request('sort') == 'price_asc' ? 'selected' : '' }}>Prix croissant</option>
+                        <option value="price_desc" {{ request('sort') == 'price_desc' ? 'selected' : '' }}>Prix décroissant</option>
+                    </select>
+                </div>
             </div>
 
-            <div style="flex: 1; min-width: 150px;">
-                <label style="font-weight: 600;">Trier par :</label>
-                <select name="sort" onchange="this.form.submit()" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
-                    <option value="">Pertinence</option>
-                    <option value="price_asc" {{ request('sort') == 'price_asc' ? 'selected' : '' }}>Prix croissant</option>
-                    <option value="price_desc" {{ request('sort') == 'price_desc' ? 'selected' : '' }}>Prix décroissant</option>
-                </select>
-            </div>
-
-            <div style="width: 100%; text-align: right;">
-                <a href="{{ route('produits.index') }}" style="color: #666; text-decoration: underline;">Réinitialiser les filtres</a>
-            </div>
-        </div>
+            {{-- Grille Produits --}}
+            @if($produits->count() > 0)
+                <div class="products-grid-shop">
+                    @foreach($produits as $produit)
+                    <div class="product-card shop-card">
+                        <a href="{{ route('produits.show', $produit->id_produit) }}" class="product-link">
+                            <div class="product-image-wrapper">
+                                @if($produit->premierePhoto)
+                                    <img src="{{ $produit->premierePhoto->url_photo }}" alt="{{ $produit->nom_produit }}">
+                                @else
+                                    <div class="no-image">Pas d'image</div>
+                                @endif
+                            </div>
+                            <div class="product-details">
+                                <span class="product-category-small">
+                                    {{ $produit->nations->first()->nom_nation ?? ($produit->categorie->nom_categorie ?? 'FIFA') }}
+                                </span>
+                                <h4 class="product-name">{{ $produit->nom_produit }}</h4>
+                                <div class="product-price">
+                                    {{ $produit->premierPrix ? number_format($produit->premierPrix->prix_total, 2) . ' €' : 'N/A' }}
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    @endforeach
+                </div>
+            @else
+                <div class="no-results">
+                    <p>Aucun produit ne correspond à vos critères.</p>
+                </div>
+            @endif
+        </main>
     </form>
+</div>
+@endsection
