@@ -7,7 +7,9 @@
     --fifa-gray: #f5f5f5;      /* Gris fond */
     --fifa-border: #e1e1e1;    /* Gris bordure */
     --fifa-text: #333333;      /* Texte standard */
+    --fifa-cyan: #55e6c1;      /* Accent cyan */
     --font-primary: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    --header-height: 80px;
 }
 
 body {
@@ -22,513 +24,234 @@ body {
 a { text-decoration: none; color: inherit; transition: color 0.2s; }
 ul { list-style: none; padding: 0; margin: 0; }
 img { max-width: 100%; display: block; }
+* { box-sizing: border-box; }
 
 .container {
-    max-width: 1280px;
+    max-width: 1320px;
     margin: 0 auto;
     padding: 0 20px;
 }
 
 /* ========================================= */
-/* 2. COMPOSANTS UI (Boutons, Titres)        */
+/* 2. HEADER PREMIUM (Le tien, on n'y touche pas) */
+/* ========================================= */
+.fifa-header {
+    background-color: var(--fifa-dark);
+    height: var(--header-height);
+    width: 100%;
+    position: fixed;
+    top: 0; left: 0;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    display: flex;
+    align-items: center;
+}
+
+.header-inner { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+
+/* BLOC GAUCHE */
+.header-left .logo-link { color: white; font-size: 1.5rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+
+/* BLOC CENTRE */
+.header-center { flex: 1; display: flex; justify-content: center; }
+.nav-list { display: flex; gap: 30px; }
+.nav-list a { color: rgba(255,255,255,0.8); font-weight: 700; text-transform: uppercase; font-size: 0.9rem; padding: 10px 0; position: relative; }
+.nav-list a:hover { color: white; }
+.nav-list a::after { content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 3px; background-color: var(--fifa-cyan); transition: width 0.3s; }
+.nav-list a:hover::after { width: 100%; }
+
+/* BLOC DROITE */
+.header-right { display: flex; align-items: center; gap: 20px; }
+.search-bar-container { position: relative; width: 240px; }
+.search-input { width: 100%; padding: 8px 35px 8px 15px; background-color: #222; border: 1px solid #444; border-radius: 4px; color: white; font-size: 0.9rem; }
+.search-input:focus { outline: none; border-color: var(--fifa-blue); background-color: #000; }
+.search-btn { position: absolute; right: 5px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #888; cursor: pointer; }
+.search-btn:hover { color: white; }
+.header-icons { display: flex; gap: 15px; }
+.icon-btn { color: white; font-size: 1.2rem; position: relative; }
+.icon-btn:hover { color: var(--fifa-cyan); }
+.cart-badge { position: absolute; top: -8px; right: -8px; background-color: var(--fifa-blue); color: white; font-size: 0.7rem; font-weight: bold; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+.header-spacer { height: var(--header-height); }
+
+.alert-success-fifa { background: var(--fifa-cyan); color: var(--fifa-dark); text-align: center; padding: 10px; font-weight: bold; margin-bottom: 20px; }
+
+/* ========================================= */
+/* 3. NOUVELLE PAGE ACCUEIL (VITRINE)        */
 /* ========================================= */
 
-/* Boutons */
-.btn {
-    display: inline-block;
-    padding: 14px 32px;
-    font-weight: 700;
-    text-transform: uppercase;
-    font-size: 0.9rem;
-    border: none;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border-radius: 50px;
-    letter-spacing: 0.5px;
-    text-align: center;
-}
-
-.btn-fifa-primary {
-    background-color: var(--fifa-blue);
-    color: white;
-}
-.btn-fifa-primary:hover {
-    background-color: #244a75;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(50, 98, 149, 0.3);
-}
-
-.btn-fifa-outline {
-    background-color: transparent;
-    border: 2px solid white;
-    color: white;
-}
-.btn-fifa-outline:hover {
-    background-color: white;
-    color: var(--fifa-dark);
-}
-
-.btn-fifa-white {
-    background-color: white;
-    color: var(--fifa-blue);
-}
-.btn-fifa-white:hover {
-    background-color: #f0f0f0;
-}
-
-/* Titres de section */
-.section-heading, .section-heading-left {
-    font-size: 1.5rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    margin-bottom: 20px;
-    color: var(--fifa-dark);
+/* Grand Hero Fullscreen */
+.fifa-hero-fullscreen {
     position: relative;
-    display: inline-block;
-}
-
-.section-header-center { text-align: center; margin-bottom: 40px; }
-.section-heading::after {
-    content: '';
-    display: block;
-    width: 60px;
-    height: 4px;
-    background: var(--fifa-blue);
-    margin: 10px auto 0;
-}
-
-.section-heading-left::after {
-    content: '';
-    display: block;
-    width: 60px;
-    height: 4px;
-    background: var(--fifa-blue);
-    margin: 10px 0 0;
-}
-
-/* ========================================= */
-/* 3. PAGE D'ACCUEIL (HOME)                  */
-/* ========================================= */
-
-/* Hero Banner */
-.hero-banner {
-    position: relative;
-    background-image: url('https://digitalhub.fifa.com/transform/6f60df08-0524-4f01-9a70-8c9e59d4432c/FWC26-Hero-Desktop?io=transform:fill,width:1440,height:600&quality=75');
+    /* Image officielle FIFA 2026 */
+    background-image: url('https://digitalhub.fifa.com/transform/6f60df08-0524-4f01-9a70-8c9e59d4432c/FWC26-Hero-Desktop?io=transform:fill,width:1440,height:800&quality=75');
     background-size: cover;
-    background-position: center 20%;
-    height: 600px;
+    background-position: center top;
+    height: 85vh; /* Prend presque tout l'écran */
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
     color: white;
-    margin-bottom: 60px;
 }
 
-.hero-overlay {
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.6));
+.hero-overlay-dark {
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.7));
     z-index: 1;
 }
 
-.hero-content {
-    position: relative;
-    z-index: 2;
-    max-width: 800px;
-    padding: 0 20px;
-}
+.hero-content-center { position: relative; z-index: 2; max-width: 900px; padding: 20px; }
+.hero-sub { font-size: 1.2rem; letter-spacing: 3px; font-weight: 700; text-transform: uppercase; margin-bottom: 15px; }
+.hero-main-title { font-size: 4rem; font-weight: 900; line-height: 1.1; margin-bottom: 30px; text-shadow: 0 4px 15px rgba(0,0,0,0.5); }
 
-.hero-subtitle {
-    font-size: 1.1rem;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    margin-bottom: 15px;
-    font-weight: 600;
-    opacity: 0.9;
-}
-
-.hero-title {
-    font-size: 4rem;
-    font-weight: 900;
-    margin: 0 0 20px 0;
-    text-transform: uppercase;
-    line-height: 1;
-    text-shadow: 0 4px 10px rgba(0,0,0,0.3);
-}
-
-.hero-text {
-    font-size: 1.3rem;
-    margin-bottom: 40px;
-    font-weight: 400;
-    opacity: 0.95;
-}
-
-.hero-buttons {
-    display: flex;
-    gap: 20px;
-    justify-content: center;
-}
-
-/* Catégories Grid (Home) */
-.quick-categories { margin-bottom: 80px; }
-.categories-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 25px;
-}
-
-.category-card {
-    position: relative;
-    height: 280px;
-    overflow: hidden;
-    border-radius: 8px;
-    display: block;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-}
-
-.cat-image {
-    width: 100%;
-    height: 100%;
-    background-size: cover;
-    background-position: center;
-    transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-.cat-overlay {
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
-    transition: background 0.3s;
-}
-
-.category-card:hover .cat-image { transform: scale(1.1); }
-
-.cat-title {
-    position: absolute;
-    bottom: 25px;
-    left: 25px;
-    color: white;
-    font-size: 1.6rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    z-index: 2;
-    letter-spacing: 1px;
-}
-
-/* Produits Grid (Home & Shared) */
-.featured-section { margin-bottom: 80px; }
-.section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    margin-bottom: 30px;
-    border-bottom: 1px solid var(--fifa-border);
-    padding-bottom: 10px;
-}
-
-.see-all-link {
-    color: var(--fifa-blue);
-    font-weight: 700;
-    font-size: 0.95rem;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-.see-all-link:hover { text-decoration: underline; }
-
-.products-grid-home {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr); /* 4 par ligne sur Home */
-    gap: 30px;
-}
-
-/* Carte Produit (Design unifié) */
-.product-card {
-    background: white;
-    transition: transform 0.3s ease;
-    border-radius: 4px;
-}
-
-.product-card:hover {
-    transform: translateY(-5px);
-}
-
-.product-image-wrapper {
-    position: relative;
-    height: 260px; /* Hauteur fixe pour alignement */
-    background: #f9f9f9;
-    overflow: hidden;
-    border-radius: 4px;
-    margin-bottom: 15px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.product-image-wrapper img {
-    max-height: 90%;
-    max-width: 90%;
-    object-fit: contain;
-    transition: transform 0.3s;
-}
-
-.product-card:hover .product-image-wrapper img {
-    transform: scale(1.05);
-}
-
-.badge-new {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    background: var(--fifa-dark);
-    color: white;
-    padding: 5px 10px;
-    font-size: 0.7rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    z-index: 2;
-}
-
-.product-details { padding: 0 5px; }
-
-.product-category {
-    font-size: 0.75rem;
-    color: #888;
-    text-transform: uppercase;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    display: block;
-    margin-bottom: 5px;
-}
-
-.product-name {
+.btn-fifa-cta {
+    background-color: var(--fifa-cyan);
+    color: var(--fifa-dark);
+    padding: 16px 40px;
     font-size: 1rem;
-    margin: 0 0 10px 0;
-    font-weight: 700;
-    color: var(--fifa-dark);
-    line-height: 1.4;
-    height: 44px; /* Limite hauteur titre */
-    overflow: hidden;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-}
-
-.product-price {
-    font-size: 1.1rem;
-    font-weight: 800;
-    color: var(--fifa-dark);
-}
-
-/* Promo Banner (Bas de page) */
-.promo-banner {
-    background-color: var(--fifa-blue);
-    background-image: linear-gradient(135deg, var(--fifa-blue) 0%, #1e4570 100%);
-    color: white;
-    text-align: center;
-    padding: 80px 20px;
-}
-.promo-content h2 {
-    font-size: 2.2rem;
-    margin: 0 0 15px 0;
     font-weight: 800;
     text-transform: uppercase;
+    border-radius: 50px;
+    display: inline-block;
+    transition: transform 0.3s ease;
 }
-.promo-content p {
-    margin-bottom: 35px;
-    font-size: 1.1rem;
-    opacity: 0.9;
-    max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
-}
+.btn-fifa-cta:hover { transform: scale(1.05); background-color: white; }
 
-/* ========================================= */
-/* 4. PAGE BOUTIQUE (SHOP LAYOUT)            */
-/* ========================================= */
-
-.shop-page-container {
-    padding-top: 40px;
-    padding-bottom: 80px;
-}
-
-.shop-layout {
-    display: flex;
-    gap: 50px; /* Espace généreux Sidebar <-> Grille */
-    align-items: flex-start;
-}
-
-/* Sidebar Filtres */
-.shop-sidebar {
-    width: 260px;
-    flex-shrink: 0;
-    /* Pas de bordure moche, juste de l'espace */
-}
-
-.sidebar-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 25px;
-    padding-bottom: 15px;
-    border-bottom: 2px solid var(--fifa-dark);
-}
-
-.sidebar-header h3 {
-    font-size: 1.1rem;
-    margin: 0;
-    text-transform: uppercase;
-    font-weight: 800;
-}
-
-.reset-filters {
-    font-size: 0.8rem;
-    color: #666;
-    text-decoration: underline;
-    cursor: pointer;
-}
-.reset-filters:hover { color: var(--fifa-blue); }
-
-.filter-group {
-    margin-bottom: 30px;
-    border-bottom: 1px solid var(--fifa-border);
-    padding-bottom: 20px;
-}
-.filter-group:last-child { border-bottom: none; }
-
-.filter-title {
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    font-weight: 800;
-    margin: 0 0 15px 0;
-    color: var(--fifa-dark);
-}
-
-/* Radio buttons custom (Style propre) */
-.custom-radio {
-    display: flex;
-    align-items: center;
-    margin-bottom: 12px;
-    cursor: pointer;
-    font-size: 0.95rem;
-    color: #555;
-    transition: all 0.2s;
-}
-
-.custom-radio:hover { color: var(--fifa-blue); }
-
-.custom-radio input {
-    appearance: none;
-    -webkit-appearance: none;
-    width: 18px;
-    height: 18px;
-    border: 2px solid #ccc;
-    border-radius: 4px; /* Carré arrondi */
-    margin-right: 12px;
-    position: relative;
-    cursor: pointer;
-    background: white;
-}
-
-.custom-radio input:checked {
-    background-color: var(--fifa-blue);
-    border-color: var(--fifa-blue);
-}
-
-.custom-radio input:checked::after {
-    content: '✓';
-    position: absolute;
-    color: white;
-    font-size: 12px;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-}
-
-/* Grille de tailles */
-.size-grid {
+/* Grille Visuelle (Homme/Femme/Enfant) */
+.section-spacer { margin: 60px auto; }
+.visual-nav-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
+    gap: 20px;
+    height: 500px;
 }
 
-.size-box { position: relative; cursor: pointer; }
-.size-box input { position: absolute; opacity: 0; cursor: pointer; }
-
-.size-box span {
+.visual-card {
+    position: relative;
     display: block;
-    text-align: center;
-    padding: 10px 0;
-    border: 1px solid var(--fifa-border);
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: #555;
-    transition: all 0.2s;
-    border-radius: 2px;
-}
-
-.size-box:hover span { border-color: var(--fifa-blue); color: var(--fifa-blue); }
-
-.size-box input:checked + span {
-    background-color: var(--fifa-dark);
-    color: white;
-    border-color: var(--fifa-dark);
-}
-
-/* Résultats Boutique */
-.shop-results { flex-grow: 1; }
-
-.results-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 30px;
-}
-
-.results-count { font-size: 1rem; color: #666; }
-.results-count strong { color: var(--fifa-dark); }
-
-.sort-wrapper { display: flex; align-items: center; }
-.sort-wrapper label { font-size: 0.9rem; margin-right: 10px; font-weight: 600; }
-
-.sort-select {
-    padding: 8px 12px;
-    border: 1px solid #ccc;
+    overflow: hidden;
+    height: 100%;
     border-radius: 4px;
-    font-family: inherit;
+}
+
+.visual-bg {
+    width: 100%; height: 100%;
+    background-size: cover; background-position: center;
+    transition: transform 0.6s ease;
+}
+
+.visual-content {
+    position: absolute;
+    bottom: 30px; left: 30px;
+    z-index: 2;
+    color: white;
+}
+
+.visual-content h3 {
+    font-size: 2rem;
+    font-weight: 900;
+    margin: 0 0 10px 0;
+    text-transform: uppercase;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+}
+
+.fake-link {
+    font-weight: 700;
+    text-decoration: underline;
     font-size: 0.9rem;
-    color: #333;
-    cursor: pointer;
+    text-transform: uppercase;
 }
 
-/* Grille spécifique boutique */
-.products-grid-shop {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr); /* 3 par ligne sur la boutique */
-    gap: 30px;
-}
+.visual-card:hover .visual-bg { transform: scale(1.05); }
 
-.no-results {
+/* Bannière Evénement */
+.event-banner-wide {
+    background-color: #000;
+    /* Image de fond abstraite */
+    background-image: url('https://digitalhub.fifa.com/transform/3b955b75-5214-4719-9588-f4b740921212/FWC26_Pattern_Blue_Green?io=transform:fill,width:1440,height:600&quality=75');
+    background-size: cover;
+    padding: 80px 20px;
     text-align: center;
-    padding: 60px;
-    background: var(--fifa-gray);
-    border-radius: 8px;
-    color: #666;
+    color: white;
+    margin: 60px 0;
 }
+
+.event-content { max-width: 600px; margin: 0 auto; }
+.event-logo { height: 40px; margin: 0 auto 20px; }
+.event-banner-wide h2 { font-size: 2.5rem; font-weight: 900; margin-bottom: 10px; }
+.event-banner-wide p { font-size: 1.2rem; margin-bottom: 30px; opacity: 0.9; }
+
+.btn-fifa-outline-big {
+    border: 2px solid white;
+    color: white;
+    padding: 12px 30px;
+    font-weight: 700;
+    text-transform: uppercase;
+    border-radius: 50px;
+}
+.btn-fifa-outline-big:hover { background-color: white; color: black; }
+
+/* Cercles Catégories */
+.section-title-center { text-align: center; font-size: 1.5rem; font-weight: 800; text-transform: uppercase; margin-bottom: 40px; color: var(--fifa-dark); }
+.categories-circles-grid { display: flex; justify-content: center; gap: 40px; flex-wrap: wrap; }
+.circle-cat { text-align: center; display: block; width: 180px; }
+.circle-img {
+    width: 180px; height: 180px;
+    border-radius: 50%;
+    background-size: cover; background-position: center;
+    margin-bottom: 15px;
+    transition: transform 0.3s ease;
+    border: 3px solid transparent;
+}
+.circle-cat:hover .circle-img { transform: scale(1.05); border-color: var(--fifa-blue); }
+.circle-cat span { font-weight: 700; color: var(--fifa-dark); text-transform: uppercase; }
+
+/* ========================================= */
+/* 4. PAGE BOUTIQUE (Sidebar + Grille)       */
+/* ========================================= */
+/* (Ce CSS reste intact pour ta page boutique) */
+
+.shop-page-container { padding-top: 40px; padding-bottom: 80px; }
+.shop-layout { display: flex; gap: 50px; align-items: flex-start; }
+.shop-sidebar { width: 260px; flex-shrink: 0; }
+.sidebar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid var(--fifa-dark); }
+.sidebar-header h3 { font-size: 1.1rem; margin: 0; text-transform: uppercase; font-weight: 800; }
+.reset-filters { font-size: 0.8rem; color: #666; text-decoration: underline; cursor: pointer; }
+.reset-filters:hover { color: var(--fifa-blue); }
+.filter-group { margin-bottom: 30px; border-bottom: 1px solid var(--fifa-border); padding-bottom: 20px; }
+.filter-group:last-child { border-bottom: none; }
+.filter-title { font-size: 0.9rem; text-transform: uppercase; font-weight: 800; margin: 0 0 15px 0; color: var(--fifa-dark); }
+.custom-radio { display: flex; align-items: center; margin-bottom: 12px; cursor: pointer; font-size: 0.95rem; color: #555; transition: all 0.2s; }
+.custom-radio:hover { color: var(--fifa-blue); }
+.custom-radio input { appearance: none; width: 18px; height: 18px; border: 2px solid #ccc; border-radius: 4px; margin-right: 12px; position: relative; cursor: pointer; background: white; }
+.custom-radio input:checked { background-color: var(--fifa-blue); border-color: var(--fifa-blue); }
+.size-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.size-box span { display: block; text-align: center; padding: 10px 0; border: 1px solid var(--fifa-border); font-size: 0.85rem; font-weight: 700; color: #555; transition: all 0.2s; border-radius: 2px; }
+.size-box input:checked + span { background-color: var(--fifa-dark); color: white; border-color: var(--fifa-dark); }
+
+.shop-results { flex-grow: 1; }
+.results-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+.results-count { font-size: 1rem; color: #666; }
+.products-grid-shop { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; }
+.product-card { background: white; transition: transform 0.3s ease; border-radius: 4px; }
+.product-card:hover { transform: translateY(-5px); }
+.product-image-wrapper { position: relative; height: 260px; background: #f9f9f9; overflow: hidden; border-radius: 4px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; }
+.product-image-wrapper img { max-height: 90%; max-width: 90%; object-fit: contain; }
+.product-name { font-size: 1rem; margin: 0 0 10px 0; font-weight: 700; color: var(--fifa-dark); height: 44px; overflow: hidden; }
+.product-price { font-size: 1.1rem; font-weight: 800; color: var(--fifa-dark); }
+
+/* Footer */
+.fifa-footer { background: var(--fifa-dark); color: #888; padding: 40px 0; margin-top: 60px; text-align: center; }
 
 /* Responsive */
-@media (max-width: 1024px) {
-    .products-grid-home { grid-template-columns: repeat(3, 1fr); }
-    .hero-title { font-size: 3rem; }
-}
-
 @media (max-width: 768px) {
-    .hero-banner { height: 450px; }
-    .hero-title { font-size: 2.2rem; }
-    .hero-buttons { flex-direction: column; gap: 10px; }
-    
+    .header-inner { flex-direction: column; padding: 10px; }
+    .header-spacer { display: none; }
+    .fifa-header { height: auto; position: relative; }
+    .hero-main-title { font-size: 2.5rem; }
+    .visual-nav-grid { grid-template-columns: 1fr; height: auto; }
+    .visual-card { height: 300px; margin-bottom: 20px; }
     .shop-layout { flex-direction: column; }
-    .shop-sidebar { width: 100%; margin-bottom: 40px; }
+    .shop-sidebar { width: 100%; margin-bottom: 30px; }
     .products-grid-shop { grid-template-columns: repeat(2, 1fr); }
-    .products-grid-home { grid-template-columns: repeat(2, 1fr); }
 }
