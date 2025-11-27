@@ -4,30 +4,45 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FIFA Store Officiel</title>
+    
     <link rel="stylesheet" href="{{ asset('css/fifa-style.css') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 
     <header>
         <a href="{{ route('home') }}" class="logo">
-            <i class="fas fa-futbol"></i> FIFA
+            FIFA STORE
         </a>
 
         <nav class="nav-menu">
             <a href="{{ route('home') }}" class="nav-link">Accueil</a>
-            <a href="#" class="nav-link">Compétitions</a>
-            <a href="#" class="nav-link">Billetterie</a>
+            <a href="{{ route('produits.index') }}" class="nav-link">Boutique</a>
             
-            <a href="{{ route('produits.index') }}" class="btn-store">
-                FIFA Store <i class="fas fa-shopping-bag"></i>
+            <form action="{{ route('produits.index') }}" method="GET" class="header-search">
+                <button type="submit"><i class="fas fa-search"></i></button>
+                <input type="text" name="search" placeholder="Rechercher..." value="{{ request('search') }}">
+            </form>
+
+            <a href="{{ route('panier.index') }}" class="cart-btn">
+                <i class="fas fa-shopping-bag"></i>
+                @if(count(session('panier', [])) > 0)
+                    <span class="cart-badge">{{ count(session('panier', [])) }}</span>
+                @endif
             </a>
         </nav>
     </header>
 
+    @if(session('success'))
+        <div style="background: var(--fifa-cyan); color: var(--fifa-dark); text-align: center; padding: 10px; font-weight: bold;">
+            {{ session('success') }}
+        </div>
+    @endif
+
     @yield('content')
 
-    <footer style="background: #0f2d4a; color: white; padding: 40px; text-align: center; margin-top: 50px;">
+    <footer>
         <p>&copy; 2025 FIFA. Tous droits réservés.</p>
     </footer>
 

@@ -15,7 +15,7 @@ return [
     |
     */
 
-    'default' => env('DB_CONNECTION', 'pgsql'), // <-- Modifié pour 'pgsql' par défaut
+    'default' => env('DB_CONNECTION', 'pgsql'),
 
     /*
     |--------------------------------------------------------------------------
@@ -73,8 +73,7 @@ return [
             'charset' => 'utf8',
             'prefix' => '',
             'prefix_indexes' => true,
-            // C'est ICI que ça se joue pour ton erreur "relation does not exist"
-            'search_path' => env('DB_SCHEMA', 'fifa'), // <-- Force 'fifa' par défaut
+            'search_path' => env('DB_SCHEMA', 'fifa'), // <-- C'est ici que ça se joue
             'sslmode' => 'prefer',
         ],
 

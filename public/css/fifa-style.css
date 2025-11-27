@@ -1,0 +1,305 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap');
+
+:root {
+    --fifa-dark: #0f2d4a;       /* Le bleu nuit profond du header */
+    --fifa-blue: #326295;       /* Le bleu standard */
+    --fifa-cyan: #55e6c9;       /* Le cyan fluo typique FIFA */
+    --bg-light: #f9f9f9;
+    --text-main: #111;
+    --text-grey: #767676;
+    --white: #ffffff;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg-light);
+    color: var(--text-main);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* --- HEADER STYLE FIFA --- */
+header {
+    background-color: var(--fifa-dark);
+    color: var(--white);
+    padding: 0 5%;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.logo {
+    font-size: 1.8rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: var(--white);
+    text-decoration: none;
+    text-transform: uppercase;
+}
+
+.nav-menu {
+    display: flex;
+    gap: 30px;
+    align-items: center;
+}
+
+.nav-link {
+    color: #cbd5e1;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    transition: color 0.3s;
+}
+
+.nav-link:hover {
+    color: var(--fifa-cyan);
+}
+
+/* Barre de recherche intégrée au Header (Style FIFA) */
+.header-search {
+    background: rgba(255,255,255,0.1);
+    padding: 8px 15px;
+    border-radius: 50px;
+    display: flex;
+    align-items: center;
+    border: 1px solid transparent;
+    transition: 0.3s;
+}
+
+.header-search:focus-within {
+    background: var(--white);
+    border-color: var(--fifa-cyan);
+}
+
+.header-search input {
+    background: transparent;
+    border: none;
+    color: var(--white);
+    outline: none;
+    padding-left: 10px;
+}
+
+.header-search:focus-within input {
+    color: var(--fifa-dark);
+}
+
+.header-search button {
+    background: none;
+    border: none;
+    color: var(--fifa-cyan);
+    cursor: pointer;
+}
+
+.cart-btn {
+    position: relative;
+    color: var(--white);
+    font-size: 1.2rem;
+    margin-left: 20px;
+    text-decoration: none;
+}
+
+.cart-badge {
+    position: absolute;
+    top: -8px;
+    right: -10px;
+    background-color: var(--fifa-cyan);
+    color: var(--fifa-dark);
+    font-size: 0.75rem;
+    font-weight: bold;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* --- HERO SECTION (ACCUEIL) --- */
+.hero {
+    height: 85vh; /* Prend presque tout l'écran */
+    background: linear-gradient(to right, rgba(15, 45, 74, 0.9), rgba(15, 45, 74, 0.4)), url('https://digitalhub.fifa.com/transform/4b179373-c7e6-42d4-a902-6034e38e5399/FIFA-World-Cup-2022-Final-Argentina-v-France');
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: center;
+    padding: 0 10%;
+    color: var(--white);
+}
+
+.hero-content {
+    max-width: 600px;
+}
+
+.hero h1 {
+    font-size: 4rem;
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+}
+
+.hero p {
+    font-size: 1.2rem;
+    margin-bottom: 40px;
+    opacity: 0.9;
+}
+
+.btn-primary {
+    background-color: var(--fifa-cyan);
+    color: var(--fifa-dark);
+    padding: 15px 40px;
+    border-radius: 30px;
+    font-weight: 700;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: transform 0.2s;
+    display: inline-block;
+}
+
+.btn-primary:hover {
+    transform: scale(1.05);
+    background-color: #fff;
+}
+
+/* --- GRILLE PRODUITS --- */
+.container {
+    max-width: 1200px;
+    margin: 50px auto;
+    padding: 0 20px;
+    flex: 1;
+}
+
+.section-header {
+    margin-bottom: 40px;
+    border-bottom: 2px solid #e5e5e5;
+    padding-bottom: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.section-title {
+    font-size: 1.8rem;
+    color: var(--fifa-dark);
+    font-weight: 700;
+    text-transform: uppercase;
+    position: relative;
+}
+
+.section-title::after {
+    content: '';
+    display: block;
+    width: 60px;
+    height: 4px;
+    background-color: var(--fifa-cyan);
+    position: absolute;
+    bottom: -17px; /* Colle à la barre grise */
+}
+
+.products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 30px;
+}
+
+.product-card {
+    background: var(--white);
+    border: 1px solid #eee;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.product-card:hover {
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.card-img {
+    height: 280px;
+    background-color: #f4f4f4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.card-img img {
+    max-width: 90%;
+    max-height: 90%;
+    object-fit: contain;
+    transition: transform 0.3s;
+}
+
+.product-card:hover .card-img img {
+    transform: scale(1.05);
+}
+
+.card-body {
+    padding: 20px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.card-category {
+    font-size: 0.75rem;
+    color: var(--text-grey);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 5px;
+}
+
+.card-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: var(--fifa-dark);
+    line-height: 1.4;
+}
+
+.card-price {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--fifa-dark);
+    margin-top: auto;
+    margin-bottom: 15px;
+}
+
+.btn-add {
+    background-color: var(--fifa-dark);
+    color: var(--white);
+    border: none;
+    padding: 10px;
+    width: 100%;
+    text-align: center;
+    text-transform: uppercase;
+    font-weight: 600;
+    font-size: 0.85rem;
+    border-radius: 4px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-add:hover {
+    background-color: var(--fifa-blue);
+}
+
+footer {
+    background-color: var(--fifa-dark);
+    color: rgba(255,255,255,0.6);
+    text-align: center;
+    padding: 30px;
+    margin-top: auto;
+}
