@@ -7,85 +7,81 @@ use App\Models\Couleur;
 use App\Models\Taille;
 use App\Models\Nation;
 use App\Models\Categorie;
+use App\Models\ProduitCouleur; // <--- INDISPENSABLE pour le tri !
 use Illuminate\Http\Request;
 
 class ProduitController extends Controller
 {
     public function index(Request $request)
     {
-        // On prépare la requête de base avec les relations nécessaires pour optimiser les performances
+        // 1. Requête de base (On charge les relations nécessaires)
         $query = Produit::query()
             ->with(['premierPrix', 'premierePhoto', 'categorie', 'nations'])
             ->where('visibilite', 'visible');
 
-        // 1. MOTEUR DE RECHERCHE AVANCÉ
+        // 2. Moteur de Recherche
         if ($request->filled('search')) {
             $search = $request->input('search');
-            
-            // On groupe les conditions "OU" dans une parenthèse pour ne pas casser les autres filtres
             $query->where(function($q) use ($search) {
-                // Recherche par Nom
                 $q->where('nom_produit', 'ILIKE', "%{$search}%")
-                  // Recherche par Description
                   ->orWhere('description_produit', 'ILIKE', "%{$search}%")
-                  // Recherche par ID (si l'utilisateur tape un nombre)
                   ->orWhereRaw("CAST(id_produit AS TEXT) LIKE ?", ["%{$search}%"])
-                  // Recherche par Nom de Catégorie (ex: taper "Maillot" trouve tous les produits de la catégorie Maillot)
                   ->orWhereHas('categorie', function($subQ) use ($search) {
                       $subQ->where('nom_categorie', 'ILIKE', "%{$search}%");
                   });
             });
         }
 
-        // 2. Filtre Catégorie
+        // 3. Filtres (Catégorie, Nation, Couleur, Taille)
         if ($request->filled('categorie')) {
             $query->where('id_categorie', $request->categorie);
         }
-
-        // 3. Filtre Nation
         if ($request->filled('nation')) {
             $query->whereHas('nations', function($q) use ($request) {
                 $q->where('nation.id_nation', $request->nation);
             });
         }
-
-        // 4. Filtre Couleur
         if ($request->filled('couleur')) {
             $query->whereHas('variantes.couleur', function($q) use ($request) {
                 $q->where('type_couleur', $request->couleur);
             });
         }
-
-        // 5. Filtre Taille
         if ($request->filled('taille')) {
             $query->whereHas('variantes.stocks.taille', function($q) use ($request) {
                 $q->where('type_taille', $request->taille);
             });
         }
 
-        // 6. Tri
+        // 4. TRI PAR PRIX (Correction Spéciale PostgreSQL)
+        // On utilise une "sous-requête" pour trier sans perturber les autres filtres.
         if ($request->filled('sort')) {
-            $query->leftJoin('produit_couleur', 'produit.id_produit', '=', 'produit_couleur.id_produit')
-                  ->select('produit.*'); // Important pour garder l'ID produit correct
-            
             if ($request->sort == 'price_asc') {
-                $query->orderBy('produit_couleur.prix_total', 'asc');
+                $query->orderBy(
+                    ProduitCouleur::select('prix_total')
+                        ->whereColumn('produit_couleur.id_produit', 'produit.id_produit')
+                        ->orderBy('prix_total', 'asc')
+                        ->limit(1)
+                , 'asc');
             } elseif ($request->sort == 'price_desc') {
-                $query->orderBy('produit_couleur.prix_total', 'desc');
+                $query->orderBy(
+                    ProduitCouleur::select('prix_total')
+                        ->whereColumn('produit_couleur.id_produit', 'produit.id_produit')
+                        ->orderBy('prix_total', 'asc') // On trie selon le prix de base du produit
+                        ->limit(1)
+                , 'desc');
             }
-            $query->distinct();
         }
 
-        // Exécution de la requête
+        // Exécution finale
         $produits = $query->get();
 
-        // Récupération des données pour les filtres (Listes déroulantes)
+        // Récupération des listes pour les filtres
         $allColors = Couleur::orderBy('type_couleur')->pluck('type_couleur');
         $allSizes = Taille::orderBy('id_taille')->pluck('type_taille');
         $allNations = Nation::orderBy('nom_nation')->get();
         $allCategories = Categorie::orderBy('nom_categorie')->get();
 
-        return view('boutique', compact('produits', 'allColors', 'allSizes', 'allNations', 'allCategories'));
+        return view('produits.index', compact('produits', 'allColors', 'allSizes', 'allNations', 'allCategories'));
     }
 
     public function home() {
