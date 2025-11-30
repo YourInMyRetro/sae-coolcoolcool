@@ -7,21 +7,22 @@ use App\Models\Couleur;
 use App\Models\Taille;
 use App\Models\Nation;
 use App\Models\Categorie;
-use App\Models\ProduitCouleur; // <--- INDISPENSABLE pour le tri !
 use Illuminate\Http\Request;
 
 class ProduitController extends Controller
 {
     public function index(Request $request)
     {
-        // 1. Requête de base (On charge les relations nécessaires)
+        // 1. Requête de base
+        // On charge les relations nécessaires (prix, photo, etc.)
         $query = Produit::query()
             ->with(['premierPrix', 'premierePhoto', 'categorie', 'nations'])
             ->where('visibilite', 'visible');
 
-        // 2. Moteur de Recherche
+        // 2. MOTEUR DE RECHERCHE
         if ($request->filled('search')) {
             $search = $request->input('search');
+            
             $query->where(function($q) use ($search) {
                 $q->where('nom_produit', 'ILIKE', "%{$search}%")
                   ->orWhere('description_produit', 'ILIKE', "%{$search}%")
@@ -36,52 +37,52 @@ class ProduitController extends Controller
         if ($request->filled('categorie')) {
             $query->where('id_categorie', $request->categorie);
         }
+
         if ($request->filled('nation')) {
             $query->whereHas('nations', function($q) use ($request) {
                 $q->where('nation.id_nation', $request->nation);
             });
         }
+
         if ($request->filled('couleur')) {
             $query->whereHas('variantes.couleur', function($q) use ($request) {
                 $q->where('type_couleur', $request->couleur);
             });
         }
+
         if ($request->filled('taille')) {
             $query->whereHas('variantes.stocks.taille', function($q) use ($request) {
                 $q->where('type_taille', $request->taille);
             });
         }
 
-        // 4. TRI PAR PRIX (Correction Spéciale PostgreSQL)
-        // On utilise une "sous-requête" pour trier sans perturber les autres filtres.
+        // --- ÉTAPE CRUCIALE : Exécution de la requête SANS tri SQL ---
+        // Cela évite l'erreur "SELECT DISTINCT" de PostgreSQL à 100%
+        $produits = $query->get();
+
+        // 4. TRI EN PHP (C'est ici que la magie opère sans bug)
         if ($request->filled('sort')) {
             if ($request->sort == 'price_asc') {
-                $query->orderBy(
-                    ProduitCouleur::select('prix_total')
-                        ->whereColumn('produit_couleur.id_produit', 'produit.id_produit')
-                        ->orderBy('prix_total', 'asc')
-                        ->limit(1)
-                , 'asc');
+                $produits = $produits->sortBy(function($produit) {
+                    // On trie par le prix total, ou un très grand nombre si pas de prix
+                    return $produit->premierPrix->prix_total ?? 99999999;
+                });
             } elseif ($request->sort == 'price_desc') {
-                $query->orderBy(
-                    ProduitCouleur::select('prix_total')
-                        ->whereColumn('produit_couleur.id_produit', 'produit.id_produit')
-                        ->orderBy('prix_total', 'asc') // On trie selon le prix de base du produit
-                        ->limit(1)
-                , 'desc');
+                $produits = $produits->sortByDesc(function($produit) {
+                    // On trie par le prix total, ou 0 si pas de prix
+                    return $produit->premierPrix->prix_total ?? 0;
+                });
             }
         }
 
-        // Exécution finale
-        $produits = $query->get();
-
-        // Récupération des listes pour les filtres
+        // Récupération des données pour les filtres (Listes déroulantes)
         $allColors = Couleur::orderBy('type_couleur')->pluck('type_couleur');
         $allSizes = Taille::orderBy('id_taille')->pluck('type_taille');
         $allNations = Nation::orderBy('nom_nation')->get();
         $allCategories = Categorie::orderBy('nom_categorie')->get();
 
-        return view('produits.index', compact('produits', 'allColors', 'allSizes', 'allNations', 'allCategories'));
+        // On renvoie vers ta vue 'boutique'
+        return view('boutique', compact('produits', 'allColors', 'allSizes', 'allNations', 'allCategories'));
     }
 
     public function home() {
