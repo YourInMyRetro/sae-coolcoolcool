@@ -255,3 +255,4 @@ img { max-width: 100%; display: block; }
     .shop-sidebar { width: 100%; margin-bottom: 30px; }
     .products-grid-shop { grid-template-columns: repeat(2, 1fr); }
 }
+
