@@ -110,8 +110,11 @@
             @if($produits->count() > 0)
                 <div class="products-grid-shop">
                     @foreach($produits as $produit)
-                    <div class="product-card shop-card">
-                        <a href="{{ route('produits.show', $produit->id_produit) }}" class="product-link">
+
+                    <div class="product-card shop-card" style="display: flex; flex-direction: column; height: 100%;">
+                        
+                        {{-- Le lien vers les détails (sur l'image et le texte uniquement) --}}
+                        <a href="{{ route('produits.show', $produit->id_produit) }}" class="product-link" style="flex-grow: 1; text-decoration: none; color: inherit;">
                             <div class="product-image-wrapper">
                                 @if($produit->premierePhoto)
                                     <img src="{{ $produit->premierePhoto->url_photo }}" alt="{{ $produit->nom_produit }}">
@@ -119,17 +122,27 @@
                                     <div class="no-image">Pas d'image</div>
                                 @endif
                             </div>
-                            <div class="product-details">
+                            <div class="product-details" style="padding: 0 15px;">
                                 <span class="product-category-small">
                                     {{ $produit->nations->first()->nom_nation ?? ($produit->categorie->nom_categorie ?? 'FIFA') }}
                                 </span>
                                 <h4 class="product-name">{{ $produit->nom_produit }}</h4>
-                                <div class="product-price">
+                                <div class="product-price" style="margin-bottom: 10px;">
                                     {{ $produit->premierPrix ? number_format($produit->premierPrix->prix_total, 2) . ' €' : 'N/A' }}
                                 </div>
                             </div>
                         </a>
+
+                        {{-- BOUTON D'AJOUT AU PANIER --}}
+                        <div style="padding: 0 15px 20px 15px; margin-top: auto;">
+                            <a href="{{ route('panier.ajouter', $produit->id_produit) }}" 
+                               style="display: block; width: 100%; padding: 10px 0; background-color: #55e6c9; color: #0f2d4a; text-align: center; font-weight: bold; text-transform: uppercase; font-size: 0.85rem; border-radius: 4px; text-decoration: none; transition: background 0.2s;">
+                                Ajouter <i class="fas fa-cart-plus"></i>
+                            </a>
+                        </div>
+
                     </div>
+                    
                     @endforeach
                 </div>
             @else

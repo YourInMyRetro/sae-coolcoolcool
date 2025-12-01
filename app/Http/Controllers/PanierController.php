@@ -51,4 +51,17 @@ class PanierController extends Controller
         session()->forget('panier');
         return redirect()->route('produits.index');
     }
+
+    public function update(Request $request, $id)
+    {
+        $panier = session()->get('panier');
+
+        if($request->quantite && isset($panier[$id])) {
+            $panier[$id]['quantite'] = $request->quantite;
+            session()->put('panier', $panier);
+            return redirect()->back()->with('success', 'Quantité mise à jour !');
+        }
+        
+        return redirect()->back();
+    }
 }

@@ -29,7 +29,19 @@
                             {{ $details['nom'] }}
                         </td>
                         <td style="padding: 15px;">{{ $details['prix'] }} €</td>
-                        <td style="padding: 15px;">{{ $details['quantite'] }}</td>
+                        
+                        <td style="padding: 15px;">
+                            <form action="{{ route('panier.update', $id) }}" method="POST" style="display: flex; gap: 5px; align-items: center;">
+                                @csrf
+                                @method('PATCH')
+                                <input type="number" name="quantite" value="{{ $details['quantite'] }}" min="1" max="10" 
+                                    style="width: 60px; padding: 5px; border: 1px solid #ccc; border-radius: 4px;">
+                                <button type="submit" style="background: #326295; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">
+                                    <i class="fas fa-sync-alt"></i>
+                                </button>
+                            </form>
+                        </td>
+                        
                         <td style="padding: 15px;">{{ $details['prix'] * $details['quantite'] }} €</td>
                         <td style="padding: 15px;">
                             <a href="{{ route('panier.supprimer', $id) }}" style="color: red;">X</a>
