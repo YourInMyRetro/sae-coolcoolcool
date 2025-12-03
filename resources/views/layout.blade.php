@@ -69,8 +69,14 @@
 
     {{-- Messages Flash (Succès/Erreur) --}}
     @if(session('success'))
-        <div class="alert-success-fifa">
+        <div class="alert-success-fifa" style="background: #55e6c1; color: #101010; padding: 15px; text-align: center; margin-bottom: 20px;">
             <i class="fas fa-check-circle"></i> {{ session('success') }}
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="alert-error-fifa" style="background: #e74c3c; color: white; padding: 15px; text-align: center; margin-bottom: 20px;">
+            <i class="fas fa-exclamation-circle"></i> {{ session('error') }}
         </div>
     @endif
 

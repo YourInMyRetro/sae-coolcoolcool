@@ -16,9 +16,8 @@ class ProduitController extends Controller
         // 1. Requête de base
         // On charge les relations nécessaires (prix, photo, etc.)
         $query = Produit::query()
-            ->with(['premierPrix', 'premierePhoto', 'categorie', 'nations'])
+            ->with(['premierPrix', 'premierePhoto', 'categorie', 'nations', 'variantes.stocks'])
             ->where('visibilite', 'visible');
-
         // 2. MOTEUR DE RECHERCHE
         if ($request->filled('search')) {
             $search = $request->input('search');
@@ -90,15 +89,26 @@ class ProduitController extends Controller
         return view('home', compact('featuredProducts'));
     }
 
-    public function show(Request $request, $id) { // 1. On ajoute Request $request pour lire l'URL
-    
-        // Ton code existant pour récupérer le produit
-        $produit = Produit::with(['variantes.couleur', 'variantes.stocks.taille', 'nations', 'categorie'])->findOrFail($id);
+    public function show(Request $request, $id) {
+        // 1. Charger le produit et ses variantes
+        $produit = Produit::with(['variantes.couleur', 'variantes.stocks.taille', 'nations', 'categorie'])
+            ->findOrFail($id);
         
-        // 2. On récupère la taille depuis l'URL (ex: ?taille=L)
+        // 2. Récupérer les tailles disponibles (C'est CA qui manquait peut-être)
+        $tailles = collect();
+        foreach ($produit->variantes as $variante) {
+            foreach ($variante->stocks as $stock) {
+                if ($stock->taille) {
+                    $tailles->push($stock->taille);
+                }
+            }
+        }
+        // Dédoublonner et trier
+        $tailles = $tailles->unique('id_taille')->sortBy('id_taille');
+    
         $tailleSelectionnee = $request->query('taille');
     
-        // 3. On ajoute 'tailleSelectionnee' dans le compact pour l'envoyer à la vue
-        return view('produits.show', compact('produit', 'tailleSelectionnee'));
+        // 3. Envoyer le tout à la vue
+        return view('produits.show', compact('produit', 'tailles', 'tailleSelectionnee'));
     }
 }

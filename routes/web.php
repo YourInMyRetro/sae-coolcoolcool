@@ -4,6 +4,13 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProduitController;
 use App\Http\Controllers\PanierController; 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ToolController;
+
+Route::get('/matcher', [ToolController::class, 'index'])->name('matcher.index');
+Route::post('/matcher', [ToolController::class, 'store'])->name('matcher.store');
+
+Route::post('/matcher/skip', [ToolController::class, 'skip'])->name('matcher.skip');
+Route::delete('/matcher/delete', [ToolController::class, 'delete'])->name('matcher.delete');
 // Accueil
 Route::get('/', [ProduitController::class, 'home'])->name('home');
 
