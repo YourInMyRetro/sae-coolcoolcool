@@ -114,7 +114,7 @@
                     <div class="product-card shop-card" style="display: flex; flex-direction: column; height: 100%;">
                         
                         {{-- Le lien vers les détails (sur l'image et le texte uniquement) --}}
-                        <a href="{{ route('produits.show', $produit->id_produit) }}" class="product-link" style="flex-grow: 1; text-decoration: none; color: inherit;">
+                        <a href="{{ route('produits.show', ['id' => $produit->id_produit, 'taille' => request('taille')]) }}" class="product-link" style="flex-grow: 1; text-decoration: none; color: inherit;">
                             <div class="product-image-wrapper">
                                 @if($produit->premierePhoto)
                                     <img src="{{ $produit->premierePhoto->url_photo }}" alt="{{ $produit->nom_produit }}">

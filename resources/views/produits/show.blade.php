@@ -17,6 +17,14 @@
             <h1>{{ $produit->nom_produit }}</h1>
             <h3 style="color: #e74c3c;">{{ number_format($produit->premierPrix->prix_total ?? 0, 2) }} €</h3>
             
+            @if($tailleSelectionnee)
+            <div style="background-color: #e1f5fe; color: #0277bd; padding: 10px; border-radius: 5px; margin: 15px 0; border-left: 4px solid #0288d1;">
+                <i class="fas fa-info-circle"></i> 
+                Rappel : Vous avez filtré pour la taille <strong>{{ strtoupper($tailleSelectionnee) }}</strong>.
+            </div>
+            @endif
+
+
             <p class="description" style="margin: 20px 0; color: #666;">
                 {{ $produit->description_produit }}
             </p>

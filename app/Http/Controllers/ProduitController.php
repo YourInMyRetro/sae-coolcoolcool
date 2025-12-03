@@ -90,8 +90,15 @@ class ProduitController extends Controller
         return view('home', compact('featuredProducts'));
     }
 
-    public function show($id) {
+    public function show(Request $request, $id) { // 1. On ajoute Request $request pour lire l'URL
+    
+        // Ton code existant pour récupérer le produit
         $produit = Produit::with(['variantes.couleur', 'variantes.stocks.taille', 'nations', 'categorie'])->findOrFail($id);
-        return view('produits.show', compact('produit'));
+        
+        // 2. On récupère la taille depuis l'URL (ex: ?taille=L)
+        $tailleSelectionnee = $request->query('taille');
+    
+        // 3. On ajoute 'tailleSelectionnee' dans le compact pour l'envoyer à la vue
+        return view('produits.show', compact('produit', 'tailleSelectionnee'));
     }
 }

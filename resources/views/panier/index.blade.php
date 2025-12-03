@@ -51,10 +51,16 @@
             </tbody>
         </table>
         
-        <div style="text-align: right; margin-top: 20px;">
-            <h3>Total : {{ $total }} €</h3>
-            <a href="{{ route('panier.vider') }}">Vider</a>
-        </div>
+        <div style="text-align: right; margin-top: 20px; display: flex; justify-content: flex-end; align-items: center; gap: 20px;">
+    {{-- Bouton Vider (Existant, on le garde discret) --}}
+    <a href="{{ route('panier.vider') }}" style="color: #e74c3c; text-decoration: underline; font-size: 0.9rem;">
+        Vider le panier
+    </a>
+    <h3 style="margin: 0; font-size: 1.5rem; color: #326295;">Total : {{ $total }} €</h3>
+    <a href="{{ route('commande.livraison') }}" class="btn-fifa-cta" style="padding: 12px 25px; text-decoration: none; background-color: #55e6c9; color: #0f2d4a; font-weight: 800; border-radius: 5px; text-transform: uppercase;">
+        Commander <i class="fas fa-arrow-right"></i>
+    </a>
+</div>
     @else
         <div style="text-align: center; padding: 50px;">
             <h3>Votre panier est vide.</h3>

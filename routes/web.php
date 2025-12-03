@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProduitController;
 use App\Http\Controllers\PanierController; 
-
+use App\Http\Controllers\AuthController;
 // Accueil
 Route::get('/', [ProduitController::class, 'home'])->name('home');
 
@@ -17,3 +17,34 @@ Route::match(['get', 'post'], '/panier/ajouter/{id}', [PanierController::class, 
 Route::get('/panier/supprimer/{id}', [PanierController::class, 'supprimer'])->name('panier.supprimer');
 Route::get('/panier/vider', [PanierController::class, 'vider'])->name('panier.vider');
 Route::patch('/panier/update/{id}', [PanierController::class, 'update'])->name('panier.update');
+
+// N'oublie pas d'importer le contrôleur tout en haut du fichier avec les autres "use"
+use App\Http\Controllers\CommandeController;
+
+// ... tes routes existantes (accueil, boutique, panier) ...
+
+// --- ROUTES COMMANDE (Sécurisées par connexion) ---
+Route::middleware(['auth'])->group(function () {
+    
+    // Étape 1 : Livraison
+    Route::get('/commande/livraison', [CommandeController::class, 'livraison'])
+        ->name('commande.livraison');
+        
+    Route::post('/commande/livraison', [CommandeController::class, 'validerLivraison'])
+        ->name('commande.validerLivraison');
+
+    // Étape 2 : Paiement
+    Route::get('/commande/paiement', [CommandeController::class, 'paiement'])
+        ->name('commande.paiement');
+        
+    Route::post('/commande/payer', [CommandeController::class, 'processPaiement'])
+        ->name('commande.processPaiement');
+    
+    // Étape 3 : Confirmation
+    Route::get('/commande/succes', [CommandeController::class, 'succes'])
+        ->name('commande.succes');
+});
+
+Route::get('/login', [AuthController::class, 'login'])->name('login'); // La fameuse route manquante !
+Route::post('/login', [AuthController::class, 'authenticate'])->name('authenticate');
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');

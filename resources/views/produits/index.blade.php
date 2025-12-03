@@ -58,18 +58,19 @@
         <div class="products-grid">
             @foreach($produits as $produit)
                 <div class="product-card">
-                    <div class="card-img">
-                        <a href="{{ route('produits.show', $produit->id_produit) }}">
-                            <img src="{{ asset($produit->premierePhoto->url_photo ?? 'img/placeholder.jpg') }}" alt="{{ $produit->nom_produit }}">
-                        </a>
-                    </div>
+                <div class="card-img">
+                    {{-- On passe un tableau : l'ID + la taille récupérée de la requête actuelle --}}
+                    <a href="{{ route('produits.show', ['id' => $produit->id_produit, 'taille' => request('taille')]) }}">
+                        <img src="{{ asset($produit->premierePhoto->url_photo ?? 'img/placeholder.jpg') }}" alt="{{ $produit->nom_produit }}">
+                    </a>
+                </div>
                     <div class="card-body">
                         <span class="card-category">
                             @foreach($produit->nations as $nation) {{ $nation->nom_nation }} @endforeach
                             {{ $produit->categorie->nom_categorie ?? '' }}
                         </span>
                         <h3 class="card-title">
-                            <a href="{{ route('produits.show', $produit->id_produit) }}" style="color: inherit; text-decoration: none;">
+                            <a href="{{ route('produits.show', ['id' => $produit->id_produit, 'taille' => request('taille')]) }}" style="color: inherit; text-decoration: none;">
                                 {{ $produit->nom_produit }}
                             </a>
                         </h3>
