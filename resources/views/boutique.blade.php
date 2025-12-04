@@ -134,10 +134,11 @@
                         </a>
 
                         {{-- BOUTON D'AJOUT AU PANIER --}}
+                        {{-- NOUVEAU CODE --}}
                         <div style="padding: 0 15px 20px 15px; margin-top: auto;">
-                            <a href="{{ route('panier.ajouter', $produit->id_produit) }}" 
-                               style="display: block; width: 100%; padding: 10px 0; background-color: #55e6c9; color: #0f2d4a; text-align: center; font-weight: bold; text-transform: uppercase; font-size: 0.85rem; border-radius: 4px; text-decoration: none; transition: background 0.2s;">
-                                Ajouter <i class="fas fa-cart-plus"></i>
+                            <a href="{{ route('produits.show', ['id' => $produit->id_produit]) }}" 
+                            style="display: block; width: 100%; padding: 10px 0; background-color: #326295; color: white; text-align: center; font-weight: bold; text-transform: uppercase; font-size: 0.85rem; border-radius: 4px; text-decoration: none; transition: background 0.2s;">
+                                Détails <i class="fas fa-info-circle"></i>
                             </a>
                         </div>
 

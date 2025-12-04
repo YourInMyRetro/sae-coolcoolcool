@@ -34,11 +34,15 @@
                             <form action="{{ route('panier.update', $id) }}" method="POST" style="display: flex; gap: 5px; align-items: center;">
                                 @csrf
                                 @method('PATCH')
-                                <input type="number" name="quantite" value="{{ $details['quantite'] }}" min="1" max="10" 
+                                {{-- AVANT --}}
+
+                                {{-- APRÈS --}}
+                                <input type="number" name="quantite" value="{{ $details['quantite'] }}" min="1" max="{{ $details['stock_max'] }}" style="width: 60px; padding: 5px; border: 1px solid #ccc; border-radius: 4px;">
                                     style="width: 60px; padding: 5px; border: 1px solid #ccc; border-radius: 4px;">
                                 <button type="submit" style="background: #326295; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">
                                     <i class="fas fa-sync-alt"></i>
                                 </button>
+                                <small style="color: #666; font-size: 0.8em;">Max: {{ $details['stock_max'] }}</small>
                             </form>
                         </td>
                         

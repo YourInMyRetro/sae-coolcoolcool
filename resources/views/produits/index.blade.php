@@ -157,6 +157,7 @@
                             </div>
                         </a>
 
+
                         <div style="padding: 0 15px 20px 15px; margin-top: auto;">
                             @if($stockTotal > 0)
                                 <a href="{{ route('produits.show', ['id' => $produit->id_produit]) }}" 
@@ -169,6 +170,7 @@
                                 </button>
                             @endif
                         </div>
+                        
 
                     </div>
                     @endforeach

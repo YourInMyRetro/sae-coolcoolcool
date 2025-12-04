@@ -12,9 +12,19 @@ class PanierController extends Controller
     {
         $panier = session()->get('panier', []);
         $total = 0;
-        foreach($panier as $item) {
+
+        // On parcourt le panier pour recalculer le total ET récupérer le stock frais
+        foreach($panier as $id => &$item) { // Le '&' permet de modifier l'item directement
             $total += $item['prix'] * $item['quantite'];
+            
+            // On va chercher le stock frais en BDD
+            $stockItem = StockArticle::find($item['id_stock']);
+            // On ajoute une clé 'stock_max' à notre tableau (juste pour l'affichage)
+            $item['stock_max'] = $stockItem ? $stockItem->stock : 0;
         }
+        // On pense à enlever la référence pour éviter des bugs bizarres PHP
+        unset($item);
+
         return view('panier.index', compact('panier', 'total'));
     }
 
@@ -103,6 +113,26 @@ class PanierController extends Controller
         $panier = session()->get('panier');
 
         if($request->quantite && isset($panier[$id])) {
+            // 1. Récupérer l'ID du stock stocké dans la session
+            $idStock = $panier[$id]['id_stock'];
+
+            // 2. Vérifier le stock réel en BDD
+            $stockReel = StockArticle::find($idStock);
+
+            if (!$stockReel) {
+                return redirect()->back()->with('error', 'Produit introuvable.');
+            }
+
+            // 3. Comparer la demande avec le stock disponible
+            if ($request->quantite > $stockReel->stock) {
+                // On met la quantité au maximum dispo pour être sympa
+                $panier[$id]['quantite'] = $stockReel->stock; 
+                session()->put('panier', $panier);
+                
+                return redirect()->back()->with('error', "Stock insuffisant ! Nous avons ajusté la quantité au maximum disponible ({$stockReel->stock}).");
+            }
+
+            // 4. Si tout est bon, on met à jour
             $panier[$id]['quantite'] = $request->quantite;
             session()->put('panier', $panier);
             return redirect()->back()->with('success', 'Quantité mise à jour !');
