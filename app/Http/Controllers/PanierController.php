@@ -2,9 +2,13 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth; // AJOUT INDISPENSABLE
+use Carbon\Carbon; // Pour les dates
 use App\Models\Produit;
 use App\Models\StockArticle; 
 use App\Models\Taille;
+use App\Models\Panier;      // AJOUT
+use App\Models\LignePanier; // AJOUT
 
 class PanierController extends Controller
 {
@@ -89,13 +93,68 @@ class PanierController extends Controller
         }
 
         session()->put('panier', $panier);
+
+        // ====================================================
+        // AJOUT : PERSISTANCE EN BDD (Si connecté)
+        // ====================================================
+        if (Auth::check()) {
+            $user = Auth::user();
+            
+            // 1. Trouver ou Créer le panier de l'utilisateur
+            $dbPanier = Panier::firstOrCreate(
+                ['id_utilisateur' => $user->id_utilisateur],
+                ['date_creation' => Carbon::now(), 'date_modification' => Carbon::now()]
+            );
+
+            // Mise à jour de la date
+            $dbPanier->date_modification = Carbon::now();
+            $dbPanier->save();
+
+            // 2. Gestion de la ligne panier
+            $ligne = LignePanier::where('id_panier', $dbPanier->id_panier)
+                                ->where('id_stock_article', $stockItem->id_stock_article)
+                                ->first();
+
+            if ($ligne) {
+                // Si existe déjà, on met à jour la quantité avec celle de la session
+                $ligne->quantite = $panier[$panierId]['quantite'];
+                $ligne->save();
+            } else {
+                // Sinon on crée
+                LignePanier::create([
+                    'id_panier' => $dbPanier->id_panier,
+                    'id_stock_article' => $stockItem->id_stock_article,
+                    'quantite' => 1
+                ]);
+            }
+        }
+        // ====================================================
+
         return redirect()->back()->with('success', 'Produit ajouté au panier !');
     }
 
     public function supprimer($id)
     {
         $panier = session()->get('panier');
+        
         if(isset($panier[$id])) {
+            
+            // ====================================================
+            // AJOUT : SUPPRESSION EN BDD AVANT DE SUPPRIMER LA SESSION
+            // ====================================================
+            if (Auth::check()) {
+                $idStock = $panier[$id]['id_stock']; // On récupère l'ID Stock avant delete
+                $user = Auth::user();
+                $dbPanier = Panier::where('id_utilisateur', $user->id_utilisateur)->first();
+
+                if ($dbPanier) {
+                    LignePanier::where('id_panier', $dbPanier->id_panier)
+                               ->where('id_stock_article', $idStock)
+                               ->delete();
+                }
+            }
+            // ====================================================
+
             unset($panier[$id]);
             session()->put('panier', $panier);
         }
@@ -104,6 +163,20 @@ class PanierController extends Controller
 
     public function vider()
     {
+        // ====================================================
+        // AJOUT : VIDER LA BDD
+        // ====================================================
+        if (Auth::check()) {
+            $user = Auth::user();
+            $dbPanier = Panier::where('id_utilisateur', $user->id_utilisateur)->first();
+            if ($dbPanier) {
+                // On supprime toutes les lignes liées à ce panier
+                LignePanier::where('id_panier', $dbPanier->id_panier)->delete();
+                // Optionnel : On peut aussi supprimer le panier lui-même, ou le garder vide
+            }
+        }
+        // ====================================================
+
         session()->forget('panier');
         return redirect()->route('produits.index');
     }
@@ -129,15 +202,38 @@ class PanierController extends Controller
                 $panier[$id]['quantite'] = $stockReel->stock; 
                 session()->put('panier', $panier);
                 
+                // Mettre à jour BDD aussi ici si connecté (cas limite)
+                $this->updateDbQuantity($idStock, $stockReel->stock);
+
                 return redirect()->back()->with('error', "Stock insuffisant ! Nous avons ajusté la quantité au maximum disponible ({$stockReel->stock}).");
             }
 
-            // 4. Si tout est bon, on met à jour
+            // 4. Si tout est bon, on met à jour la session
             $panier[$id]['quantite'] = $request->quantite;
             session()->put('panier', $panier);
+
+            // ====================================================
+            // AJOUT : MISE À JOUR BDD
+            // ====================================================
+            $this->updateDbQuantity($idStock, $request->quantite);
+            // ====================================================
+
             return redirect()->back()->with('success', 'Quantité mise à jour !');
         }
         
         return redirect()->back();
+    }
+
+    // Petite fonction privée pour éviter de répéter le code dans update()
+    private function updateDbQuantity($idStock, $qty) {
+        if (Auth::check()) {
+            $user = Auth::user();
+            $dbPanier = Panier::where('id_utilisateur', $user->id_utilisateur)->first();
+            if ($dbPanier) {
+                LignePanier::where('id_panier', $dbPanier->id_panier)
+                           ->where('id_stock_article', $idStock)
+                           ->update(['quantite' => $qty]);
+            }
+        }
     }
 }

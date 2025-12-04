@@ -2,45 +2,75 @@
 
 namespace App\Models;
 
-use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Support\Facades\DB;
 
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    // 1. Lier à la bonne table et clé primaire
+    // Configuration de la table
     protected $table = 'utilisateur';
     protected $primaryKey = 'id_utilisateur';
-    public $timestamps = false; // Ta table n'a pas created_at/updated_at
+    public $timestamps = false;
 
-    // 2. Les colonnes modifiables
+    // Champs remplissables (Mass Assignment)
     protected $fillable = [
-        'nom', 'prenom', 'mail', 'date_naissance', 
-        'pays_naissance', 'langue', 'mot_de_passe_chiffre', 'surnom'
+        'nom', 
+        'prenom', 
+        'mail', 
+        'date_naissance', 
+        'pays_naissance', 
+        'langue', 
+        'mot_de_passe_chiffre', 
+        'surnom'
     ];
 
-    // 3. Cacher le mot de passe
     protected $hidden = [
         'mot_de_passe_chiffre', 'remember_token',
     ];
 
+    // Événement : Création automatique d'un acheteur quand on crée un user
     protected static function booted()
     {
         static::created(function ($user) {
-            // Dès qu'un utilisateur est créé, on l'ajoute dans la table 'acheteur'
             DB::table('acheteur')->insert([
                 'id_utilisateur' => $user->id_utilisateur
             ]);
         });
     }
 
-    // 4. Indiquer à Laravel quel est le champ "mot de passe"
     public function getAuthPassword()
     {
         return $this->mot_de_passe_chiffre;
+    }
+
+    // --- RELATIONS ---
+
+    /**
+     * Relation avec la table Professionel
+     * Un utilisateur PEUT avoir une fiche professionnel
+     */
+    public function professionel()
+    {
+        // hasOne(Modele, cle_etrangere, cle_locale)
+        return $this->hasOne(Professionel::class, 'id_utilisateur', 'id_utilisateur');
+    }
+
+    // --- UTILITAIRES ---
+
+    /**
+     * Vérifie si l'utilisateur est un professionnel
+     */
+    public function estProfessionnel()
+    {
+        if ($this->professionel != null) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }

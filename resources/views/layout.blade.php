@@ -23,7 +23,7 @@
             {{-- BLOC GAUCHE : LOGO --}}
             <div class="header-left">
                 <a href="{{ route('home') }}" class="logo-link">
-                    {{-- Si tu as une image logo, remplace le texte ci-dessous par <img src="..." /> --}}
+                    {{-- Logo Textuel FIFA --}}
                     <span class="fifa-logo-text">FIFA STORE</span>
                 </a>
             </div>
@@ -34,13 +34,14 @@
                     <ul class="nav-list">
                         <li><a href="{{ route('home') }}" class="{{ request()->routeIs('home') ? 'active' : '' }}">Accueil</a></li>
                         <li><a href="{{ route('produits.index') }}" class="{{ request()->routeIs('produits.index') ? 'active' : '' }}">Boutique</a></li>
+                        {{-- Exemples de filtres rapides --}}
                         <li><a href="{{ route('produits.index', ['categorie' => 1]) }}">Maillots</a></li>
-                        <li><a href="{{ route('produits.index', ['categorie' => 3]) }}">Accessoires</a></li>
+                        <li><a href="{{ route('matcher.index') }}">Matcher</a></li>
                     </ul>
                 </nav>
             </div>
 
-            {{-- BLOC DROITE : RECHERCHE & PANIER --}}
+            {{-- BLOC DROITE : RECHERCHE & PANIER & USER --}}
             <div class="header-right">
                 
                 {{-- Barre de recherche intégrée --}}
@@ -51,20 +52,37 @@
 
                 {{-- Icônes Utilisateur & Panier --}}
                 <div class="header-icons">
-                    <a href="#" class="icon-btn" title="Mon Compte"><i class="far fa-user"></i></a>
+                    
+                    {{-- 1. LE BONHOMME (Logique Connexion / Compte) --}}
+                    @guest
+                        {{-- Si VISITEUR : Lien vers Login --}}
+                        <a href="{{ route('login') }}" class="icon-btn" title="Se connecter">
+                            <i class="far fa-user"></i>
+                        </a>
+                    @endguest
+
+                    @auth
+                        {{-- Si CONNECTÉ : Lien vers Compte (Icône pleine + couleur distinctive) --}}
+                        <a href="{{ route('compte.index') }}" class="icon-btn" title="Mon Compte">
+                            <i class="fas fa-user" style="color: #55e6c1;"></i>
+                        </a>
+                    @endauth
+
+                    {{-- 2. LE PANIER --}}
                     <a href="{{ route('panier.index') }}" class="icon-btn cart-btn-wrapper" title="Mon Panier">
                         <i class="fas fa-shopping-bag"></i>
                         @if(count(session('panier', [])) > 0)
                             <span class="cart-badge">{{ count(session('panier', [])) }}</span>
                         @endif
                     </a>
+
                 </div>
             </div>
 
         </div>
     </header>
 
-    {{-- Espaceur pour compenser le header fixe --}}
+    {{-- Espaceur pour compenser le header fixe (si tu as mis position:fixed en CSS) --}}
     <div class="header-spacer"></div>
 
     {{-- Messages Flash (Succès/Erreur) --}}

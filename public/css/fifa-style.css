@@ -256,3 +256,277 @@ img { max-width: 100%; display: block; }
     .products-grid-shop { grid-template-columns: repeat(2, 1fr); }
 }
 
+/* =========================================
+   AUTH PREMIUM DESIGN (Connexion / Inscription)
+   ========================================= */
+
+/* Fond de page légèrement grisé pour faire ressortir les cartes */
+.auth-page-wrapper {
+    background-color: #f5f7fa;
+    min-height: calc(100vh - 200px); /* Prend toute la hauteur moins le header/footer */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+}
+
+/* La Carte Principale (Card) */
+.auth-card-premium {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 51, 102, 0.1); /* Ombre bleutée subtile */
+    padding: 40px;
+    width: 100%;
+    max-width: 550px; /* Largeur standard */
+    border-top: 5px solid #326295; /* Ligne bleue FIFA en haut */
+    animation: slideUp 0.5s ease-out;
+}
+
+/* Version Large pour le PRO */
+.auth-card-premium.is-wide {
+    max-width: 900px;
+    border-top-color: #00d4ff; /* Ligne Cyan pour les Pros */
+}
+
+/* Titres */
+.auth-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.auth-header h1 {
+    color: #003366;
+    font-size: 1.8rem;
+    margin-bottom: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: -0.5px;
+}
+
+.auth-header p {
+    color: #666;
+    font-size: 0.95rem;
+}
+
+/* Champs de formulaire modernes */
+.fifa-form-group {
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.fifa-form-group label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #326295;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+}
+
+.fifa-input {
+    width: 100%;
+    padding: 12px 15px;
+    font-size: 1rem;
+    border: 2px solid #e1e4e8;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    background-color: #fafbfc;
+    color: #333;
+}
+
+.fifa-input:focus {
+    border-color: #00d4ff; /* Focus Cyan FIFA */
+    background-color: #fff;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+}
+
+/* Boutons */
+.btn-fifa-submit {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #326295 0%, #1e3c5c 100%);
+    color: white;
+    font-weight: 700;
+    text-transform: uppercase;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    font-size: 1rem;
+    letter-spacing: 0.5px;
+    margin-top: 10px;
+}
+
+.btn-fifa-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(50, 98, 149, 0.3);
+}
+
+.btn-fifa-submit.pro-style {
+    background: linear-gradient(135deg, #003366 0%, #000000 100%); /* Plus sombre/luxe pour Pro */
+    border: 1px solid #00d4ff; /* Bordure Cyan */
+}
+
+/* Liens du bas */
+.auth-footer-links {
+    text-align: center;
+    margin-top: 25px;
+    font-size: 0.9rem;
+    color: #777;
+}
+
+.auth-footer-links a {
+    color: #326295;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s;
+}
+
+.auth-footer-links a:hover {
+    color: #00d4ff;
+    text-decoration: underline;
+}
+
+/* Animation d'apparition */
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Grille pour le formulaire Pro */
+.pro-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+}
+
+@media (max-width: 768px) {
+    .pro-grid { grid-template-columns: 1fr; gap: 20px; }
+    .auth-card-premium { padding: 20px; }
+}
+
+/* Badge Pro */
+.badge-pro-title {
+    background-color: #00d4ff;
+    color: #003366;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.5em;
+    vertical-align: middle;
+    margin-left: 10px;
+}
+
+/* =========================================
+   ESPACE COMPTE PREMIUM (DARK THEME)
+   ========================================= */
+
+.account-page-wrapper {
+    background-color: #101010; /* Fond noir profond */
+    color: #ffffff;
+    min-height: 80vh;
+    padding: 60px 20px;
+}
+
+.account-container {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.account-header {
+    border-bottom: 2px solid #333;
+    padding-bottom: 20px;
+    margin-bottom: 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.account-header h1 {
+    font-size: 2.5rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 0;
+}
+
+.account-header .user-badge {
+    color: #00ff87; /* Vert Cyan FIFA */
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+/* Grille des cartes */
+.account-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+}
+
+.account-card {
+    background: #1e1e1e; /* Gris très sombre */
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 30px;
+    transition: transform 0.3s, border-color 0.3s;
+    position: relative;
+    overflow: hidden;
+}
+
+.account-card:hover {
+    transform: translateY(-5px);
+    border-color: #00ff87;
+}
+
+.account-card h2 {
+    color: #00ff87;
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #444;
+    padding-bottom: 10px;
+}
+
+.account-card ul {
+    list-style: none;
+    padding: 0;
+}
+
+.account-card li {
+    margin-bottom: 12px;
+    color: #ccc;
+    font-size: 0.95rem;
+}
+
+.account-card li strong {
+    color: #fff;
+    margin-right: 5px;
+}
+
+/* Boutons spécifiques Compte */
+.btn-account-action {
+    display: inline-block;
+    margin-top: 15px;
+    padding: 10px 20px;
+    background: transparent;
+    border: 1px solid #00ff87;
+    color: #00ff87;
+    text-decoration: none;
+    border-radius: 4px;
+    font-weight: bold;
+    transition: all 0.3s;
+}
+
+.btn-account-action:hover {
+    background: #00ff87;
+    color: #101010;
+}
+
+.btn-logout {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+}
