@@ -10,6 +10,16 @@
         </div>
 
         <form action="{{ route('register.pro.submit') }}" method="POST">
+                @if ($errors->any())
+            <div style="background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 15px; margin-bottom: 20px; border-radius: 5px;">
+                <strong>Oups ! Il y a des problèmes :</strong>
+                <ul style="margin-top: 10px; margin-bottom: 0; padding-left: 20px;">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+                    @endif
             @csrf
             
             <div class="pro-grid">
@@ -114,6 +124,29 @@
                         En créant un compte professionnel, vous certifiez agir au nom de la société mentionnée ci-dessus. Votre numéro de TVA sera vérifié avant validation définitive.
                     </div>
                 </div>
+                <div style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 20px;">
+                
+                {{-- Case CGU --}}
+                <div class="fifa-form-group" style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px;">
+                    <input type="checkbox" name="cgu_consent" id="cgu_consent_pro" required style="width: 18px; height: 18px; margin-top: 3px;">
+                    <label for="cgu_consent_pro" style="font-size: 0.9em; color: #555; text-transform: none; font-weight: normal;">
+                        J'accepte les <a href="{{ route('cgu') }}" target="_blank" style="color: #00d4ff; text-decoration: underline;">Conditions Générales d'Utilisation</a> 
+                        et la <a href="{{ route('privacy') }}" target="_blank" style="color: #00d4ff; text-decoration: underline;">Politique de Confidentialité</a>. *
+                    </label>
+                </div>
+                @error('cgu_consent') 
+                    <span style="color:red; font-size:0.85em; display:block; margin-left: 30px;">{{ $message }}</span> 
+                @enderror
+
+                {{-- Case Newsletter (Optionnelle mais conseillée) --}}
+                <div class="fifa-form-group" style="display: flex; align-items: flex-start; gap: 10px;">
+                    <input type="checkbox" name="newsletter_optin" id="newsletter_optin_pro" value="1" style="width: 18px; height: 18px; margin-top: 3px;">
+                    <label for="newsletter_optin_pro" style="font-size: 0.9em; color: #555; text-transform: none; font-weight: normal;">
+                        J'accepte de recevoir les offres B2B et actualités de la FIFA par email.
+                    </label>
+                </div>
+
+            </div>
 
             </div> <button type="submit" class="btn-fifa-submit pro-style">
                 Valider ma demande PRO <i class="fas fa-check-circle" style="margin-left: 8px;"></i>

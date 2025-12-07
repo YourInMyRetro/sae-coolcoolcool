@@ -16,6 +16,17 @@
 
         <div class="account-card" style="border-top: 4px solid #00d4ff;">
             
+            {{-- Affichage des erreurs de validation --}}
+            @if ($errors->any())
+                <div style="background-color: #3d1a1a; color: #ff6b6b; padding: 15px; margin-bottom: 20px; border-radius: 5px; border: 1px solid #ff6b6b;">
+                    <ul style="margin: 0; padding-left: 20px;">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             <form action="{{ route('compte.demande.store') }}" method="POST">
                 @csrf
                 
@@ -31,25 +42,21 @@
                             <input type="text" value="{{ $user->prenom }} {{ $user->nom }}" class="fifa-input" disabled>
                         </div>
                     </div>
-                    <div class="fifa-form-group">
-                        <label>Email de contact</label>
-                        <input type="text" value="{{ $user->mail }}" class="fifa-input" disabled>
-                    </div>
                 </div>
 
                 <div class="fifa-form-group">
                     <label>Sujet de la demande *</label>
-                    <input type="text" name="sujet" class="fifa-input" placeholder="Ex: Devis pour 50 maillots personnalisés..." required>
+                    <input type="text" name="sujet" class="fifa-input" placeholder="Ex: Devis pour 50 maillots personnalisés..." value="{{ old('sujet') }}" required>
                 </div>
 
                 <div class="fifa-form-group">
                     <label>Téléphone de contact *</label>
-                    <input type="text" name="telephone" class="fifa-input" placeholder="+33 6 ..." required>
+                    <input type="text" name="telephone" class="fifa-input" placeholder="+33 6 ..." value="{{ old('telephone') }}" required>
                 </div>
 
                 <div class="fifa-form-group">
                     <label>Description du besoin (Détails, Quantités, Délais...) *</label>
-                    <textarea name="description_besoin" class="fifa-input" rows="6" style="resize: vertical;" required placeholder="Décrivez votre projet en détail pour notre bureau d'étude..."></textarea>
+                    <textarea name="description_besoin" class="fifa-input" rows="6" style="resize: vertical;" required placeholder="Décrivez votre projet en détail...">{{ old('description_besoin') }}</textarea>
                 </div>
 
                 <div style="margin-top: 30px; border-top: 1px solid #333; padding-top: 20px; text-align: right;">

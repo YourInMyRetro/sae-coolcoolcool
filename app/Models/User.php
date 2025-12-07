@@ -12,35 +12,22 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    // --- CONFIGURATION STRICTE (Table 'utilisateur') ---
+    // --- CONFIGURATION AUTHENTIFICATION (Tuto Prof) ---
     protected $table = 'utilisateur';
     protected $primaryKey = 'id_utilisateur';
     public $timestamps = false;
 
-    // Champs modifiables en masse (Mass Assignment)
     protected $fillable = [
-        'nom', 
-        'prenom', 
-        'mail', 
-        'date_naissance', 
-        'pays_naissance', 
-        'langue', 
-        'mot_de_passe_chiffre', 
-        'surnom',
-        'newsletter_optin' // <--- AJOUTÉ POUR LE RGPD
+        'nom', 'prenom', 'mail', 'date_naissance', 
+        'pays_naissance', 'langue', 'mot_de_passe_chiffre', 
+        'surnom', 'newsletter_optin'
     ];
 
     protected $hidden = [
-        'mot_de_passe_chiffre', 
-        'remember_token',
+        'mot_de_passe_chiffre', 'remember_token',
     ];
 
-    // Conversion automatique pour le booléen
-    protected $casts = [
-        'newsletter_optin' => 'boolean',
-    ];
-
-    // Création automatique de l'acheteur lié à l'utilisateur
+    // Création automatique de l'acheteur
     protected static function booted()
     {
         static::created(function ($user) {
@@ -48,19 +35,45 @@ class User extends Authenticatable
         });
     }
 
-    // Indique à Laravel quel champ utiliser pour le mot de passe
     public function getAuthPassword()
     {
         return $this->mot_de_passe_chiffre;
     }
+
+    // --- RELATIONS MÉTIERS (Ce qui manquait) ---
+
+    // 1. Relation Pro (Existante)
+    public function professionel() { 
+        return $this->hasOne(Professionel::class, 'id_utilisateur', 'id_utilisateur'); 
+    }
     
-    // Indique à Laravel quel champ utiliser pour l'email (Reset de mot de passe)
-    public function getEmailForPasswordReset()
-    {
-        return $this->mail;
+    public function estProfessionnel() { 
+        return $this->professionel != null; 
     }
 
-    // Relations
-    public function professionel() { return $this->hasOne(Professionel::class, 'id_utilisateur', 'id_utilisateur'); }
-    public function estProfessionnel() { return $this->professionel != null; }
+    // 2. Relation Panier (Pour la restauration AuthController)
+    public function panier() {
+        return $this->hasOne(Panier::class, 'id_utilisateur', 'id_utilisateur');
+    }
+
+    // 3. Relation Adresses (Pour la Commande)
+    public function adresses() {
+        return $this->belongsToMany(Adresse::class, 'possedeadresse', 'id_utilisateur', 'id_adresse');
+    }
+
+    // 4. Relation Commandes (Pour l'historique)
+    public function commandes() {
+        return $this->hasMany(Commande::class, 'id_utilisateur', 'id_utilisateur');
+    }
+
+    // 5. Relation Votes (Pour le Système de Vote)
+    // Table pivot 'faitvote'
+    public function votes() {
+        return $this->belongsToMany(Vote::class, 'faitvote', 'id_utilisateur', 'id_vote');
+    }
+    
+    // Vérifie si l'utilisateur a déjà voté pour un thème
+    public function aVotePourTheme($idTheme) {
+        return $this->votes()->where('idtheme', $idTheme)->exists();
+    }
 }
