@@ -110,9 +110,9 @@
                        id="password" 
                        class="fifa-input" 
                        required 
-                       minlength="4"
-                       title="Le mot de passe doit contenir au moins 4 caractères."
-                       placeholder="Minimum 4 caractères">
+                       minlength="8"
+                       title="Le mot de passe doit contenir au moins 8 caractères pour votre sécurité."
+                       placeholder="Minimum 8 caractères">
                 @error('password') <span style="color:red; font-size:0.8em;">{{ $message }}</span> @enderror
             </div>
 
@@ -123,13 +123,46 @@
                        id="password_confirmation" 
                        class="fifa-input" 
                        required 
-                       minlength="4"
+                       minlength="8"
                        placeholder="Répétez le mot de passe">
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+
+          {{-- CHECKBOX 1 : OBLIGATOIRE (CGU & Politique Confidentialité) --}}
+            <div class="fifa-form-group" style="display: flex; align-items: flex-start; gap: 10px;">
+                <input type="checkbox" name="cgu_consent" id="cgu_consent" required style="margin-top: 4px; width: auto;">
+                <label for="cgu_consent" style="font-size: 0.85rem; line-height: 1.4; color: #555; font-weight: normal;">
+                    J'accepte les 
+                    {{-- LIEN VERS LES CGU OFFICIELLES DE LA FIFA --}}
+                    <a href="https://www.fifa.com/fr/legal/terms-of-service" target="_blank" rel="noopener noreferrer" style="text-decoration: underline; color: #00cfb7;">
+                        Conditions Générales d'Utilisation
+                    </a> 
+                    {{-- LIEN VERS TA POLITIQUE (Que tu as rédigée en Q2) --}}
+                    <a href="{{ route('privacy') }}" target="_blank" style="text-decoration: underline; color: #00cfb7;">
+                        Politique de Confidentialité
+                    </a>. *
+                </label>
+            </div>
+            @error('cgu_consent') <div style="color:red; font-size:0.8em; margin-bottom: 10px;">{{ $message }}</div> @enderror
+
+            {{-- CHECKBOX 2 : FACULTATIVE (Newsletter - Privacy by Default) --}}
+            <div class="fifa-form-group" style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 25px;">
+                <input type="checkbox" name="newsletter_optin" id="newsletter_optin" value="1" style="margin-top: 4px; width: auto;">
+                <label for="newsletter_optin" style="font-size: 0.85rem; line-height: 1.4; color: #555; font-weight: normal;">
+                    J'accepte de recevoir les offres et actualités de la FIFA par email.
+                </label>
             </div>
 
             <button type="submit" class="btn-fifa-submit">
                 S'inscrire <i class="fas fa-arrow-right" style="margin-left: 8px;"></i>
             </button>
+
+            {{-- MENTION LÉGALE SOUS LE BOUTON --}}
+            <p style="margin-top: 15px; font-size: 0.75rem; color: #888; text-align: center; line-height: 1.4;">
+                Vos données sont traitées par la FIFA pour gérer votre compte. Vous disposez d'un droit d'accès et de rectification.
+            </p>
+
         </form>
 
         <div class="auth-footer-links">

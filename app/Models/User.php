@@ -12,12 +12,12 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    // Configuration de la table
+    // --- CONFIGURATION STRICTE (Table 'utilisateur') ---
     protected $table = 'utilisateur';
     protected $primaryKey = 'id_utilisateur';
     public $timestamps = false;
 
-    // Champs remplissables (Mass Assignment)
+    // Champs modifiables en masse (Mass Assignment)
     protected $fillable = [
         'nom', 
         'prenom', 
@@ -26,51 +26,41 @@ class User extends Authenticatable
         'pays_naissance', 
         'langue', 
         'mot_de_passe_chiffre', 
-        'surnom'
+        'surnom',
+        'newsletter_optin' // <--- AJOUTÉ POUR LE RGPD
     ];
 
     protected $hidden = [
-        'mot_de_passe_chiffre', 'remember_token',
+        'mot_de_passe_chiffre', 
+        'remember_token',
     ];
 
-    // Événement : Création automatique d'un acheteur quand on crée un user
+    // Conversion automatique pour le booléen
+    protected $casts = [
+        'newsletter_optin' => 'boolean',
+    ];
+
+    // Création automatique de l'acheteur lié à l'utilisateur
     protected static function booted()
     {
         static::created(function ($user) {
-            DB::table('acheteur')->insert([
-                'id_utilisateur' => $user->id_utilisateur
-            ]);
+            DB::table('acheteur')->insert(['id_utilisateur' => $user->id_utilisateur]);
         });
     }
 
+    // Indique à Laravel quel champ utiliser pour le mot de passe
     public function getAuthPassword()
     {
         return $this->mot_de_passe_chiffre;
     }
-
-    // --- RELATIONS ---
-
-    /**
-     * Relation avec la table Professionel
-     * Un utilisateur PEUT avoir une fiche professionnel
-     */
-    public function professionel()
+    
+    // Indique à Laravel quel champ utiliser pour l'email (Reset de mot de passe)
+    public function getEmailForPasswordReset()
     {
-        // hasOne(Modele, cle_etrangere, cle_locale)
-        return $this->hasOne(Professionel::class, 'id_utilisateur', 'id_utilisateur');
+        return $this->mail;
     }
 
-    // --- UTILITAIRES ---
-
-    /**
-     * Vérifie si l'utilisateur est un professionnel
-     */
-    public function estProfessionnel()
-    {
-        if ($this->professionel != null) {
-            return true;
-        } else {
-            return false;
-        }
-    }
+    // Relations
+    public function professionel() { return $this->hasOne(Professionel::class, 'id_utilisateur', 'id_utilisateur'); }
+    public function estProfessionnel() { return $this->professionel != null; }
 }

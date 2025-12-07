@@ -18,20 +18,33 @@
                 <a href="{{ route('produits.index') }}" class="reset-filters">Tout effacer</a>
             </div>
 
-            {{-- Filtre : Catégories --}}
+           {{-- Filtre : Catégories (Accordéon Esthétique) --}}
             <div class="filter-group">
                 <h4 class="filter-title">Catégories</h4>
                 <div class="filter-options">
-                    <label class="custom-radio">
+                    
+                    <label class="custom-radio parent-cat" style="margin-bottom:10px; font-weight:bold;">
                         <input type="radio" name="categorie" value="" onchange="this.form.submit()" {{ request('categorie') == '' ? 'checked' : '' }}>
-                        <span>Tout voir</span>
+                        <span class="cat-name">TOUT VOIR</span>
                     </label>
-                    @foreach($allCategories as $cat)
-                    <label class="custom-radio">
-                        <input type="radio" name="categorie" value="{{ $cat->id_categorie }}" onchange="this.form.submit()" {{ request('categorie') == $cat->id_categorie ? 'checked' : '' }}>
-                        <span>{{ $cat->nom_categorie }}</span>
-                    </label>
+
+                    @foreach($categoryGroups as $groupName => $categories)
+                        <details class="category-accordion" open>
+                            <summary class="parent-label">
+                                {{ $groupName }} <i class="fas fa-chevron-down"></i>
+                            </summary>
+                            
+                            <div class="subcategory-list">
+                                @foreach($categories as $cat)
+                                <label class="custom-radio">
+                                    <input type="radio" name="categorie" value="{{ $cat->id_categorie }}" onchange="this.form.submit()" {{ request('categorie') == $cat->id_categorie ? 'checked' : '' }}>
+                                    <span>{{ $cat->nom_categorie }}</span>
+                                </label>
+                                @endforeach
+                            </div>
+                        </details>
                     @endforeach
+
                 </div>
             </div>
 

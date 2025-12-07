@@ -1,0 +1,239 @@
+[90m= [39m[
+    [
+      "[34mmail[39m" => "[32mlucas.martin@email.fr[39m",
+      "[34mnom[39m" => "[32mMartin[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32malice.bernard@email.fr[39m",
+      "[34mnom[39m" => "[32mBernard[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32mhugo.dubois@email.fr[39m",
+      "[34mnom[39m" => "[32mDubois[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32mchloe.thomas@email.fr[39m",
+      "[34mnom[39m" => "[32mThomas[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32mjulien.robert@email.fr[39m",
+      "[34mnom[39m" => "[32mRobert[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32mmanon.richard@email.fr[39m",
+      "[34mnom[39m" => "[32mRichard[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32mmatthieu.petit@email.fr[39m",
+      "[34mnom[39m" => "[32mPetit[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32mlea.durand@email.fr[39m",
+      "[34mnom[39m" => "[32mDurand[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32menzo.leroy@email.fr[39m",
+      "[34mnom[39m" => "[32mLeroy[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32mcamille.moreau@email.fr[39m",
+      "[34mnom[39m" => "[32mMoreau[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32madrien.simon@email.fr[39m",
+      "[34mnom[39m" => "[32mSimon[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32memma.laurent@email.fr[39m",
+      "[34mnom[39m" => "[32mLaurent[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32mnicolas.lefebvre@email.fr[39m",
+      "[34mnom[39m" => "[32mLefebvre[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32mpauline.michel@email.fr[39m",
+      "[34mnom[39m" => "[32mMichel[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32mantoine.garcia@email.fr[39m",
+      "[34mnom[39m" => "[32mGarcia[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32mmarie.roux@email.fr[39m",
+      "[34mnom[39m" => "[32mRoux[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32malex.vincent@email.fr[39m",
+      "[34mnom[39m" => "[32mVincent[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32mjuliette.fournier@email.fr[39m",
+      "[34mnom[39m" => "[32mFournier[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32mlouis.morel@email.fr[39m",
+      "[34mnom[39m" => "[32mMorel[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32mclara.girard@email.fr[39m",
+      "[34mnom[39m" => "[32mGirard[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32mtheo.andre@email.fr[39m",
+      "[34mnom[39m" => "[32mAndre[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32msophie.lefevre@email.fr[39m",
+      "[34mnom[39m" => "[32mLefevre[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32mgabriel.mercier@email.fr[39m",
+      "[34mnom[39m" => "[32mMercier[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32melodie.dupont@email.fr[39m",
+      "[34mnom[39m" => "[32mDupont[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32marthur.lambert@email.fr[39m",
+      "[34mnom[39m" => "[32mLambert[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32mlaura.bonnet@email.fr[39m",
+      "[34mnom[39m" => "[32mBonnet[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32mmaxime.francois@email.fr[39m",
+      "[34mnom[39m" => "[32mFrancois[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32mines.martinez@email.fr[39m",
+      "[34mnom[39m" => "[32mMartinez[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32mraphael.garnier@email.fr[39m",
+      "[34mnom[39m" => "[32mGarnier[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32meva.faure@email.fr[39m",
+      "[34mnom[39m" => "[32mFaure[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32madam.rousseau@email.fr[39m",
+      "[34mnom[39m" => "[32mRousseau[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32mcharlotte.blanc@email.fr[39m",
+      "[34mnom[39m" => "[32mBlanc[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32mdavid.guerin@email.fr[39m",
+      "[34mnom[39m" => "[32mGuerin[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32msarah.muller@email.fr[39m",
+      "[34mnom[39m" => "[32mMuller[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32mbaptiste.henry@email.fr[39m",
+      "[34mnom[39m" => "[32mHenry[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32manais.lemoine@email.fr[39m",
+      "[34mnom[39m" => "[32mLemoine[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32msacha.pereira@email.fr[39m",
+      "[34mnom[39m" => "[32mPereira[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32mmathilde.gauthier@email.fr[39m",
+      "[34mnom[39m" => "[32mGauthier[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32mvalentin.chevalier@email.fr[39m",
+      "[34mnom[39m" => "[32mChevalier[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32moceane.robin@email.fr[39m",
+      "[34mnom[39m" => "[32mRobin[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32mclement.masson@email.fr[39m",
+      "[34mnom[39m" => "[32mMasson[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32mjustine.meunier@email.fr[39m",
+      "[34mnom[39m" => "[32mMeunier[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32mkevin.perrin@email.fr[39m",
+      "[34mnom[39m" => "[32mPerrin[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32mlouise.morin@email.fr[39m",
+      "[34mnom[39m" => "[32mMorin[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32mvictor.caron@email.fr[39m",
+      "[34mnom[39m" => "[32mCaron[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32maudrey.marchand@email.fr[39m",
+      "[34mnom[39m" => "[32mMarchand[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32mtom.dasilva@email.fr[39m",
+      "[34mnom[39m" => "[32mDa silva[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32mestelle.picard@email.fr[39m",
+      "[34mnom[39m" => "[32mPicard[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32mnolan.giraud@email.fr[39m",
+      "[34mnom[39m" => "[32mGiraud[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32mambre.huet@email.fr[39m",
+      "[34mnom[39m" => "[32mHuet[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32madmin.etude@fifa.com[39m",
+      "[34mnom[39m" => "[32mBureau[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32mservice.vente@fifa.com[39m",
+      "[34mnom[39m" => "[32mVente[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32msuivi.logistique@fifa.com[39m",
+      "[34mnom[39m" => "[32mLogistique[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32matelier.fabrication@fifa.com[39m",
+      "[34mnom[39m" => "[32mAtelier[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32mdir.com@fifa.com[39m",
+      "[34mnom[39m" => "[32mDirection[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32mtest@fifa.com[39m",
+      "[34mnom[39m" => "[32mTest[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32mvalerianpasquier7@gmail.com[39m",
+      "[34mnom[39m" => "[32mpasquier[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32mta@gmail.com[39m",
+      "[34mnom[39m" => "[32maudi[39m",
+    ],
+    [
+      "[34mmail[39m" => "[32mvp@gmail.com[39m",
+      "[34mnom[39m" => "[32mPasquiert[39m",
+    ],
+  ]
+

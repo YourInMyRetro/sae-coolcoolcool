@@ -1,48 +1,57 @@
 @extends('layout')
 
 @section('content')
-<div class="container section-spacer" style="max-width: 500px; padding: 60px 20px;">
-    <div style="background: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
-        <h2 class="section-title" style="text-align: center; margin-bottom: 30px;">Connexion</h2>
+<div class="auth-page-wrapper">
+    <div class="auth-card-premium">
+        
+        <div class="auth-header">
+            <h1>Connexion</h1>
+            <p>Accédez à votre espace membre FIFA.</p>
+        </div>
+
+        @if ($errors->any())
+            <div style="background: #ffe6e6; color: #d8000c; padding: 10px; border-radius: 4px; margin-bottom: 15px; font-size: 0.9em;">
+                <ul style="margin: 0; padding-left: 20px;">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
 
         <form action="{{ route('authenticate') }}" method="POST">
             @csrf
             
-            {{-- Email --}}
-            <div style="margin-bottom: 20px;">
-                <label style="font-weight: bold; display: block; margin-bottom: 8px;">Adresse Email</label>
-                <input type="email" name="mail" class="search-input" style="width: 100%; border: 1px solid #ccc; background: white; color: black;" value="{{ old('mail') }}" required autofocus>
-                @error('mail')
-                    <span style="color: red; font-size: 0.85rem;">{{ $message }}</span>
-                @enderror
+            <div class="fifa-form-group">
+                <label for="mail">Adresse Email</label>
+                <input type="email" name="mail" id="mail" class="fifa-input" value="{{ old('mail') }}" required autofocus placeholder="exemple@email.com">
             </div>
 
-            {{-- Mot de passe --}}
-            <div style="margin-bottom: 30px;">
-                <label style="font-weight: bold; display: block; margin-bottom: 8px;">Mot de passe</label>
-                <input type="password" name="password" class="search-input" style="width: 100%; border: 1px solid #ccc; background: white; color: black;" required>
+            <div class="fifa-form-group">
+                <label for="password">Mot de passe</label>
+                <input type="password" name="password" id="password" class="fifa-input" required placeholder="********">
             </div>
 
-            <button type="submit" class="btn-fifa-cta" style="width: 100%; border: none; cursor: pointer; justify-content: center;">
-                Se Connecter
+            <div class="fifa-form-group" style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                <input type="checkbox" name="remember" id="remember" style="width: 18px; height: 18px; accent-color: #326295; cursor: pointer;">
+                <label for="remember" style="margin: 0; cursor: pointer; color: #555; text-transform: none; font-weight: normal;">
+                    Se souvenir de moi
+                </label>
+            </div>
+
+            <button type="submit" class="btn-fifa-submit">
+                Se connecter <i class="fas fa-sign-in-alt" style="margin-left: 8px;"></i>
             </button>
         </form>
 
-        {{-- AJOUT : Section Création de Compte (Même DA) --}}
-        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; text-align: center;">
-            <p style="margin-bottom: 15px; font-weight: bold; color: #555;">Nouveau sur FIFA Store ?</p>
-            
-            <div style="display: flex; flex-direction: column; gap: 10px;">
-                {{-- Bouton Créer Compte Particulier --}}
-                <a href="{{ route('register.form') }}" class="btn-fifa-cta" style="width: 100%; text-decoration: none; justify-content: center; background-color: #326295; color: white;">
-                    Créer un compte Particulier
-                </a>
-
-                {{-- Bouton Créer Compte Pro --}}
-                <a href="{{ route('register.pro.form') }}" class="btn-fifa-cta" style="width: 100%; text-decoration: none; justify-content: center; background-color: #fff; color: #326295; border: 2px solid #326295;">
-                    Créer un compte PRO
-                </a>
-            </div>
+        {{-- Section Création de Compte --}}
+        <div class="auth-footer-links">
+            <p style="margin-bottom: 10px; font-weight: bold;">Nouveau sur FIFA Store ?</p>
+            <a href="{{ route('register.form') }}">Créer un compte Particulier</a>
+            <br>
+            <span style="color: #ccc;">|</span>
+            <br>
+            <a href="{{ route('register.pro.form') }}" style="color: #008eb3;">Créer un compte PRO</a>
         </div>
 
     </div>

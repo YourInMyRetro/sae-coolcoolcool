@@ -13,75 +13,93 @@ class ProduitController extends Controller
 {
     public function index(Request $request)
     {
-        // 1. Requête de base
-        // On charge les relations nécessaires (prix, photo, etc.)
+        // 1. REQUÊTE PRODUITS (Inchangée)
         $query = Produit::query()
-            ->with(['premierPrix', 'premierePhoto', 'categorie', 'nations', 'variantes.stocks'])
+            ->with(['premierPrix', 'premierePhoto', 'categorie', 'nations'])
             ->where('visibilite', 'visible');
-        // 2. MOTEUR DE RECHERCHE
+
+        // Moteur de recherche
         if ($request->filled('search')) {
             $search = $request->input('search');
-            
             $query->where(function($q) use ($search) {
                 $q->where('nom_produit', 'ILIKE', "%{$search}%")
                   ->orWhere('description_produit', 'ILIKE', "%{$search}%")
-                  ->orWhereRaw("CAST(id_produit AS TEXT) LIKE ?", ["%{$search}%"])
                   ->orWhereHas('categorie', function($subQ) use ($search) {
                       $subQ->where('nom_categorie', 'ILIKE', "%{$search}%");
                   });
             });
         }
 
-        // 3. Filtres (Catégorie, Nation, Couleur, Taille)
+        // Filtres
         if ($request->filled('categorie')) {
             $query->where('id_categorie', $request->categorie);
         }
-
         if ($request->filled('nation')) {
             $query->whereHas('nations', function($q) use ($request) {
                 $q->where('nation.id_nation', $request->nation);
             });
         }
-
         if ($request->filled('couleur')) {
             $query->whereHas('variantes.couleur', function($q) use ($request) {
                 $q->where('type_couleur', $request->couleur);
             });
         }
-
         if ($request->filled('taille')) {
             $query->whereHas('variantes.stocks.taille', function($q) use ($request) {
                 $q->where('type_taille', $request->taille);
             });
         }
 
-        // --- ÉTAPE CRUCIALE : Exécution de la requête SANS tri SQL ---
-        // Cela évite l'erreur "SELECT DISTINCT" de PostgreSQL à 100%
-        $produits = $query->get();
-
-        // 4. TRI EN PHP (C'est ici que la magie opère sans bug)
+        // Tri
         if ($request->filled('sort')) {
+            $query->leftJoin('produit_couleur', 'produit.id_produit', '=', 'produit_couleur.id_produit')
+                  ->select('produit.*')
+                  ->distinct();
+            
             if ($request->sort == 'price_asc') {
-                $produits = $produits->sortBy(function($produit) {
-                    // On trie par le prix total, ou un très grand nombre si pas de prix
-                    return $produit->premierPrix->prix_total ?? 99999999;
-                });
+                $query->orderBy('produit_couleur.prix_total', 'asc');
             } elseif ($request->sort == 'price_desc') {
-                $produits = $produits->sortByDesc(function($produit) {
-                    // On trie par le prix total, ou 0 si pas de prix
-                    return $produit->premierPrix->prix_total ?? 0;
-                });
+                $query->orderBy('produit_couleur.prix_total', 'desc');
             }
         }
 
-        // Récupération des données pour les filtres (Listes déroulantes)
+        $produits = $query->get();
+
+        // 2. DONNÉES DE FILTRAGE
         $allColors = Couleur::orderBy('type_couleur')->pluck('type_couleur');
         $allSizes = Taille::orderBy('id_taille')->pluck('type_taille');
         $allNations = Nation::orderBy('nom_nation')->get();
-        $allCategories = Categorie::orderBy('nom_categorie')->get();
+        
+        // --- C'EST ICI QUE LA MAGIE OPÈRE ---
+        // On récupère toutes les catégories plates
+        $categoriesPlates = Categorie::orderBy('nom_categorie')->get();
 
-        // On renvoie vers ta vue 'boutique'
-        return view('boutique', compact('produits', 'allColors', 'allSizes', 'allNations', 'allCategories'));
+        // On construit la hiérarchie MANUELLEMENT
+        // Structure : 'Nom du Groupe' => ['Nom Catégorie 1', 'Nom Catégorie 2']
+        $mapping = [
+            'UNIVERS VÊTEMENTS' => ['Maillots', 'Vêtement'], 
+            'ÉQUIPEMENTS'       => ['Accessoires', 'Ballons'],
+            'COLLECTOR'         => ['Objets de collection', 'Signés']
+        ];
+
+        $categoryGroups = [];
+
+        // On remplit les groupes avec les objets Catégorie réels
+        foreach ($mapping as $groupName => $catNames) {
+            $categoryGroups[$groupName] = $categoriesPlates->filter(function($cat) use ($catNames) {
+                return in_array($cat->nom_categorie, $catNames);
+            });
+        }
+        
+        // On récupère celles qui ne sont pas mappées (au cas où tu en ajoutes d'autres plus tard)
+        $mappedIds = $categoriesPlates->whereIn('nom_categorie', array_merge(...array_values($mapping)))->pluck('id_categorie');
+        $others = $categoriesPlates->whereNotIn('id_categorie', $mappedIds);
+        
+        if($others->isNotEmpty()) {
+            $categoryGroups['AUTRES'] = $others;
+        }
+
+        return view('boutique', compact('produits', 'allColors', 'allSizes', 'allNations', 'categoryGroups'));
     }
 
     public function home() {
@@ -90,11 +108,28 @@ class ProduitController extends Controller
     }
 
     public function show(Request $request, $id) {
-        // 1. Charger le produit et ses variantes
-        $produit = Produit::with(['variantes.couleur', 'variantes.stocks.taille', 'nations', 'categorie'])
+        $produit = Produit::with(['variantes.couleur', 'variantes.stocks.taille', 'nations', 'categorie', 'premierePhoto', 'premierPrix'])
             ->findOrFail($id);
         
-        // 2. Récupérer les tailles disponibles (C'est CA qui manquait peut-être)
+        $viewed = session()->get('viewed_products', []);
+
+        if(!in_array($id, $viewed)) {
+            session()->push('viewed_products', $id);
+        }
+
+        $produitsVus = Produit::whereIn('id_produit', $viewed)
+            ->where('id_produit', '!=', $id)
+            ->with('premierePhoto', 'premierPrix')
+            ->limit(4)
+            ->get();
+
+        $produitsSimilaires = Produit::where('id_categorie', $produit->id_categorie)
+            ->where('id_produit', '!=', $id)
+            ->with('premierePhoto', 'premierPrix')
+            ->inRandomOrder()
+            ->limit(4)
+            ->get();
+        
         $tailles = collect();
         foreach ($produit->variantes as $variante) {
             foreach ($variante->stocks as $stock) {
@@ -103,12 +138,9 @@ class ProduitController extends Controller
                 }
             }
         }
-        // Dédoublonner et trier
         $tailles = $tailles->unique('id_taille')->sortBy('id_taille');
-    
         $tailleSelectionnee = $request->query('taille');
     
-        // 3. Envoyer le tout à la vue
-        return view('produits.show', compact('produit', 'tailles', 'tailleSelectionnee'));
+        return view('produits.show', compact('produit', 'tailles', 'tailleSelectionnee', 'produitsVus', 'produitsSimilaires'));
     }
 }

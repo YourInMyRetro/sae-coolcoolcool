@@ -34,9 +34,13 @@
                     <ul class="nav-list">
                         <li><a href="{{ route('home') }}" class="{{ request()->routeIs('home') ? 'active' : '' }}">Accueil</a></li>
                         <li><a href="{{ route('produits.index') }}" class="{{ request()->routeIs('produits.index') ? 'active' : '' }}">Boutique</a></li>
+                        
+                        {{-- --- AJOUT DU LIEN VOTE ICI --- --}}
+                        <li><a href="{{ route('vote.index') }}" class="{{ request()->routeIs('vote.*') ? 'active' : '' }}">Votes</a></li>
+
                         {{-- Exemples de filtres rapides --}}
                         <li><a href="{{ route('produits.index', ['categorie' => 1]) }}">Maillots</a></li>
-                        <li><a href="{{ route('matcher.index') }}">Matcher</a></li>
+                        <!--<li><a href="{{ route('matcher.index') }}">Matcher</a></li>-->
                     </ul>
                 </nav>
             </div>

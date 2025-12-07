@@ -8,12 +8,11 @@ use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use App\Models\Professionel;
 use App\Models\Panier;
-use App\Models\StockArticle; // Nécessaire pour reconstruire les infos produits
+use App\Models\StockArticle; 
 
 class AuthController extends Controller
 {
     // --- LOGIN ---
-
     public function login() {
         return view('auth.login');
     }
@@ -24,46 +23,46 @@ class AuthController extends Controller
             'password' => ['required'],
         ]);
 
-        if (Auth::attempt(['mail' => $credentials['mail'], 'password' => $credentials['password']])) {
-            $request->session()->regenerate();
-            
-            // --- RESTAURATION DU PANIER ---
-            $this->restoreCartFromDatabase(Auth::user());
+        $remember = $request->boolean('remember');
 
+        if (Auth::attempt($credentials, $remember)) {
+            $request->session()->regenerate();
+            $this->restoreCartFromDatabase(Auth::user());
             return redirect()->intended(route('home'));
         }
 
-        return back()->withErrors([
-            'mail' => 'Email ou mot de passe incorrect.',
-        ])->onlyInput('mail');
+        return back()->withErrors(['mail' => 'Mauvais identifiant ou mot de passe.'])->onlyInput('mail');
     }
 
+    // --- LOGOUT ---
     public function logout(Request $request) {
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect('/');
+        return redirect()->route('login');
     }
 
     // --- INSCRIPTION PARTICULIER ---
+    public function showRegisterForm() { return view('auth.register'); }
 
-    public function showRegisterForm()
-    {
-        return view('auth.register');
-    }
-
-    public function register(Request $request)
-    {
+    public function register(Request $request) {
+        // 1. Validation avec les nouvelles règles RGPD
         $request->validate([
-            'nom' => 'required|string|max:50',
-            'prenom' => 'required|string|max:50',
-            'mail' => 'required|string|email|max:100|unique:utilisateur',
+            'nom' => 'required|max:50', 
+            'prenom' => 'required|max:50',
+            'mail' => 'required|email|unique:utilisateur', 
             'date_naissance' => 'required|date',
-            'pays_naissance' => 'required|string|max:50',
-            'langue' => 'required|string|max:50',
-            'password' => 'required|string|min:4|confirmed',
+            'pays_naissance' => 'required|max:50', 
+            'langue' => 'required|max:50',
+            'password' => 'required|min:8|confirmed', // Min 8 caractères (Recommandation ANSSI)
+            'cgu_consent' => 'accepted', // OBLIGATOIRE : Case à cocher CGU
+            'newsletter_optin' => 'nullable', // FACULTATIF : Case Newsletter
+        ], [
+            'cgu_consent.accepted' => 'Vous devez accepter les conditions d\'utilisation et la politique de confidentialité.',
+            'password.min' => 'Le mot de passe doit faire au moins 8 caractères pour votre sécurité.'
         ]);
 
+        // 2. Création de l'utilisateur
         $user = new User();
         $user->nom = $request->input('nom');
         $user->prenom = $request->input('prenom');
@@ -71,48 +70,49 @@ class AuthController extends Controller
         $user->date_naissance = $request->input('date_naissance');
         $user->pays_naissance = $request->input('pays_naissance');
         $user->langue = $request->input('langue');
-        $user->surnom = $request->input('surnom');
+        $user->surnom = $request->input('surnom') ?? $request->input('prenom'); // Surnom par défaut si vide
         $user->mot_de_passe_chiffre = Hash::make($request->input('password'));
+        
+        // Gestion de l'Opt-in Newsletter
+        $user->newsletter_optin = $request->has('newsletter_optin'); 
 
         $user->save();
 
         Auth::login($user);
-        
-        // Pas de panier à restaurer pour un nouveau compte, mais on pourrait sauvegarder la session actuelle
-        
         return redirect()->route('home')->with('success', 'Bienvenue sur FIFA Store !');
     }
 
-    // --- INSCRIPTION PROFESSIONNEL ---
+    // --- INSCRIPTION PRO ---
+    public function showRegisterProForm() { return view('auth.register_pro'); }
 
-    public function showRegisterProForm()
-    {
-        return view('auth.register_pro');
-    }
-
-    public function registerPro(Request $request)
-    {
+    public function registerPro(Request $request) {
+        // On applique aussi le RGPD aux pros (c'est mieux juridiquement)
         $request->validate([
-            'nom' => 'required|string|max:50',
-            'prenom' => 'required|string|max:50',
-            'mail' => 'required|string|email|max:100|unique:utilisateur',
-            'date_naissance' => 'required|date',
-            'pays_naissance' => 'required|string|max:50',
-            'langue' => 'required|string|max:50',
-            'password' => 'required|string|min:4|confirmed',
-            'nom_societe' => 'required|string|max:100',
-            'activite' => 'required|string|max:100',
-            'numero_tva' => 'required|string|max:30|unique:professionel,numero_tva_intracommunautaire',
+            'nom' => 'required|max:50', 
+            'prenom' => 'required|max:50',
+            'mail' => 'required|email|unique:utilisateur', 
+            'password' => 'required|min:8|confirmed',
+            'nom_societe' => 'required|max:100', 
+            'numero_tva' => 'required|unique:professionel,numero_tva_intracommunautaire',
+            'activite' => 'required|max:100', 
+            'date_naissance' => 'required|date', 
+            'pays_naissance' => 'required|max:50', 
+            'langue' => 'required|max:50',
+            'cgu_consent' => 'accepted', // Ajout conseillé
         ]);
 
         $user = new User();
-        $user->nom = $request->input('nom');
+        $user->nom = $request->input('nom'); 
         $user->prenom = $request->input('prenom');
-        $user->mail = $request->input('mail');
+        $user->mail = $request->input('mail'); 
         $user->date_naissance = $request->input('date_naissance');
-        $user->pays_naissance = $request->input('pays_naissance');
+        $user->pays_naissance = $request->input('pays_naissance'); 
         $user->langue = $request->input('langue');
         $user->mot_de_passe_chiffre = Hash::make($request->input('password'));
+        
+        // Par défaut, un pro n'est pas inscrit à la newsletter grand public sauf si demandé
+        $user->newsletter_optin = $request->has('newsletter_optin');
+        
         $user->save();
 
         $pro = new Professionel();
@@ -123,61 +123,27 @@ class AuthController extends Controller
         $pro->save();
 
         Auth::login($user);
-
-        return redirect()->route('home')->with('success', 'Compte Professionnel créé avec succès !');
+        return redirect()->route('home')->with('success', 'Compte Pro créé !');
     }
 
-    /**
-     * Méthode privée pour restaurer le panier depuis la BDD vers la Session
-     */
-    private function restoreCartFromDatabase($user)
-    {
-        // 1. Récupérer le panier en BDD avec ses lignes
+    private function restoreCartFromDatabase($user) {
         $dbPanier = Panier::with(['lignes'])->where('id_utilisateur', $user->id_utilisateur)->first();
-
-        if (!$dbPanier) {
-            return; // Rien à restaurer
-        }
-
-        // 2. Récupérer le panier actuel de la session (visiteur)
+        if (!$dbPanier) return;
         $sessionPanier = session('panier', []);
-
-        // 3. Fusionner BDD -> Session
         foreach ($dbPanier->lignes as $ligne) {
-            // On a besoin de récupérer les infos détaillées pour reconstruire la session
-            // (Nom, Prix, Photo, etc.) car la table ligne_panier n'a que des ID.
-            $stock = StockArticle::with(['produitCouleur.produit.photos', 'produitCouleur.couleur', 'taille'])
-                                 ->find($ligne->id_stock_article);
-
-            if ($stock && $stock->produitCouleur && $stock->produitCouleur->produit) {
-                $produit = $stock->produitCouleur->produit;
-                $couleur = $stock->produitCouleur->couleur;
-                $taille  = $stock->taille;
-
-                // Reconstitution de la clé unique utilisée dans PanierController
-                // Format : id_produit - id_couleur - id_taille
-                $panierKey = $produit->id_produit . '-' . $couleur->id_couleur . '-' . $taille->id_taille;
-
-                // Si l'article n'est pas déjà dans la session, on l'ajoute
-                // (Ou on pourrait additionner les quantités si on voulait être perfectionniste)
-                if (!isset($sessionPanier[$panierKey])) {
-                    $sessionPanier[$panierKey] = [
-                        "nom" => $produit->nom_produit . " (" . ucfirst($couleur->type_couleur) . " - " . strtoupper($taille->type_taille) . ")",
-                        "quantite" => $ligne->quantite,
-                        "prix" => $stock->produitCouleur->prix_total,
-                        // On prend la première photo dispo
-                        "photo" => $produit->photos->first()->url_photo ?? 'img/placeholder.jpg',
-                        "id_stock" => $stock->id_stock_article
+            $stock = StockArticle::with(['produitCouleur.produit.photos', 'produitCouleur.couleur', 'taille'])->find($ligne->id_stock_article);
+            if ($stock) {
+                $p = $stock->produitCouleur->produit;
+                $key = $p->id_produit . '-' . $stock->produitCouleur->couleur->id_couleur . '-' . $stock->taille->id_taille;
+                if (!isset($sessionPanier[$key])) {
+                    $sessionPanier[$key] = [
+                        "nom" => $p->nom_produit . " (" . ucfirst($stock->produitCouleur->couleur->type_couleur) . " - " . strtoupper($stock->taille->type_taille) . ")",
+                        "quantite" => $ligne->quantite, "prix" => $stock->produitCouleur->prix_total,
+                        "photo" => $p->photos->first()->url_photo ?? 'img/placeholder.jpg', "id_stock" => $stock->id_stock_article
                     ];
-                } else {
-                    // Si conflit, on garde la quantité la plus élevée (ou on additionne)
-                    // Ici on garde le max pour éviter les doublons accidentels
-                    $sessionPanier[$panierKey]['quantite'] = max($sessionPanier[$panierKey]['quantite'], $ligne->quantite);
-                }
+                } else { $sessionPanier[$key]['quantite'] = max($sessionPanier[$key]['quantite'], $ligne->quantite); }
             }
         }
-
-        // 4. Sauvegarder la fusion dans la Session
         session()->put('panier', $sessionPanier);
     }
 }
