@@ -71,4 +71,10 @@ class Produit extends Model
         return $this->hasOne(ProduitCouleur::class, 'id_produit', 'id_produit')
                     ->orderBy('prix_total', 'asc');
     }
+
+    // Lien vers les déclinaisons (Prix & Couleurs)
+    public function produitCouleurs()
+    {
+        return $this->hasMany(ProduitCouleur::class, 'id_produit', 'id_produit');
+    }
 }

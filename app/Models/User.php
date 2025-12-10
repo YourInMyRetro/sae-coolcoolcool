@@ -20,7 +20,7 @@ class User extends Authenticatable
     protected $fillable = [
         'nom', 'prenom', 'mail', 'date_naissance', 
         'pays_naissance', 'langue', 'mot_de_passe_chiffre', 
-        'surnom', 'newsletter_optin'
+        'surnom', 'newsletter_optin','role'
     ];
 
     protected $hidden = [
@@ -75,5 +75,10 @@ class User extends Authenticatable
     // Vérifie si l'utilisateur a déjà voté pour un thème
     public function aVotePourTheme($idTheme) {
         return $this->votes()->where('idtheme', $idTheme)->exists();
+    }
+
+    public function isDirector($idDirecteur) 
+    {
+        return $this->role === 'directeur';
     }
 }

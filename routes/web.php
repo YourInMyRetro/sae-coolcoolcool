@@ -83,3 +83,16 @@ Route::middleware(['auth'])->group(function () {
     // VOTES (Détail/Action nécessitant connexion)
     Route::get('/votes/{id_competition}', [VoteController::class, 'show'])->name('vote.show');
 });
+
+// --- ESPACE DIRECTEUR ---
+Route::middleware(['auth', 'directeur'])->group(function () {
+    
+    Route::get('/directeur/dashboard', [App\Http\Controllers\DirecteurController::class, 'dashboard'])
+        ->name('directeur.dashboard');
+
+    Route::get('/directeur/produits-incomplets', [App\Http\Controllers\DirecteurController::class, 'produitsIncomplets'])
+        ->name('directeur.produits_incomplets');
+
+    Route::post('/directeur/produit/{id}/fixer-prix', [App\Http\Controllers\DirecteurController::class, 'updatePrix'])
+        ->name('directeur.update_prix');
+});
