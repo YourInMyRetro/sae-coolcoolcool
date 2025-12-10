@@ -35,8 +35,19 @@
                         <li><a href="{{ route('home') }}" class="{{ request()->routeIs('home') ? 'active' : '' }}">Accueil</a></li>
                         <li><a href="{{ route('produits.index') }}" class="{{ request()->routeIs('produits.index') ? 'active' : '' }}">Boutique</a></li>
                         
-                        {{-- --- AJOUT DU LIEN VOTE ICI --- --}}
+                       {{-- --- AJOUT DU LIEN VOTE ICI --- --}}
                         <li><a href="{{ route('vote.index') }}" class="{{ request()->routeIs('vote.*') ? 'active' : '' }}">Votes</a></li>
+
+                        {{-- --- BLOC DIRECTEUR (SEULEMENT POUR LE BOSS) --- --}}
+                        @auth
+                            @if(Auth::user()->isDirector())
+                                <li>
+                                    <a href="{{ route('directeur.dashboard') }}" style="color: #e74c3c; font-weight: bold;">
+                                        <i class="fas fa-lock"></i> DIRECTION
+                                    </a>
+                                </li>
+                            @endif
+                        @endauth
 
                         {{-- Exemples de filtres rapides --}}
                         <li><a href="{{ route('produits.index', ['categorie' => 1]) }}">Maillots</a></li>

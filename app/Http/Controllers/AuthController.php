@@ -17,7 +17,8 @@ class AuthController extends Controller
         return view('auth.login');
     }
 
-    public function authenticate(Request $request) {
+public function authenticate(Request $request) {
+        // 1. Validation des entrées
         $credentials = $request->validate([
             'mail' => ['required', 'email'],
             'password' => ['required'],
@@ -25,12 +26,25 @@ class AuthController extends Controller
 
         $remember = $request->boolean('remember');
 
+        // 2. Tentative de connexion (Pour TOUT LE MONDE)
         if (Auth::attempt($credentials, $remember)) {
             $request->session()->regenerate();
             $this->restoreCartFromDatabase(Auth::user());
+
+            // --- LOGIQUE DE DÉRIVATION ---
+            
+            // CAS A : C'est le Directeur
+            // On vérifie son rôle via le Modèle
+            if (Auth::user()->isDirector()) {
+                return redirect()->route('directeur.dashboard');
+            }
+
+            // CAS B : C'est un utilisateur normal (Client ou Pro)
+            // On le renvoie vers la page d'accueil (ou la page qu'il visait avant le login)
             return redirect()->intended(route('home'));
         }
 
+        // 3. Echec de connexion
         return back()->withErrors(['mail' => 'Mauvais identifiant ou mot de passe.'])->onlyInput('mail');
     }
 

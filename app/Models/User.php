@@ -77,7 +77,7 @@ class User extends Authenticatable
         return $this->votes()->where('idtheme', $idTheme)->exists();
     }
 
-    public function isDirector($idDirecteur) 
+    public function isDirector() 
     {
         return $this->role === 'directeur';
     }
