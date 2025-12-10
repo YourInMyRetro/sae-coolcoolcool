@@ -11,9 +11,11 @@ use Illuminate\Http\Request;
 
 class ProduitController extends Controller
 {
+    // ... imports
+
     public function index(Request $request)
     {
-        // 1. REQUÊTE PRODUITS (Inchangée)
+        // 1. REQUÊTE DE BASE (Sans JOIN, sans DISTINCT)
         $query = Produit::query()
             ->with(['premierPrix', 'premierePhoto', 'categorie', 'nations'])
             ->where('visibilite', 'visible');
@@ -30,7 +32,7 @@ class ProduitController extends Controller
             });
         }
 
-        // Filtres
+        // Filtres (Utilisation de whereHas pour éviter les jointures parasites)
         if ($request->filled('categorie')) {
             $query->where('id_categorie', $request->categorie);
         }
@@ -50,32 +52,30 @@ class ProduitController extends Controller
             });
         }
 
-        // Tri
+        // --- CORRECTION DU TRI ---
         if ($request->filled('sort')) {
-            $query->leftJoin('produit_couleur', 'produit.id_produit', '=', 'produit_couleur.id_produit')
-                  ->select('produit.*')
-                  ->distinct();
-            
-            if ($request->sort == 'price_asc') {
-                $query->orderBy('produit_couleur.prix_total', 'asc');
-            } elseif ($request->sort == 'price_desc') {
-                $query->orderBy('produit_couleur.prix_total', 'desc');
-            }
+            $direction = $request->sort == 'price_asc' ? 'asc' : 'desc';
+
+            // On trie via une sous-requête SQL directe sur la table produit_couleur
+            // Cela évite d'avoir à faire un JOIN et un DISTINCT qui font planter PostgreSQL
+            $query->orderBy(
+                \App\Models\ProduitCouleur::select('prix_total')
+                    ->whereColumn('produit_couleur.id_produit', 'produit.id_produit')
+                    ->orderBy('prix_total', 'asc') // On prend le prix le plus bas du produit comme référence
+                    ->limit(1),
+                $direction
+            );
         }
 
         $produits = $query->get();
 
-        // 2. DONNÉES DE FILTRAGE
+        // 2. DONNÉES DE FILTRAGE (Inchangé)
         $allColors = Couleur::orderBy('type_couleur')->pluck('type_couleur');
         $allSizes = Taille::orderBy('id_taille')->pluck('type_taille');
         $allNations = Nation::orderBy('nom_nation')->get();
-        
-        // --- C'EST ICI QUE LA MAGIE OPÈRE ---
-        // On récupère toutes les catégories plates
         $categoriesPlates = Categorie::orderBy('nom_categorie')->get();
 
-        // On construit la hiérarchie MANUELLEMENT
-        // Structure : 'Nom du Groupe' => ['Nom Catégorie 1', 'Nom Catégorie 2']
+        // Construction manuelle des groupes de catégories
         $mapping = [
             'UNIVERS VÊTEMENTS' => ['Maillots', 'Vêtement'], 
             'ÉQUIPEMENTS'       => ['Accessoires', 'Ballons'],
@@ -83,15 +83,12 @@ class ProduitController extends Controller
         ];
 
         $categoryGroups = [];
-
-        // On remplit les groupes avec les objets Catégorie réels
         foreach ($mapping as $groupName => $catNames) {
             $categoryGroups[$groupName] = $categoriesPlates->filter(function($cat) use ($catNames) {
                 return in_array($cat->nom_categorie, $catNames);
             });
         }
         
-        // On récupère celles qui ne sont pas mappées (au cas où tu en ajoutes d'autres plus tard)
         $mappedIds = $categoriesPlates->whereIn('nom_categorie', array_merge(...array_values($mapping)))->pluck('id_categorie');
         $others = $categoriesPlates->whereNotIn('id_categorie', $mappedIds);
         

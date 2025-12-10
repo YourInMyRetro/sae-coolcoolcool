@@ -18,4 +18,20 @@ class Commande extends Model
     {
         return $this->hasMany(LigneCommande::class, 'id_commande', 'id_commande');
     }
+
+    // --- AJOUT MIDAS ---
+    public function suiviLivraison()
+    {
+        return $this->hasOne(SuiviLivraison::class, 'id_commande', 'id_commande');
+    }
+    
+    public function utilisateur()
+    {
+        return $this->belongsTo(User::class, 'id_utilisateur', 'id_utilisateur');
+    }
+    
+    public function adresse()
+    {
+        return $this->belongsTo(Adresse::class, 'id_adresse', 'id_adresse');
+    }
 }

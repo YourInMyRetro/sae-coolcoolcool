@@ -10,7 +10,7 @@ use App\Models\Commande;
 use App\Models\LigneCommande;
 use App\Models\CarteBancaire;
 use App\Models\Reglement;
-use App\Models\Produit;
+use App\Models\StockArticle; // Import du modèle Stock
 use Carbon\Carbon;
 
 class CommandeController extends Controller
@@ -20,7 +20,6 @@ class CommandeController extends Controller
     // ------------------------------------------------------------------
     public function livraison()
     {
-        // 1. Vérification du panier
         $panier = session()->get('panier');
         if(!$panier || count($panier) == 0) {
             return redirect()->route('panier.index');
@@ -28,8 +27,6 @@ class CommandeController extends Controller
 
         $userId = Auth::id();
 
-        // 2. Récupération des adresses via la table de liaison 'possedeadresse'
-        // On fait une jointure pour récupérer les infos de la table 'adresse'
         $adresses = DB::table('adresse')
             ->join('possedeadresse', 'adresse.id_adresse', '=', 'possedeadresse.id_adresse')
             ->where('possedeadresse.id_utilisateur', $userId)
@@ -40,17 +37,15 @@ class CommandeController extends Controller
     }
 
     // ------------------------------------------------------------------
-    // TRAITEMENT DE L'ADRESSE (Création ou Sélection)
+    // TRAITEMENT DE L'ADRESSE
     // ------------------------------------------------------------------
     public function validerLivraison(Request $request)
     {
         $userId = Auth::id();
 
-        // Cas A : L'utilisateur a choisi une adresse existante
         if ($request->filled('id_adresse_existante')) {
             $idAdresse = $request->id_adresse_existante;
         } 
-        // Cas B : L'utilisateur crée une nouvelle adresse
         else {
             $request->validate([
                 'rue' => 'required',
@@ -59,17 +54,14 @@ class CommandeController extends Controller
                 'pays_adresse' => 'required',
             ]);
 
-            // 1. Insertion dans la table 'adresse'
-            // On utilise create() via le Modèle Adresse configuré précédemment
             $adresse = Adresse::create([
                 'rue' => $request->rue,
                 'code_postal_adresse' => $request->code_postal_adresse,
                 'ville_adresse' => $request->ville_adresse,
                 'pays_adresse' => $request->pays_adresse,
-                'type_adresse' => 'Livraison' // Valeur par défaut obligatoire selon ton CHECK SQL
+                'type_adresse' => 'Livraison'
             ]);
             
-            // 2. Création du lien dans 'possedeadresse'
             DB::table('possedeadresse')->insert([
                 'id_adresse' => $adresse->id_adresse,
                 'id_utilisateur' => $userId
@@ -78,9 +70,7 @@ class CommandeController extends Controller
             $idAdresse = $adresse->id_adresse;
         }
 
-        // On sauvegarde l'ID pour l'étape suivante
         session()->put('id_adresse_livraison', $idAdresse);
-
         return redirect()->route('commande.paiement');
     }
 
@@ -89,17 +79,13 @@ class CommandeController extends Controller
     // ------------------------------------------------------------------
     public function paiement()
     {
-        // Vérification sécurité : on doit avoir une adresse
         if (!session()->has('id_adresse_livraison')) {
             return redirect()->route('commande.livraison');
         }
 
         $userId = Auth::id();
-
-        // Récupération des cartes enregistrées pour cet utilisateur
         $cartes = CarteBancaire::where('id_utilisateur', $userId)->get();
         
-        // Calcul du montant total
         $panier = session()->get('panier', []);
         $total = 0;
         foreach($panier as $item) {
@@ -118,7 +104,17 @@ class CommandeController extends Controller
         $panier = session()->get('panier');
         $idAdresse = session()->get('id_adresse_livraison');
         
-        // Sécurité : On recalcule le total ici plutôt que de faire confiance à l'input hidden
+        // --- 0. VERIFICATION ULTIME DU STOCK ---
+        // Avant de débiter la carte, on revérifie que tout est encore dispo
+        foreach($panier as $item) {
+            $stockReel = StockArticle::find($item['id_stock']);
+            if (!$stockReel || $stockReel->stock < $item['quantite']) {
+                return redirect()->route('panier.index')
+                    ->with('error', "Attention ! Le stock pour " . $item['nom'] . " a changé ou est épuisé.");
+            }
+        }
+
+        // Calcul du total
         $totalCalcul = 0;
         foreach($panier as $item) {
             $totalCalcul += $item['prix'] * $item['quantite'];
@@ -129,31 +125,25 @@ class CommandeController extends Controller
         // === 1. GESTION DE LA CARTE BANCAIRE ===
         $idCb = $request->input('use_saved_card');
 
-        // Si l'utilisateur n'a pas choisi une carte existante, on en crée une
         if (!$idCb) {
-            // Conversion de la date MM/YY (ex: 12/25) vers YYYY-MM-DD (ex: 2025-12-01)
-            $dateExpiration = '2030-01-01'; // Valeur par défaut
-            
+            $dateExpiration = '2030-01-01'; 
             if ($request->filled('expiration')) {
                 $parts = explode('/', $request->input('expiration'));
                 if (count($parts) == 2) {
                     $mois = trim($parts[0]);
-                    $annee = '20' . trim($parts[1]); // On ajoute le siècle '20'
-                    // On check validité rapide
+                    $annee = '20' . trim($parts[1]); 
                     if(checkdate($mois, 01, $annee)) {
                         $dateExpiration = "$annee-$mois-01";
                     }
                 }
             }
 
-            // Création de la carte dans la BDD
             $carte = CarteBancaire::create([
                 'id_utilisateur' => $userId,
-                'numero_chiffre' => $request->card_number ?? '0000', // En production, il faut chiffrer ça !
+                'numero_chiffre' => $request->card_number ?? '0000',
                 'ccv_chiffre'    => $request->input('ccv') ?? '000',
                 'expiration'     => $dateExpiration
             ]);
-            
             $idCb = $carte->id_cb;
         }
 
@@ -165,52 +155,38 @@ class CommandeController extends Controller
             'montant_total'    => $montantTotal,
             'frais_livraison'  => $fraisPort,
             'taxes_livraison'  => 0.00,
-            'statut_livraison' => 'Validée', // Statut imposé par le CHECK SQL
+            'statut_livraison' => 'Validée',
             'type_livraison'   => 'Standard'
         ]);
 
-        // === 3. CRÉATION DES LIGNES ET LIEN STOCK ===
+        // === 3. CRÉATION DES LIGNES ET MISE À JOUR STOCK ===
         foreach($panier as $key => $item) {
-            // Création de la ligne de commande
+            // A. Création ligne commande
             $ligne = LigneCommande::create([
                 'id_commande'           => $commande->id_commande,
                 'quantite_commande'     => $item['quantite'],
                 'prix_unitaire_negocie' => $item['prix']
             ]);
 
-            // --- Logique complexe pour 'estplacee' ---
-            // Ta BDD demande de lier la ligne de commande à un 'id_stock_article' précis.
-            // Comme le panier en session (version actuelle) n'a pas l'ID stock, on doit le trouver.
-            // On déduit le produit depuis la clé du panier (ex: "12-5" => id_produit 12, couleur 5) ou juste l'ID.
-            
-            $parts = explode('-', $key);
-            $idProduit = $parts[0];
-            $idCouleur = $parts[1] ?? null; // Peut être null si pas de variante gérée
+            // B. Lien avec le stock (table estplacee)
+            // On utilise l'ID stock stocké directement dans la session par PanierController
+            $idStock = $item['id_stock']; 
 
-            // On cherche un article en stock correspondant
-            $queryStock = DB::table('stock_article')
-                ->join('produit_couleur', 'stock_article.id_produit_couleur', '=', 'produit_couleur.id_produit_couleur')
-                ->where('produit_couleur.id_produit', $idProduit);
-
-            if ($idCouleur) {
-                $queryStock->where('produit_couleur.id_couleur', $idCouleur);
-            }
-
-            // On prend le premier stock disponible (par défaut Taille L ou autre si on ne gère pas la taille)
-            $stockItem = $queryStock->first();
-
-            // Si on trouve un stock, on fait le lien. Sinon, on met 1 par défaut pour éviter le crash (mode dégradé)
-            $idStockFinal = $stockItem ? $stockItem->id_stock_article : 1;
-
-            // Insertion dans la table d'association 'estplacee'
             DB::table('estplacee')->insert([
-                'id_stock_article'  => $idStockFinal,
+                'id_stock_article'  => $idStock,
                 'id_ligne_commande' => $ligne->id_ligne_commande
             ]);
+
+            // C. --- DIMINUTION DU STOCK (Le point crucial) ---
+            // On récupère l'article de stock et on décrémente
+            $stockArticle = StockArticle::find($idStock);
+            if ($stockArticle) {
+                // decrement() est une méthode Laravel qui fait "stock = stock - X" de manière sécurisée
+                $stockArticle->decrement('stock', $item['quantite']);
+            }
         }
 
         // === 4. ENREGISTREMENT DU RÈGLEMENT ===
-        // Ta table 'reglement' a une clé étrangère vers 'commande' (id_commande)
         Reglement::create([
             'id_cb'             => $idCb,
             'id_commande'       => $commande->id_commande,
@@ -219,13 +195,18 @@ class CommandeController extends Controller
             'mode_reglement'    => 'Carte Bancaire'
         ]);
 
-        // === 5. FIN DU PROCESSUS ===
+        // === 5. NETTOYAGE ===
+        // Si l'utilisateur a un panier en base de données, on le vide aussi
+        $dbPanier = \App\Models\Panier::where('id_utilisateur', $userId)->first();
+        if ($dbPanier) {
+            \App\Models\LignePanier::where('id_panier', $dbPanier->id_panier)->delete();
+        }
+
         session()->forget(['panier', 'id_adresse_livraison']);
 
         return redirect()->route('commande.succes');
     }
 
-    // Page de succès
     public function succes()
     {
         return view('commande.succes');

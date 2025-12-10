@@ -65,19 +65,43 @@
                 </div>
             </div>
 
-            {{-- Filtre : Couleurs --}}
+            {{-- Filtre : Couleurs (Version Compacte) --}}
             <div class="filter-group">
                 <h4 class="filter-title">Couleurs</h4>
-                <div class="filter-options">
-                    <label class="custom-radio">
-                        <input type="radio" name="couleur" value="" onchange="this.form.submit()" {{ request('couleur') == '' ? 'checked' : '' }}>
-                        <span>Toutes</span>
-                    </label>
+                
+                {{-- Option "Toutes" --}}
+                <label class="custom-radio" style="margin-bottom: 10px; display: block;">
+                    <input type="radio" name="couleur" value="" onchange="this.form.submit()" {{ request('couleur') == '' ? 'checked' : '' }}>
+                    <span>Toutes les couleurs</span>
+                </label>
+
+                {{-- Grille de couleurs --}}
+                <div class="color-grid" style="display: flex; flex-wrap: wrap; gap: 8px;">
                     @foreach($allColors as $c)
-                    <label class="custom-radio">
-                        <input type="radio" name="couleur" value="{{ $c }}" onchange="this.form.submit()" {{ request('couleur') == $c ? 'checked' : '' }}>
-                        <span style="display:inline-block; width:12px; height:12px; background-color: {{ $c == 'Or' ? 'gold' : ($c == 'Multicolore' ? 'linear-gradient(to right, red,blue)' : $c) }}; border-radius:50%; margin-right:5px; border:1px solid #ddd;"></span>
-                        <span>{{ ucfirst($c) }}</span>
+                    <label class="color-swatch" title="{{ ucfirst($c) }}" style="cursor: pointer; position: relative;">
+                        <input type="radio" name="couleur" value="{{ $c }}" onchange="this.form.submit()" {{ request('couleur') == $c ? 'checked' : '' }} style="display: none;">
+                        
+                        {{-- La pastille de couleur --}}
+                        <span style="
+                            display: block; 
+                            width: 25px; 
+                            height: 25px; 
+                            border-radius: 50%; 
+                            background: {{ $c == 'Or' ? 'gold' : ($c == 'Multicolore' ? 'linear-gradient(135deg, red, blue, yellow)' : ($c == 'Argent' ? 'silver' : $c)) }};
+                            border: 1px solid #ccc;
+                            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                            transition: transform 0.2s, box-shadow 0.2s;
+                        "></span>
+
+                        {{-- Indicateur de sélection (coche ou bordure) via CSS inline pour faire vite, ou classe active --}}
+                        @if(request('couleur') == $c)
+                            <span style="
+                                position: absolute; 
+                                top: -3px; left: -3px; right: -3px; bottom: -3px; 
+                                border: 2px solid #326295; 
+                                border-radius: 50%;
+                            "></span>
+                        @endif
                     </label>
                     @endforeach
                 </div>
