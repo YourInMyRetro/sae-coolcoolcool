@@ -1,67 +1,83 @@
 @extends('layout')
 
 @section('content')
-<div class="container mt-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="text-uppercase fw-bold text-danger mb-0">Produits en cours de création (US 40)</h1>
-        <a href="{{ route('directeur.dashboard') }}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left"></i> Retour Dashboard
+<div class="container py-5">
+    
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <div>
+            <h6 class="text-uppercase text-danger fw-bold mb-1">Action Requise</h6>
+            <h1 class="text-white fw-bold">Produits en Attente de Prix</h1>
+        </div>
+        <a href="{{ route('directeur.dashboard') }}" class="btn btn-outline-light rounded-pill px-4">
+            <i class="fas fa-arrow-left me-2"></i> Retour Dashboard
         </a>
     </div>
     
     @if(session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
+        <div class="alert alert-success d-flex align-items-center mb-4 rounded-3 shadow-lg">
+            <i class="fas fa-check-circle fa-2x me-3"></i>
+            <div>{{ session('success') }}</div>
+        </div>
     @endif
 
-    <div class="row">
+    <div class="row g-4">
         @forelse($produitsSansPrix as $produit)
-            <div class="col-md-6 mb-4">
-                <div class="card border-danger h-100 shadow-sm">
-                    <div class="card-header bg-danger text-white d-flex justify-content-between">
-                        <span class="fw-bold">Réf: #{{ $produit->id_produit }}</span>
-                        <span class="badge bg-white text-danger">Prix manquant</span>
+            <div class="col-md-6 col-lg-4">
+                <div class="dashboard-card position-relative overflow-hidden">
+                    <div class="position-absolute top-0 start-0 w-100 h-1 bg-danger"></div>
+                    
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <span class="badge bg-danger bg-opacity-25 text-danger border border-danger">
+                            ID #{{ $produit->id_produit }}
+                        </span>
+                        <i class="fas fa-tshirt text-muted fa-2x opacity-25"></i>
                     </div>
-                    <div class="card-body">
-                        <h5 class="card-title fw-bold">{{ $produit->nom_produit }}</h5>
-                        <p class="card-text text-muted small">{{ Str::limit($produit->description_produit, 80) }}</p>
-                        
-                        <hr>
-                        
-                        <h6 class="fw-bold small text-uppercase text-secondary mb-2">Définir le prix de vente :</h6>
-                        
-                        <form action="{{ route('directeur.update_prix', $produit->id_produit) }}" method="POST" class="row g-2 align-items-end">
-                            @csrf
+
+                    <h4 class="text-white mb-2">{{ $produit->nom_produit }}</h4>
+                    <p class="text-muted small mb-4" style="min-height: 40px;">
+                        {{ Str::limit($produit->description_produit, 60) }}
+                    </p>
+                    
+                    <form action="{{ route('directeur.update_prix', $produit->id_produit) }}" method="POST">
+                        @csrf
+                        <div class="bg-dark bg-opacity-50 p-3 rounded-3 border border-secondary border-opacity-25">
                             
-                            <div class="col-5">
-                                <label class="form-label small fw-bold">Couleur principale</label>
-                                <select name="id_couleur" class="form-select form-select-sm" required>
+                            <div class="mb-2">
+                                <label class="text-muted small fw-bold text-uppercase">Couleur</label>
+                                <select name="id_couleur" class="form-select form-select-sm input-dark" required>
                                     @foreach($couleurs as $couleur)
                                         <option value="{{ $couleur->id_couleur }}">{{ $couleur->type_couleur }}</option>
                                     @endforeach
                                 </select>
                             </div>
 
-                            <div class="col-4">
-                                <label class="form-label small fw-bold">Prix (€)</label>
-                                <input type="number" step="0.01" name="prix_total" class="form-control form-control-sm" placeholder="0.00" required>
+                            <div class="row g-2 align-items-end">
+                                <div class="col-7">
+                                    <label class="text-muted small fw-bold text-uppercase">Prix (€)</label>
+                                    <input type="number" step="0.01" name="prix_total" class="form-control form-control-sm input-dark fw-bold text-white" placeholder="0.00" required>
+                                </div>
+                                <div class="col-5">
+                                    <button type="submit" class="btn btn-sm btn-fifa-cyan w-100 fw-bold shadow-sm">
+                                        VALIDER
+                                    </button>
+                                </div>
                             </div>
+                        </div>
+                    </form>
 
-                            <div class="col-3">
-                                <button type="submit" class="btn btn-sm btn-success w-100 fw-bold">
-                                    <i class="fas fa-check"></i> Valider
-                                </button>
-                            </div>
-                        </form>
-                    </div>
                 </div>
             </div>
         @empty
             <div class="col-12">
-                <div class="alert alert-light text-center py-5 border">
-                    <i class="fas fa-check-circle text-success fa-3x mb-3"></i>
-                    <h4>Tout est à jour !</h4>
-                    <p class="text-muted">Aucun produit en attente de prix.</p>
-                    <a href="{{ route('directeur.dashboard') }}" class="btn btn-primary mt-2">Retour au Dashboard</a>
+                <div class="dashboard-card text-center py-5">
+                    <div class="mb-4 text-success opacity-75">
+                        <i class="fas fa-clipboard-check fa-5x"></i>
+                    </div>
+                    <h2 class="text-white">Tout est en ordre !</h2>
+                    <p class="text-muted">Aucun produit en attente de validation.</p>
+                    <a href="{{ route('directeur.dashboard') }}" class="btn btn-outline-light mt-3 rounded-pill">
+                        Retourner au Dashboard
+                    </a>
                 </div>
             </div>
         @endforelse

@@ -9,24 +9,23 @@ use App\Models\Couleur;
 use App\Models\ProduitCouleur;
 use App\Models\Taille;
 use App\Models\StockArticle;
-use App\Models\Commande; // On utilise le modèle Eloquent
+use App\Models\Commande;
 use Carbon\Carbon;
 
 class DirecteurController extends Controller
 {
     // =================================================================
-    // US 29 & 30 : DASHBOARD (VERSION PHP - INFAILLIBLE)
+    // US 29 & 30 : DASHBOARD
     // =================================================================
     public function dashboard()
     {
-        // 1. RÉCUPÉRATION BRUTE (On prend tout ce qui n'est pas annulé)
+        // 1. Calcul CA Mensuel
         $commandes = Commande::where('statut_livraison', '!=', 'Annulée')
                              ->orderBy('date_commande', 'desc')
                              ->get();
 
-        // 2. CALCUL CA MENSUEL (US 29) - Fait par PHP
         $ventesMensuelles = $commandes->groupBy(function($c) {
-            return substr($c->date_commande, 0, 7); // Extrait "YYYY-MM"
+            return substr($c->date_commande, 0, 7); // YYYY-MM
         })->map(function ($groupe, $mois) {
             return (object) [
                 'mois' => $mois,
@@ -34,8 +33,7 @@ class DirecteurController extends Controller
             ];
         })->take(12);
 
-        // 3. CALCUL PAR CATÉGORIE (US 30) - SQL Simplifié + Traitement PHP
-        // On récupère juste les lignes brutes avec leur catégorie
+        // 2. Calcul par Catégorie
         $lignes = DB::table('ligne_commande')
             ->join('commande', 'ligne_commande.id_commande', '=', 'commande.id_commande')
             ->join('estplacee', 'ligne_commande.id_ligne_commande', '=', 'estplacee.id_ligne_commande')
@@ -51,7 +49,6 @@ class DirecteurController extends Controller
             ->where('commande.statut_livraison', '!=', 'Annulée')
             ->get();
 
-        // On groupe en PHP
         $ventesParCategorie = $lignes->groupBy(function($l) {
             return substr($l->date_commande, 0, 7) . ' - ' . $l->nom_categorie;
         })->map(function ($groupe, $key) {
@@ -63,54 +60,55 @@ class DirecteurController extends Controller
             ];
         })->sortByDesc('mois');
 
-        // Compteur pour le bouton d'action
         $nbProduitsIncomplets = Produit::whereDoesntHave('produitCouleurs')->count();
 
         return view('directeur.dashboard', compact('ventesMensuelles', 'ventesParCategorie', 'nbProduitsIncomplets'));
     }
 
     // =================================================================
-    // US 40 & 54 : GESTION DES PRODUITS (AVEC STOCK INITIAL)
+    // US 40 & 54 : GESTION DES PRODUITS (Correction Nom de Vue)
     // =================================================================
     public function produitsIncomplets()
     {
         $produitsSansPrix = Produit::whereDoesntHave('produitCouleurs')->get();
         $couleurs = Couleur::all();
-        return view('directeur.produits_incomplets', compact('produitsSansPrix', 'couleurs'));
+        
+        // --- CORRECTION ICI : "produits_incomplet" SANS S ---
+        return view('directeur.produits_incomplet', compact('produitsSansPrix', 'couleurs'));
     }
 
     public function updatePrix(Request $request, $id)
     {
+        // Validation simplifiée (Juste Prix/Couleur)
         $request->validate([
             'id_couleur' => 'required|exists:couleur,id_couleur',
             'prix_total' => 'required|numeric|min:0',
-            'stock_initial' => 'required|integer|min:0', // <--- Gestion Stock
         ]);
 
-        // 1. Prix
+        // 1. Création prix
         $produitCouleur = new ProduitCouleur();
         $produitCouleur->id_produit = $id;
         $produitCouleur->id_couleur = $request->input('id_couleur');
         $produitCouleur->prix_total = $request->input('prix_total');
         $produitCouleur->save();
 
-        // 2. Stock
-        $stockQty = $request->input('stock_initial');
+        // 2. Stock auto à 0
         $tailles = Taille::all();
         foreach($tailles as $taille) {
             $stock = new StockArticle();
             $stock->id_produit_couleur = $produitCouleur->id_produit_couleur;
             $stock->id_taille = $taille->id_taille;
-            $stock->stock = $stockQty;
+            $stock->stock = 0; 
             $stock->save();
         }
 
-        // 3. Visibilité
+        // 3. Activation produit
         $produit = Produit::findOrFail($id);
         $produit->visibilite = 'visible';
         $produit->save();
 
+        // Redirection vers la route (qui elle a des tirets et un 's', c'est normal pour l'URL)
         return redirect()->route('directeur.produits_incomplets')
-            ->with('success', "Produit validé (Prix: {$produitCouleur->prix_total}€, Stock: $stockQty)");
+                         ->with('success', "Prix validé : {$produitCouleur->prix_total}€. Produit en ligne.");
     }
 }

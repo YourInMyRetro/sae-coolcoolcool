@@ -647,3 +647,146 @@ summary.parent-label:hover {
     font-size: 0.85rem;
     color: #555;
 }
+
+/* --- EXTENSION DASHBOARD DIRECTEUR --- */
+
+:root {
+    --fifa-dark: #0f1623;       /* Bleu nuit profond */
+    --fifa-card: #1a2233;       /* Bleu nuit légèrement plus clair pour les cartes */
+    --fifa-cyan: #55e6c1;       /* Cyan vibrant */
+    --fifa-cyan-hover: #32ffce; /* Cyan plus pétant au survol */
+    --fifa-text-muted: #a0aec0; /* Gris clair pour les sous-titres */
+    --fifa-danger: #e74c3c;     /* Rouge pour les alertes */
+}
+
+/* 1. CARTES MODERNES */
+.dashboard-card {
+    background-color: var(--fifa-card);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    height: 100%;
+    color: white;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.4);
+    border-color: rgba(85, 230, 193, 0.3);
+}
+
+.dashboard-card h3 {
+    font-size: 1.1rem;
+    color: var(--fifa-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+.stat-value {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 5px;
+}
+
+/* 2. TABLEAUX ÉLÉGANTS */
+.fifa-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 8px; /* Espacement entre les lignes */
+}
+
+.fifa-table thead th {
+    color: var(--fifa-text-muted);
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    padding: 10px 20px;
+    border: none;
+}
+
+.fifa-table tbody tr {
+    background-color: #232d3f;
+    transition: background 0.2s;
+}
+
+.fifa-table tbody tr:hover {
+    background-color: #2d3b55;
+    transform: scale(1.01);
+}
+
+.fifa-table td {
+    padding: 15px 20px;
+    color: white;
+    border: none;
+}
+
+.fifa-table td:first-child {
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+    font-weight: bold;
+    color: var(--fifa-cyan);
+}
+
+.fifa-table td:last-child {
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+    font-weight: bold;
+}
+
+/* 3. BOUTONS D'ACTION */
+.btn-fifa-action {
+    background: linear-gradient(135deg, var(--fifa-danger), #c0392b);
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 30px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+}
+
+.btn-fifa-action:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(231, 76, 60, 0.6);
+    color: white;
+}
+
+.btn-fifa-cyan {
+    background: var(--fifa-cyan);
+    color: #0f1623;
+}
+.btn-fifa-cyan:hover {
+    background: var(--fifa-cyan-hover);
+    color: #0f1623;
+}
+
+/* 4. BADGES */
+.badge-count {
+    background: white;
+    color: var(--fifa-danger);
+    border-radius: 50%;
+    padding: 2px 8px;
+    font-size: 0.9rem;
+    margin-left: 10px;
+    font-weight: 800;
+}
+
+/* 5. INPUTS SOMBRES (Pour le formulaire) */
+.input-dark {
+    background-color: #0f1623 !important;
+    border: 1px solid #2d3b55 !important;
+    color: white !important;
+}
+.input-dark:focus {
+    border-color: var(--fifa-cyan) !important;
+    box-shadow: 0 0 0 3px rgba(85, 230, 193, 0.2) !important;
+}
