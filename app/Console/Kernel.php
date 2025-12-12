@@ -12,7 +12,9 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
+        // C'est ici qu'on active votre commande automatique
+        // Elle s'exécutera tous les jours
+        $schedule->command('commandes:clore-reserves')->daily();
     }
 
     /**

@@ -24,17 +24,74 @@
 
         {{-- Formulaire Nouvelle Adresse --}}
         <h4 style="color: #326295; margin-bottom: 15px;">Ou nouvelle adresse :</h4>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
-            <input type="text" name="rue" placeholder="Numéro et Rue" class="form-control" style="grid-column: span 2; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
-            <input type="text" name="code_postal_adresse" placeholder="Code Postal" class="form-control" style="padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
-            <input type="text" name="ville_adresse" placeholder="Ville" class="form-control" style="padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
-            <input type="text" name="pays_adresse" placeholder="Pays" class="form-control" style="padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; position: relative;">
+            {{-- Ajout de l'ID 'search-adresse' et 'autocomplete="off"' --}}
+            <div style="grid-column: span 2; position: relative;">
+                <input type="text" id="search-adresse" name="rue" placeholder="Commencez à taper votre adresse..." class="form-control" autocomplete="off" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                {{-- Liste des suggestions --}}
+                <ul id="suggestions-liste" style="list-style: none; padding: 0; margin: 0; position: absolute; width: 100%; background: white; border: 1px solid #ddd; border-top: none; z-index: 1000; display: none; max-height: 200px; overflow-y: auto;"></ul>
+            </div>
+
+            {{-- Ajout des IDs pour le remplissage automatique --}}
+            <input type="text" id="code_postal" name="code_postal_adresse" placeholder="Code Postal" class="form-control" style="padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+            <input type="text" id="ville" name="ville_adresse" placeholder="Ville" class="form-control" style="padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+            <input type="text" name="pays_adresse" value="France" placeholder="Pays" class="form-control" style="padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
         </div>
 
-        {{-- BOUTON VALIDATION --}}
         <button type="submit" style="width: 100%; padding: 15px; background-color: #326295; color: white; border: none; font-weight: bold; font-size: 1.1rem; border-radius: 5px; cursor: pointer; margin-top: 10px;">
             Continuer vers le paiement <i class="fas fa-credit-card"></i>
         </button>
     </form>
 </div>
+
+{{-- Script pour l'API Adresse --}}
+<script>
+    const inputAdresse = document.getElementById('search-adresse');
+    const suggestionsListe = document.getElementById('suggestions-liste');
+    const inputCP = document.getElementById('code_postal');
+    const inputVille = document.getElementById('ville');
+
+    inputAdresse.addEventListener('input', function() {
+        const query = this.value;
+        if (query.length > 3) {
+            // Appel à l'API Data.gouv.fr
+            fetch(`https://api-adresse.data.gouv.fr/search/?q=${query}&limit=5`)
+                .then(response => response.json())
+                .then(data => {
+                    suggestionsListe.innerHTML = '';
+                    suggestionsListe.style.display = 'block';
+                    
+                    data.features.forEach(feature => {
+                        const li = document.createElement('li');
+                        li.style.padding = '10px';
+                        li.style.cursor = 'pointer';
+                        li.style.borderBottom = '1px solid #eee';
+                        li.innerText = feature.properties.label;
+                        
+                        // Au clic sur une suggestion
+                        li.addEventListener('click', function() {
+                            inputAdresse.value = feature.properties.name; // Juste le nom de la rue
+                            inputCP.value = feature.properties.postcode;
+                            inputVille.value = feature.properties.city;
+                            suggestionsListe.style.display = 'none';
+                        });
+
+                        li.addEventListener('mouseover', () => li.style.backgroundColor = '#f0f0f0');
+                        li.addEventListener('mouseout', () => li.style.backgroundColor = 'white');
+                        
+                        suggestionsListe.appendChild(li);
+                    });
+                });
+        } else {
+            suggestionsListe.style.display = 'none';
+        }
+    });
+
+    // Cacher la liste si on clique ailleurs
+    document.addEventListener('click', function(e) {
+        if (e.target !== inputAdresse) {
+            suggestionsListe.style.display = 'none';
+        }
+    });
+</script>
 @endsection

@@ -27,6 +27,7 @@
         @endif
 
         <div class="account-grid">
+            {{-- CARTE 1 : MES INFOS --}}
             <div class="account-card">
                 <h2><i class="far fa-id-card"></i> Mes Infos</h2>
                 <ul>
@@ -38,6 +39,17 @@
                 <a href="{{ route('compte.edit') }}" class="btn-account-action">Modifier mon profil</a>
             </div>
 
+            {{-- CARTE 2 : MES COMMANDES (NOUVEAU) --}}
+            <div class="account-card">
+                <h2><i class="fas fa-box-open"></i> Mes Commandes</h2>
+                <p style="color: #aaa; margin-bottom: 20px;">Retrouvez l'historique de vos achats et suivez vos livraisons en cours.</p>
+                
+                <a href="{{ route('compte.commandes') }}" class="btn-account-action" style="background-color: #326295; color: white; border: none;">
+                    <i class="fas fa-list-ul"></i> Suivi de mes commandes
+                </a>
+            </div>
+
+            {{-- CARTE 3 : ESPACE PRO (Si applicable) --}}
             @if($estPro)
             <div class="account-card" style="border-color: #00d4ff;">
                 <h2 style="color: #00d4ff;"><i class="fas fa-briefcase"></i> Espace Pro</h2>
@@ -47,7 +59,6 @@
                     <li><strong>TVA :</strong> {{ $infosPro->numero_tva_intracommunautaire }}</li>
                 </ul>
                 
-                {{-- BOUTON DEMANDE SPECIALE --}}
                 <a href="{{ route('compte.demande.create') }}" class="btn-account-action" style="color: #00d4ff; border-color: #00d4ff;">
                     <i class="fas fa-plus-circle"></i> Nouvelle demande produit
                 </a>
@@ -55,7 +66,6 @@
             
             <div class="account-card" style="grid-column: span 2; border-color: #00d4ff;">
                 <h2 style="color: #00d4ff;"><i class="fas fa-file-contract"></i> Mes Demandes Spéciales</h2>
-                
                 @if(count($mesDemandes) > 0)
                     <table style="width: 100%; border-collapse: collapse; margin-top: 15px; color: #ccc;">
                         <thead>
@@ -87,6 +97,7 @@
             </div>
             @endif
 
+            {{-- CARTE 4 : PARAMÈTRES --}}
             <div class="account-card">
                 <h2><i class="fas fa-cog"></i> Paramètres</h2>
                 <p style="color: #aaa; margin-bottom: 20px;">Gérez la sécurité de votre compte.</p>

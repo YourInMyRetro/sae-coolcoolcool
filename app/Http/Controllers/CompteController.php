@@ -3,111 +3,142 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use App\Models\Produit;
-use App\Models\Couleur;
-use App\Models\ProduitCouleur;
-use App\Models\Taille;
-use App\Models\StockArticle;
-use App\Models\Commande;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use App\Models\User;
+use App\Models\Professionel;
+use App\Models\DemandeSpeciale; // Import indispensable
+use App\Models\Commande;        // <--- AJOUT pour le Sprint 1
 use Carbon\Carbon;
 
-class DirecteurController extends Controller
+class CompteController extends Controller
 {
-    // =================================================================
-    // US 29 & 30 : DASHBOARD (VERSION PHP ROBUSTE)
-    // =================================================================
-    public function dashboard()
+    public function index()
     {
-        // 1. Calcul CA Mensuel (PHP)
-        $commandes = Commande::where('statut_livraison', '!=', 'Annulée')
-                             ->orderBy('date_commande', 'desc')
-                             ->get();
+        $idUser = Auth::id();
+        $user = User::with(['professionel'])->find($idUser);
 
-        $ventesMensuelles = $commandes->groupBy(function($c) {
-            return substr($c->date_commande, 0, 7); // YYYY-MM
-        })->map(function ($groupe, $mois) {
-            return (object) [
-                'mois' => $mois,
-                'total_ventes' => $groupe->sum('montant_total')
-            ];
-        })->take(12);
-
-        // 2. Calcul par Catégorie (SQL + PHP)
-        $lignes = DB::table('ligne_commande')
-            ->join('commande', 'ligne_commande.id_commande', '=', 'commande.id_commande')
-            ->join('estplacee', 'ligne_commande.id_ligne_commande', '=', 'estplacee.id_ligne_commande')
-            ->join('stock_article', 'estplacee.id_stock_article', '=', 'stock_article.id_stock_article')
-            ->join('produit_couleur', 'stock_article.id_produit_couleur', '=', 'produit_couleur.id_produit_couleur')
-            ->join('produit', 'produit_couleur.id_produit', '=', 'produit.id_produit')
-            ->join('categorie', 'produit.id_categorie', '=', 'categorie.id_categorie')
-            ->select(
-                'categorie.nom_categorie', 
-                'commande.date_commande',
-                DB::raw('(ligne_commande.prix_unitaire_negocie * ligne_commande.quantite_commande) as montant')
-            )
-            ->where('commande.statut_livraison', '!=', 'Annulée')
-            ->get();
-
-        $ventesParCategorie = $lignes->groupBy(function($l) {
-            return substr($l->date_commande, 0, 7) . ' - ' . $l->nom_categorie;
-        })->map(function ($groupe, $key) {
-            list($mois, $cat) = explode(' - ', $key);
-            return (object) [
-                'mois' => $mois,
-                'nom_categorie' => $cat,
-                'total' => $groupe->sum('montant')
-            ];
-        })->sortByDesc('mois');
-
-        $nbProduitsIncomplets = Produit::whereDoesntHave('produitCouleurs')->count();
-
-        return view('directeur.dashboard', compact('ventesMensuelles', 'ventesParCategorie', 'nbProduitsIncomplets'));
-    }
-
-    // =================================================================
-    // US 40 & 54 : GESTION DES PRODUITS (RETOUR AU SPRINT SIMPLE)
-    // =================================================================
-    public function produitsIncomplets()
-    {
-        $produitsSansPrix = Produit::whereDoesntHave('produitCouleurs')->get();
-        $couleurs = Couleur::all();
-        
-        // --- CORRECTION CRITIQUE ICI (Singulier) ---
-        return view('directeur.produits_incomplet', compact('produitsSansPrix', 'couleurs'));
-    }
-
-    public function updatePrix(Request $request, $id)
-    {
-        // ON NE DEMANDE QUE LE PRIX ET LA COULEUR
-        $request->validate([
-            'id_couleur' => 'required|exists:couleur,id_couleur',
-            'prix_total' => 'required|numeric|min:0',
-        ]);
-
-        // 1. Création du prix
-        $produitCouleur = new ProduitCouleur();
-        $produitCouleur->id_produit = $id;
-        $produitCouleur->id_couleur = $request->input('id_couleur');
-        $produitCouleur->prix_total = $request->input('prix_total');
-        $produitCouleur->save();
-
-        // 2. Stock Automatique (0 par défaut)
-        $tailles = Taille::all();
-        foreach($tailles as $taille) {
-            $stock = new StockArticle();
-            $stock->id_produit_couleur = $produitCouleur->id_produit_couleur;
-            $stock->id_taille = $taille->id_taille;
-            $stock->stock = 0; // On initialise à 0, c'est tout.
-            $stock->save();
+        if (!$user) {
+            return redirect()->route('login');
         }
 
-        // 3. On rend visible
-        $produit = Produit::findOrFail($id);
-        $produit->visibilite = 'visible';
-        $produit->save();
+        $estUnPro = false;
+        $infosPro = null;
+        $mesDemandes = [];
 
-        return redirect()->route('directeur.produits_incomplets')
-                         ->with('success', "Prix fixé à {$produitCouleur->prix_total}€. Produit activé.");
+        if ($user->professionel) {
+            $estUnPro = true;
+            $infosPro = $user->professionel;
+            // Récupération de l'historique des demandes
+            $mesDemandes = DemandeSpeciale::where('id_utilisateur', $idUser)
+                                          ->orderBy('date_demande', 'desc')
+                                          ->get();
+        }
+
+        return view('compte.index', [
+            'utilisateur' => $user,
+            'estPro' => $estUnPro,
+            'infosPro' => $infosPro,
+            'mesDemandes' => $mesDemandes
+        ]);
+    }
+
+    public function edit()
+    {
+        $idUser = Auth::id();
+        $user = User::with(['professionel'])->find($idUser);
+        return view('compte.edit', ['user' => $user]);
+    }
+
+    public function update(Request $request)
+    {
+        $user = Auth::user();
+        $request->validate([
+            'nom' => 'required|string|max:50',
+            'prenom' => 'required|string|max:50',
+            'surnom' => 'nullable|string|max:50',
+            'langue' => 'required|string|max:50',
+            'password' => 'nullable|string|min:4|confirmed',
+        ]);
+
+        $user->nom = $request->input('nom');
+        $user->prenom = $request->input('prenom');
+        $user->surnom = $request->input('surnom');
+        $user->langue = $request->input('langue');
+
+        if ($request->input('password')) {
+            $user->mot_de_passe_chiffre = Hash::make($request->input('password'));
+        }
+        $user->save();
+
+        if ($user->estProfessionnel()) {
+            $request->validate([
+                'nom_societe' => 'required|string|max:100',
+                'activite' => 'required|string|max:100',
+            ]);
+            $pro = $user->professionel;
+            $pro->nom_societe = $request->input('nom_societe');
+            $pro->activite = $request->input('activite');
+            $pro->save();
+        }
+
+        return redirect()->route('compte.index')->with('success', 'Informations mises à jour !');
+    }
+
+    // --- GESTION DEMANDES SPÉCIALES ---
+
+    public function createDemande()
+    {
+        $user = Auth::user();
+        if (!$user->estProfessionnel()) {
+            return redirect()->route('compte.index')->with('error', 'Accès réservé aux professionnels.');
+        }
+        return view('compte.demande_speciale', ['user' => $user]);
+    }
+
+    public function storeDemande(Request $request)
+    {
+        $user = Auth::user();
+        
+        // Sécurité : Vérifier si c'est bien un pro
+        if (!$user->estProfessionnel()) {
+            return redirect()->route('compte.index');
+        }
+
+        // Validation des données reçues
+        $request->validate([
+            'sujet' => 'required|string|max:255',
+            'telephone' => 'required|string|max:20',
+            'description_besoin' => 'required|string|min:10',
+        ]);
+
+        // Création de la demande
+        $demande = new DemandeSpeciale();
+        $demande->id_utilisateur = $user->id_utilisateur;
+        $demande->sujet = $request->input('sujet');
+        $demande->telephone = $request->input('telephone');
+        $demande->description_besoin = $request->input('description_besoin');
+        $demande->date_demande = Carbon::now();
+        $demande->statut = 'En attente';
+        
+        $demande->save();
+
+        // Redirection vers le dashboard avec message de succès
+        return redirect()->route('compte.index')->with('success', 'Votre demande spéciale a été transmise au bureau d\'étude !');
+    }
+
+    // --- SPRINT 1 : AJOUT DE LA FONCTION MANQUANTE ---
+
+    public function mesCommandes() 
+    {
+        $user = Auth::user();
+        
+        // On récupère les commandes avec le suivi
+        $commandes = Commande::where('id_utilisateur', $user->id_utilisateur)
+                             ->with('suivi')
+                             ->orderBy('date_commande', 'desc')
+                             ->get();
+        
+        return view('compte.commandes', compact('commandes'));
     }
 }

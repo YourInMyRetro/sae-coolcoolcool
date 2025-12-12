@@ -1,37 +1,41 @@
 <?php
+
 namespace App\Models;
+
 use Illuminate\Database\Eloquent\Model;
 
 class Commande extends Model
 {
+    // Configuration pour respecter ta table SQL 'commande'
     protected $table = 'commande';
     protected $primaryKey = 'id_commande';
-    public $timestamps = false; 
+    public $timestamps = false; // Car tu utilises 'date_commande' et non 'created_at'
 
     protected $fillable = [
-        'id_adresse', 'id_utilisateur', 'date_commande', 
-        'montant_total', 'frais_livraison', 'taxes_livraison', 
-        'statut_livraison', 'type_livraison'
+        'id_adresse',
+        'id_utilisateur',
+        'date_commande',
+        'montant_total',
+        'frais_livraison',
+        'taxes_livraison',
+        'statut_livraison', // Valeurs: 'En préparation', 'Expédiée', 'Livrée', 'Validée', 'Réserve'...
+        'type_livraison'    // Valeurs: 'Standard', 'Express'
     ];
 
-    public function lignes()
-    {
-        return $this->hasMany(LigneCommande::class, 'id_commande', 'id_commande');
-    }
-
-    // --- AJOUT MIDAS ---
-    public function suiviLivraison()
+    // Relation vers le modèle SuiviLivraison que tu as déjà créé
+    public function suivi()
     {
         return $this->hasOne(SuiviLivraison::class, 'id_commande', 'id_commande');
     }
-    
+
+    // Relation vers l'utilisateur (Acheteur)
     public function utilisateur()
     {
         return $this->belongsTo(User::class, 'id_utilisateur', 'id_utilisateur');
     }
-    
-    public function adresse()
-    {
-        return $this->belongsTo(Adresse::class, 'id_adresse', 'id_adresse');
+
+    // Scope pour filtrer facilement les commandes Express (Sprint 2)
+    public function scopeExpress($query) {
+        return $query->where('type_livraison', 'Express');
     }
 }

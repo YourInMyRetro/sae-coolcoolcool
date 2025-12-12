@@ -8,7 +8,7 @@ use App\Http\Controllers\ToolController;
 use App\Http\Controllers\CommandeController;
 use App\Http\Controllers\CompteController;
 use App\Http\Controllers\VoteController;
-
+use App\Http\Controllers\ServiceCommandeController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -96,3 +96,12 @@ Route::middleware(['auth', 'directeur'])->group(function () {
     Route::post('/directeur/produit/{id}/fixer-prix', [App\Http\Controllers\DirecteurController::class, 'updatePrix'])
         ->name('directeur.update_prix');
 });
+
+// Sprint 1 : Acheteur
+Route::middleware(['auth'])->group(function () {
+    Route::get('/compte/commandes', [CompteController::class, 'mesCommandes'])->name('compte.commandes');
+});
+
+// Sprint 2 & 3 : Service Commande (Idéalement protégé par un middleware admin/staff)
+Route::get('/service/dashboard', [ServiceCommandeController::class, 'dashboard'])->name('service.dashboard');
+Route::post('/service/reserve', [ServiceCommandeController::class, 'storeReserve'])->name('service.reserve.store');
