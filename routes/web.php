@@ -105,3 +105,20 @@ Route::middleware(['auth'])->group(function () {
 // Sprint 2 & 3 : Service Commande (Idéalement protégé par un middleware admin/staff)
 Route::get('/service/dashboard', [ServiceCommandeController::class, 'dashboard'])->name('service.dashboard');
 Route::post('/service/reserve', [ServiceCommandeController::class, 'storeReserve'])->name('service.reserve.store');
+
+// --- SPRINT 3 : Service Expédition (Midas) ---
+use App\Http\Controllers\ServiceExpeditionController;
+
+Route::middleware(['auth'])->group(function () {
+    // Dashboard Expédition (US 25, 26)
+    Route::get('/service/expedition', [ServiceExpeditionController::class, 'index'])
+         ->name('service.expedition');
+
+    // Action : Remettre au transporteur (US 27)
+    Route::post('/service/expedition/prise-en-charge', [ServiceExpeditionController::class, 'priseEnCharge'])
+         ->name('service.expedition.pickup');
+
+    // Action : Envoyer SMS (US 28)
+    Route::post('/service/expedition/sms/{id}', [ServiceExpeditionController::class, 'sendSms'])
+         ->name('service.expedition.sms');
+});
