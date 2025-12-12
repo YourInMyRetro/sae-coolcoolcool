@@ -11,10 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('utilisateur', function (Blueprint $table){
-            $table->string('role')->default('client');
-            //
-        });
+        // CORRECTION : On vérifie si la colonne existe AVANT d'essayer de la créer
+        if (!Schema::hasColumn('utilisateur', 'role')) {
+            Schema::table('utilisateur', function (Blueprint $table) {
+                $table->string('role')->default('client');
+            });
+        }
     }
 
     /**
@@ -22,8 +24,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('utilisateur', function (Blueprint $table) {
-            $table->dropColumn('role');
-        });
+        if (Schema::hasColumn('utilisateur', 'role')) {
+            Schema::table('utilisateur', function (Blueprint $table) {
+                $table->dropColumn('role');
+            });
+        }
     }
 };

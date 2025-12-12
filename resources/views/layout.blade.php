@@ -49,6 +49,26 @@
                             @endif
                         @endauth
 
+                        @auth
+                            {{-- Menu spécifique au Service Expédition (Midas - Sprint 3) --}}
+                            @if(Auth::user()->isExpedition())
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                        🚚 Service Expédition
+                                    </a>
+                                    <ul class="dropdown-menu">
+                                        {{-- ID 25 & 26 : Consulter les commandes à livrer --}}
+                                        <li>
+                                            <a class="dropdown-item" href="{{ route('service.expedition') }}">
+                                                Tableau de bord (Départs)
+                                            </a>
+                                        </li>
+                                        {{-- ID 27 & 28 sont gérés DANS le tableau de bord, pas besoin de sous-menu --}}
+                                    </ul>
+                                </li>
+                            @endif
+                        @endauth
+
                         {{-- Exemples de filtres rapides --}}
                         <li><a href="{{ route('produits.index', ['categorie' => 1]) }}">Maillots</a></li>
                         <!--<li><a href="{{ route('matcher.index') }}">Matcher</a></li>-->

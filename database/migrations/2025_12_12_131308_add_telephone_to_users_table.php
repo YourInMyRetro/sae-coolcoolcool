@@ -11,8 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            //
+        // CORRECTION 1 : On cible la table 'utilisateur'
+        Schema::table('utilisateur', function (Blueprint $table) {
+            // CORRECTION 2 : On ajoute la colonne telephone
+            // ->nullable() est important car tes utilisateurs existants n'ont pas de numéro
+            $table->string('telephone', 20)->nullable()->after('mail');
         });
     }
 
@@ -21,8 +24,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            //
+        Schema::table('utilisateur', function (Blueprint $table) {
+            // Permet de supprimer la colonne si on annule la migration
+            $table->dropColumn('telephone');
         });
     }
 };

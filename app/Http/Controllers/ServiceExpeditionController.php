@@ -10,31 +10,52 @@ use Carbon\Carbon;
 class ServiceExpeditionController extends Controller
 {
     /**
-     * US 25 & 26 : Dashboard Expédition
-     * Affiche les commandes "Express" (Autre mode) pour les périodes demandées.
+     * ID 25 & 26 : Dashboard Expédition avec filtres temporels et mode de transport.
      */
     public function index()
     {
-        // Définition des bornes de temps pour "demi-journée prochaine" et "journée prochaine"
+        // --- 1. Calcul des Créneaux Temporels (Logique Métier) ---
         $now = Carbon::now();
-        $demain = Carbon::tomorrow();
         
-        // Logique simplifiée pour "demi-journée" : Matin (0-12h) ou Après-midi (12h-24h)
-        // Ici on prend simplement les commandes Express prêtes à partir
+        // Logique pour "Demi-journée prochaine" (ID 25)
+        // Si on est le matin (0-12h), la prochaine demi-journée est l'après-midi (12-24h).
+        // Si on est l'après-midi, c'est demain matin (0-12h).
+        if ($now->hour < 12) {
+            $creneauDomicile = "Cet après-midi (12h - 24h)";
+        } else {
+            $creneauDomicile = "Demain matin (00h - 12h)";
+        }
+
+        // Logique pour "Journée prochaine" (ID 26)
+        $creneauAutre = "Demain (" . Carbon::tomorrow()->format('d/m/Y') . ")";
+
+        // --- 2. Récupération des Commandes ---
         
-        // Récupère les commandes Express qui sont 'En préparation' ou 'Validée'
-        // On charge l'utilisateur pour avoir son info (Nom/Tel) et l'adresse
-        $commandesAExpedier = Commande::where('type_livraison', 'Express')
+        // ID 25 : Transport à domicile (Standard) pour la demi-journée prochaine
+        // Note : On prend les 'En préparation' ou 'Validée' prêtes à partir.
+        $commandesDomicile = Commande::where('type_livraison', 'Standard')
+            ->whereIn('statut_livraison', ['Validée', 'En préparation'])
+            ->with(['utilisateur', 'suivi'])
+            ->orderBy('date_commande', 'asc') // Les plus anciennes en premier
+            ->get();
+
+        // ID 26 : Autre mode (Express) pour la journée prochaine
+        $commandesAutre = Commande::where('type_livraison', '!=', 'Standard') // Express, etc.
             ->whereIn('statut_livraison', ['Validée', 'En préparation'])
             ->with(['utilisateur', 'suivi'])
             ->orderBy('date_commande', 'asc')
             ->get();
 
-        return view('service.expedition', compact('commandesAExpedier'));
+        return view('service.expedition', compact(
+            'commandesDomicile', 
+            'commandesAutre', 
+            'creneauDomicile', 
+            'creneauAutre'
+        ));
     }
 
     /**
-     * US 27 : Prise en charge par le transporteur
+     * ID 27 : Prise en charge par le transporteur (Action de groupe)
      */
     public function priseEnCharge(Request $request)
     {
@@ -52,12 +73,12 @@ class ServiceExpeditionController extends Controller
             $commande->statut_livraison = 'Expédiée';
             $commande->save();
 
-            // Création ou mise à jour du suivi (Date prise en charge)
+            // ID 27 : On enregistre que le transporteur a pris le colis
             SuiviLivraison::updateOrCreate(
                 ['id_commande' => $id],
                 [
                     'date_prise_en_charge' => Carbon::now(),
-                    // On assigne un transporteur par défaut si pas encore défini (ex: ID 1 dans ton SQL)
+                    // On garde le transporteur existant ou on met 1 par défaut
                     'id_transporteur' => $commande->suivi ? $commande->suivi->id_transporteur : 1 
                 ]
             );
@@ -67,19 +88,20 @@ class ServiceExpeditionController extends Controller
     }
 
     /**
-     * US 28 : Simulation envoi SMS
+     * ID 28 : Envoi SMS Client
      */
     public function sendSms(Request $request, $id)
     {
         $commande = Commande::with('utilisateur')->findOrFail($id);
         
-        // Comme le champ téléphone n'existe pas nativement dans ton SQL,
-        // on simule l'action.
-        $nomClient = $commande->utilisateur->nom;
+        // On récupère le téléphone (ajouté via ta migration)
+        // Si le champ est vide, on met un message par défaut.
+        $tel = $commande->utilisateur->telephone ?? 'Numéro inconnu';
+        $nom = $commande->utilisateur->nom;
         
-        // Logique fictive d'envoi SMS
-        // SMS::send($commande->utilisateur->telephone, "Votre commande #$id est partie !");
+        // Simulation de l'envoi SMS (Logique fictive)
+        // SMS::to($tel)->send("Votre commande #{$id} est expédiée !");
 
-        return back()->with('success', "SMS envoyé à {$nomClient} pour la commande #{$id}.");
+        return back()->with('success', "SMS envoyé à {$nom} ({$tel}) pour confirmer l'expédition.");
     }
 }

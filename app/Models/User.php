@@ -18,7 +18,7 @@ class User extends Authenticatable
     public $timestamps = false;
 
     protected $fillable = [
-        'nom', 'prenom', 'mail', 'date_naissance', 
+        'nom', 'prenom', 'mail','telephone', 'date_naissance', 
         'pays_naissance', 'langue', 'mot_de_passe_chiffre', 
         'surnom', 'newsletter_optin','role'
     ];
@@ -80,5 +80,14 @@ class User extends Authenticatable
     public function isDirector() 
     {
         return $this->role === 'directeur';
+    }
+
+    /**
+     * Vérifie si l'utilisateur est membre du service expédition.
+     */
+    public function isExpedition()
+    {
+        // On suppose que le rôle en base de données sera 'service_expedition'
+        return $this->role === 'service_expedition';
     }
 }
