@@ -7,39 +7,72 @@
     <form action="{{ route('commande.validerLivraison') }}" method="POST" style="background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
         @csrf
         
-        {{-- Choix Adresse Existante --}}
+        {{-- 1. CHOIX ADRESSE (Inchangé) --}}
         @if($adresses->count() > 0)
-            <h4 style="color: #326295; margin-bottom: 15px;">Vos adresses enregistrées :</h4>
+            <h4 style="color: #326295; margin-bottom: 15px;">1. Adresse de livraison :</h4>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 30px;">
                 @foreach($adresses as $adr)
-                    <label style="border: 2px solid #eee; padding: 15px; border-radius: 8px; cursor: pointer; transition: 0.2s;" onclick="document.querySelectorAll('label').forEach(l => l.style.borderColor='#eee'); this.style.borderColor='#326295';">
+                    <label style="border: 2px solid #eee; padding: 15px; border-radius: 8px; cursor: pointer; transition: 0.2s;" onclick="document.querySelectorAll('.addr-label').forEach(l => l.style.borderColor='#eee'); this.style.borderColor='#326295';" class="addr-label">
                         <input type="radio" name="id_adresse_existante" value="{{ $adr->id_adresse }}">
                         <strong>{{ $adr->rue }}</strong><br>
                         {{ $adr->code_postal_adresse }} {{ $adr->ville_adresse }}
                     </label>
                 @endforeach
             </div>
-            <hr style="margin: 30px 0; border: 0; border-top: 1px solid #eee;">
+            <div class="text-center mb-3">- OU -</div>
         @endif
 
-        {{-- Formulaire Nouvelle Adresse --}}
-        <h4 style="color: #326295; margin-bottom: 15px;">Ou nouvelle adresse :</h4>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; position: relative;">
-            {{-- Ajout de l'ID 'search-adresse' et 'autocomplete="off"' --}}
-            <div style="grid-column: span 2; position: relative;">
-                <input type="text" id="search-adresse" name="rue" placeholder="Commencez à taper votre adresse..." class="form-control" autocomplete="off" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
-                {{-- Liste des suggestions --}}
+        {{-- Formulaire Nouvelle Adresse (Style amélioré) --}}
+        <h4 style="color: #326295; margin-bottom: 15px;">Nouvelle adresse :</h4>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 30px; position: relative;">
+            <div style="grid-column: span 2;">
+                <input type="text" id="search-adresse" name="rue" placeholder="Rue et numéro..." class="form-control" autocomplete="off" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
                 <ul id="suggestions-liste" style="list-style: none; padding: 0; margin: 0; position: absolute; width: 100%; background: white; border: 1px solid #ddd; border-top: none; z-index: 1000; display: none; max-height: 200px; overflow-y: auto;"></ul>
             </div>
-
-            {{-- Ajout des IDs pour le remplissage automatique --}}
             <input type="text" id="code_postal" name="code_postal_adresse" placeholder="Code Postal" class="form-control" style="padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
             <input type="text" id="ville" name="ville_adresse" placeholder="Ville" class="form-control" style="padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
             <input type="text" name="pays_adresse" value="France" placeholder="Pays" class="form-control" style="padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
         </div>
 
-        <button type="submit" style="width: 100%; padding: 15px; background-color: #326295; color: white; border: none; font-weight: bold; font-size: 1.1rem; border-radius: 5px; cursor: pointer; margin-top: 10px;">
-            Continuer vers le paiement <i class="fas fa-credit-card"></i>
+        <hr style="margin: 30px 0; border: 0; border-top: 1px solid #eee;">
+
+        {{-- 2. NOUVEAU : CHOIX DU TRANSPORT (C'est ici que ça se passe) --}}
+        <h4 style="color: #326295; margin-bottom: 15px;">2. Mode d'expédition :</h4>
+        <div style="display: flex; gap: 20px; margin-bottom: 30px;">
+            
+            {{-- Option STANDARD --}}
+            <label style="flex: 1; border: 2px solid #326295; background-color: #f9fbfd; padding: 15px; border-radius: 8px; cursor: pointer;">
+                <input type="radio" name="mode_livraison" value="Standard" checked>
+                <div style="margin-top: 5px;">
+                    <strong style="color: #326295;"><i class="fas fa-truck"></i> Standard (Domicile)</strong>
+                    <div style="color: #666; font-size: 0.9em;">Livraison sous 3 à 5 jours</div>
+                    <div style="font-weight: bold; margin-top: 5px;">5.00 €</div>
+                </div>
+            </label>
+
+            {{-- Option EXPRESS --}}
+            <label style="flex: 1; border: 2px solid #eee; padding: 15px; border-radius: 8px; cursor: pointer;" onclick="this.querySelector('input').checked = true;">
+                <input type="radio" name="mode_livraison" value="Express">
+                <div style="margin-top: 5px;">
+                    <strong style="color: #dc3545;"><i class="fas fa-bolt"></i> Express 24h</strong>
+                    <div style="color: #666; font-size: 0.9em;">Pour les pressés !</div>
+                    <div style="font-weight: bold; margin-top: 5px;">14.90 €</div>
+                </div>
+            </label>
+
+            {{-- Option RELAIS --}}
+            <label style="flex: 1; border: 2px solid #eee; padding: 15px; border-radius: 8px; cursor: pointer;" onclick="this.querySelector('input').checked = true;">
+                <input type="radio" name="mode_livraison" value="Relais">
+                <div style="margin-top: 5px;">
+                    <strong style="color: #28a745;"><i class="fas fa-store"></i> Point Relais</strong>
+                    <div style="color: #666; font-size: 0.9em;">Écologique et pratique</div>
+                    <div style="font-weight: bold; margin-top: 5px;">3.50 €</div>
+                </div>
+            </label>
+        </div>
+
+        <button type="submit" style="width: 100%; padding: 15px; background-color: #326295; color: white; border: none; font-weight: bold; font-size: 1.1rem; border-radius: 5px; cursor: pointer;">
+            Valider et Payer <i class="fas fa-arrow-right"></i>
         </button>
     </form>
 </div>

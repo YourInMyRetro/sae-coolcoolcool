@@ -43,7 +43,7 @@ class ServiceExpeditionController extends Controller
             ->whereDoesntHave('suivi', function($q) {
                 $q->whereNotNull('date_prise_en_charge');
             })
-            ->with(['utilisateur', 'suivi'])
+            ->with(['utilisateur', 'suivi', 'adresse'])
             ->orderBy('date_commande', 'asc')
             ->get();
 

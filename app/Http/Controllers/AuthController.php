@@ -63,7 +63,8 @@ class AuthController extends Controller
             'nom' => 'required|max:50', 
             'prenom' => 'required|max:50',
             'mail' => 'required|email|unique:utilisateur', 
-            // CORRECTION ID 5 : Cohérence date de naissance (max 120 ans)
+            // AJOUT DU TÉLÉPHONE (Nullable mais formaté si présent)
+            'telephone' => ['nullable', 'string', 'min:10', 'max:20', 'regex:/^([0-9\s\-\+\(\)]*)$/'],
             'date_naissance' => 'required|date|before:today|after:-120 years',
             'pays_naissance' => 'required|max:50', 
             'langue' => 'required|max:50',
@@ -71,10 +72,11 @@ class AuthController extends Controller
             'cgu_consent' => 'accepted',
             'newsletter_optin' => 'nullable',
         ], [
-            'cgu_consent.accepted' => 'Vous devez accepter les conditions d\'utilisation et la politique de confidentialité.',
-            'password.min' => 'Le mot de passe doit faire au moins 8 caractères pour votre sécurité.',
-            'date_naissance.after' => 'Veuillez saisir une date de naissance valide (moins de 120 ans).',
-            'date_naissance.before' => 'La date de naissance doit être dans le passé.'
+            'cgu_consent.accepted' => 'Vous devez accepter les conditions d\'utilisation.',
+            'password.min' => 'Le mot de passe doit faire au moins 8 caractères.',
+            'date_naissance.after' => 'Date de naissance invalide.',
+            'telephone.regex' => 'Le format du numéro de téléphone est invalide.',
+            'telephone.min' => 'Le numéro de téléphone est trop court.'
         ]);
 
         // 2. Création de l'utilisateur
@@ -82,6 +84,9 @@ class AuthController extends Controller
         $user->nom = $request->input('nom');
         $user->prenom = $request->input('prenom');
         $user->mail = $request->input('mail');
+        // SAUVEGARDE DU TÉLÉPHONE
+        $user->telephone = $request->input('telephone');
+        
         $user->date_naissance = $request->input('date_naissance');
         $user->pays_naissance = $request->input('pays_naissance');
         $user->langue = $request->input('langue');

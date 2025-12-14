@@ -10,13 +10,13 @@ use App\Models\Commande;
 use App\Models\LigneCommande;
 use App\Models\CarteBancaire;
 use App\Models\Reglement;
-use App\Models\StockArticle; // Import du modèle Stock
+use App\Models\StockArticle;
 use Carbon\Carbon;
 
 class CommandeController extends Controller
 {
     // ------------------------------------------------------------------
-    // ÉTAPE 1 : CHOIX DU MODE DE LIVRAISON (ADRESSE)
+    // ÉTAPE 1 : CHOIX DU MODE DE LIVRAISON (ADRESSE + MODE)
     // ------------------------------------------------------------------
     public function livraison()
     {
@@ -37,12 +37,13 @@ class CommandeController extends Controller
     }
 
     // ------------------------------------------------------------------
-    // TRAITEMENT DE L'ADRESSE
+    // TRAITEMENT DE L'ADRESSE ET DU MODE
     // ------------------------------------------------------------------
     public function validerLivraison(Request $request)
     {
         $userId = Auth::id();
 
+        // 1. Gestion de l'adresse
         if ($request->filled('id_adresse_existante')) {
             $idAdresse = $request->id_adresse_existante;
         } 
@@ -70,12 +71,17 @@ class CommandeController extends Controller
             $idAdresse = $adresse->id_adresse;
         }
 
+        // 2. Sauvegarde du mode de transport en session
+        $modeLivraison = $request->input('mode_livraison', 'Standard'); 
+        session()->put('type_livraison_choisi', $modeLivraison);
+
         session()->put('id_adresse_livraison', $idAdresse);
+        
         return redirect()->route('commande.paiement');
     }
 
     // ------------------------------------------------------------------
-    // ÉTAPE 2 : PAGE DE PAIEMENT
+    // ÉTAPE 2 : PAGE DE PAIEMENT (C'était celle qui manquait !)
     // ------------------------------------------------------------------
     public function paiement()
     {
@@ -87,12 +93,25 @@ class CommandeController extends Controller
         $cartes = CarteBancaire::where('id_utilisateur', $userId)->get();
         
         $panier = session()->get('panier', []);
-        $total = 0;
+        
+        // Calcul du total produits
+        $totalProduits = 0;
         foreach($panier as $item) {
-            $total += $item['prix'] * $item['quantite'];
+            $totalProduits += $item['prix'] * $item['quantite'];
         }
 
-        return view('commande.paiement', compact('cartes', 'total'));
+        // Ajout des frais de port pour l'affichage
+        $typeLivraison = session()->get('type_livraison_choisi', 'Standard');
+        $fraisPort = match($typeLivraison) {
+            'Express' => 14.90,
+            'Relais' => 3.50,
+            default => 5.00,
+        };
+
+        // Le total affiché inclut maintenant les frais
+        $total = $totalProduits + $fraisPort;
+
+        return view('commande.paiement', compact('cartes', 'total', 'fraisPort'));
     }
 
     // ------------------------------------------------------------------
@@ -103,9 +122,9 @@ class CommandeController extends Controller
         $userId = Auth::id();
         $panier = session()->get('panier');
         $idAdresse = session()->get('id_adresse_livraison');
+        $typeLivraison = session()->get('type_livraison_choisi', 'Standard');
         
         // --- 0. VERIFICATION ULTIME DU STOCK ---
-        // Avant de débiter la carte, on revérifie que tout est encore dispo
         foreach($panier as $item) {
             $stockReel = StockArticle::find($item['id_stock']);
             if (!$stockReel || $stockReel->stock < $item['quantite']) {
@@ -115,12 +134,19 @@ class CommandeController extends Controller
         }
 
         // Calcul du total
-        $totalCalcul = 0;
+        $totalProduits = 0;
         foreach($panier as $item) {
-            $totalCalcul += $item['prix'] * $item['quantite'];
+            $totalProduits += $item['prix'] * $item['quantite'];
         }
-        $fraisPort = 5.00;
-        $montantTotal = $totalCalcul + $fraisPort;
+
+        // Logique de prix selon le mode
+        $fraisPort = match($typeLivraison) {
+            'Express' => 14.90,
+            'Relais' => 3.50,
+            default => 5.00,
+        };
+
+        $montantTotal = $totalProduits + $fraisPort;
 
         // === 1. GESTION DE LA CARTE BANCAIRE ===
         $idCb = $request->input('use_saved_card');
@@ -156,32 +182,24 @@ class CommandeController extends Controller
             'frais_livraison'  => $fraisPort,
             'taxes_livraison'  => 0.00,
             'statut_livraison' => 'Validée',
-            'type_livraison'   => 'Standard'
+            'type_livraison'   => $typeLivraison
         ]);
 
         // === 3. CRÉATION DES LIGNES ET MISE À JOUR STOCK ===
         foreach($panier as $key => $item) {
-            // A. Création ligne commande
             $ligne = LigneCommande::create([
                 'id_commande'           => $commande->id_commande,
                 'quantite_commande'     => $item['quantite'],
                 'prix_unitaire_negocie' => $item['prix']
             ]);
 
-            // B. Lien avec le stock (table estplacee)
-            // On utilise l'ID stock stocké directement dans la session par PanierController
-            $idStock = $item['id_stock']; 
-
             DB::table('estplacee')->insert([
-                'id_stock_article'  => $idStock,
+                'id_stock_article'  => $item['id_stock'],
                 'id_ligne_commande' => $ligne->id_ligne_commande
             ]);
 
-            // C. --- DIMINUTION DU STOCK (Le point crucial) ---
-            // On récupère l'article de stock et on décrémente
-            $stockArticle = StockArticle::find($idStock);
+            $stockArticle = StockArticle::find($item['id_stock']);
             if ($stockArticle) {
-                // decrement() est une méthode Laravel qui fait "stock = stock - X" de manière sécurisée
                 $stockArticle->decrement('stock', $item['quantite']);
             }
         }
@@ -196,13 +214,12 @@ class CommandeController extends Controller
         ]);
 
         // === 5. NETTOYAGE ===
-        // Si l'utilisateur a un panier en base de données, on le vide aussi
         $dbPanier = \App\Models\Panier::where('id_utilisateur', $userId)->first();
         if ($dbPanier) {
             \App\Models\LignePanier::where('id_panier', $dbPanier->id_panier)->delete();
         }
 
-        session()->forget(['panier', 'id_adresse_livraison']);
+        session()->forget(['panier', 'id_adresse_livraison', 'type_livraison_choisi']);
 
         return redirect()->route('commande.succes');
     }

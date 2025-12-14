@@ -45,4 +45,10 @@ class Commande extends Model
         return $query->where('type_livraison', '!=', 'Express')
                      ->where('statut_livraison', 'Payée');
     }
+    // Relation vers l'adresse de livraison
+    public function adresse()
+    {
+        // On lie 'id_adresse' de la commande vers le modèle Adresse
+        return $this->belongsTo(Adresse::class, 'id_adresse', 'id_adresse');
+    }
 }

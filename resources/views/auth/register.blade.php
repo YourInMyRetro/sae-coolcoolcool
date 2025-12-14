@@ -94,18 +94,34 @@
                 @error('pays_naissance') <span style="color:red; font-size:0.8em;">{{ $message }}</span> @enderror
             </div>
 
-            <div class="fifa-form-group">
-                <label for="mail">Adresse Email *</label>
-                <input type="email" 
-                       name="mail" 
-                       id="mail" 
-                       class="fifa-input" 
-                       value="{{ $errors->has('mail') ? '' : old('mail') }}" 
-                       required 
-                       pattern="[^@\s]+@[^@\s]+\.[^@\s]+"
-                       title="Veuillez entrer une adresse email valide."
-                       placeholder="exemple@email.com">
-                @error('mail') <span style="color:red; font-size:0.8em;">{{ $message }}</span> @enderror
+            {{-- MODIFICATION ICI : On groupe Email et Téléphone sur la même ligne --}}
+            <div style="display: flex; gap: 15px;">
+                <div class="fifa-form-group" style="flex: 1;">
+                    <label for="mail">Adresse Email *</label>
+                    <input type="email" 
+                           name="mail" 
+                           id="mail" 
+                           class="fifa-input" 
+                           value="{{ $errors->has('mail') ? '' : old('mail') }}" 
+                           required 
+                           pattern="[^@\s]+@[^@\s]+\.[^@\s]+"
+                           placeholder="exemple@email.com">
+                    @error('mail') <span style="color:red; font-size:0.8em;">{{ $message }}</span> @enderror
+                </div>
+
+                <div class="fifa-form-group" style="flex: 1;">
+                    <label for="telephone">Téléphone mobile</label>
+                    <input type="tel" 
+                           name="telephone" 
+                           id="telephone" 
+                           class="fifa-input" 
+                           value="{{ $errors->has('telephone') ? '' : old('telephone') }}" 
+                           {{-- Pas 'required' strict pour éviter de bloquer les autres, mais conseillé --}}
+                           minlength="10"
+                           maxlength="20"
+                           placeholder="06 12 34 56 78">
+                    @error('telephone') <span style="color:red; font-size:0.8em;">{{ $message }}</span> @enderror
+                </div>
             </div>
 
             <div class="fifa-form-group">
