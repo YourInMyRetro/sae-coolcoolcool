@@ -6,19 +6,16 @@ use Illuminate\Http\Request;
 use App\Models\Commande;
 use App\Models\SuiviLivraison;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Log; // Ajout essentiel pour la simulation (ID 28)
+use Illuminate\Support\Facades\Log;
+// 1. Import de la librairie Twilio
+use Twilio\Rest\Client; 
 
 class ServiceExpeditionController extends Controller
 {
-    /**
-     * ID 25 & 26 : Dashboard Expédition
-     * Affiche les commandes prêtes à partir selon le mode de transport et le créneau.
-     */
+    // ... (La méthode index() reste inchangée) ...
     public function index()
     {
         $now = Carbon::now();
-        
-        // Calcul "cosmétique" des créneaux pour l'affichage (ID 25)
         if ($now->hour < 12) {
             $creneauDomicile = "Cet après-midi (12h - 20h)"; 
         } else {
@@ -26,46 +23,35 @@ class ServiceExpeditionController extends Controller
         }
         $creneauAutre = "Demain (" . Carbon::tomorrow()->format('d/m/Y') . ")";
 
-        // ID 25 : Transport à domicile (Standard)
-        // CRITIQUE : On exclut les commandes qui ont déjà une date_prise_en_charge
         $commandesDomicile = Commande::where('type_livraison', 'Standard')
             ->whereIn('statut_livraison', ['Validée', 'En préparation'])
             ->whereDoesntHave('suivi', function($q) {
                 $q->whereNotNull('date_prise_en_charge');
             })
-            ->with(['utilisateur', 'suivi'])
-            ->orderBy('date_commande', 'asc') // FIFO : Premier arrivé, premier servi
+            ->with(['utilisateur', 'suivi', 'adresse']) 
+            ->orderBy('date_commande', 'asc')
             ->get();
 
-        // ID 26 : Autre mode (Express, etc.)
         $commandesAutre = Commande::where('type_livraison', '!=', 'Standard')
             ->whereIn('statut_livraison', ['Validée', 'En préparation'])
             ->whereDoesntHave('suivi', function($q) {
                 $q->whereNotNull('date_prise_en_charge');
             })
-            ->with(['utilisateur', 'suivi', 'adresse'])
+            ->with(['utilisateur', 'suivi', 'adresse']) 
             ->orderBy('date_commande', 'asc')
             ->get();
 
-        return view('service.expedition', compact(
-            'commandesDomicile', 
-            'commandesAutre', 
-            'creneauDomicile', 
-            'creneauAutre'
-        ));
+        return view('service.expedition', compact('commandesDomicile', 'commandesAutre', 'creneauDomicile', 'creneauAutre'));
     }
 
-    /**
-     * ID 27 : Prise en charge par le transporteur (Action de groupe)
-     */
+    // ... (La méthode priseEnCharge() reste inchangée) ...
     public function priseEnCharge(Request $request)
     {
-        // 1. Validation : On s'assure qu'on a bien reçu une liste d'IDs valides
         $request->validate([
             'commandes' => 'required|array',
             'commandes.*' => 'exists:commande,id_commande'
         ], [
-            'commandes.required' => 'Veuillez cocher au moins une commande à remettre au transporteur.',
+            'commandes.required' => 'Veuillez cocher au moins une commande.',
         ]);
 
         $ids = $request->input('commandes');
@@ -73,23 +59,16 @@ class ServiceExpeditionController extends Controller
 
         foreach ($ids as $id) {
             $commande = Commande::find($id);
-
-            // Sécurité métier : On ne ré-expédie pas une commande déjà partie
             if ($commande->statut_livraison === 'Expédiée' || $commande->statut_livraison === 'Livrée') {
                 continue; 
             }
-            
-            // Mise à jour du statut
             $commande->statut_livraison = 'Expédiée';
             $commande->save();
 
-            // ID 27 : Enregistrement de la date et heure EXACTES de prise en charge
-            // Si le suivi n'existe pas encore, on le crée.
             SuiviLivraison::updateOrCreate(
                 ['id_commande' => $id],
                 [
                     'date_prise_en_charge' => Carbon::now(),
-                    // Si un transporteur était déjà assigné on le garde, sinon par défaut id 1 (France Express)
                     'id_transporteur' => $commande->suivi->id_transporteur ?? 1 
                 ]
             );
@@ -97,20 +76,18 @@ class ServiceExpeditionController extends Controller
         }
 
         if ($successCount === 0) {
-            return back()->with('warning', 'Aucune commande traitée (elles étaient peut-être déjà expédiées).');
+            return back()->with('warning', 'Aucune commande traitée.');
         }
 
-        return back()->with('success', "🚚 $successCount commandes remises au transporteur avec succès !");
+        return back()->with('success', "🚚 $successCount commandes remises au transporteur !");
     }
 
     /**
-     * ID 28 : Envoi SMS Client
+     * ID 28 : Envoi SMS RÉEL via Twilio
      */
-    // Dans ServiceExpeditionController.php
-
     public function sendSms(Request $request, $id)
     {
-        // Validation : On vérifie qu'on a bien reçu un message
+        // 1. Validation
         $request->validate([
             'message_sms' => 'required|string|min:5|max:160',
         ]);
@@ -119,17 +96,50 @@ class ServiceExpeditionController extends Controller
         $tel = $commande->utilisateur->telephone;
         $nom = $commande->utilisateur->nom;
 
-        // Sécurité double : Si jamais un petit malin force le formulaire
         if (empty($tel)) {
-            return back()->withErrors(['msg' => "Échec : Ce client n'a pas de numéro de téléphone."]);
+            return back()->withErrors(['msg' => "Échec : Pas de numéro de téléphone."]);
         }
 
+        // 2. Formatage du numéro pour Twilio (+33...)
+        // On enlève tout ce qui n'est pas chiffre
         $telClean = preg_replace('/[^0-9]/', '', $tel);
-        $messageContent = $request->input('message_sms'); // Le texte saisi par toi
+        
+        // Si ça commence par 0, on remplace par +33 (Format Français)
+        if (str_starts_with($telClean, '0')) {
+            $telClean = '+33' . substr($telClean, 1);
+        }
+        // Si le numéro n'a pas de +, on l'ajoute (sécurité)
+        if (!str_starts_with($telClean, '+')) {
+            $telClean = '+' . $telClean;
+        }
 
-        // Simulation technique (Preuve pour le prof)
-        Log::info("SMS SERVICE | To: $telClean | Msg: $messageContent");
+        $messageContent = $request->input('message_sms');
 
-        return back()->with('success', "📱 SMS envoyé à $nom : \"$messageContent\"");
+        // 3. Envoi via Twilio
+        try {
+            $sid = env('TWILIO_SID');
+            $token = env('TWILIO_AUTH_TOKEN');
+            $messagingServiceSid = env('TWILIO_MESSAGING_SERVICE_SID');
+
+            $client = new Client($sid, $token);
+
+            $client->messages->create(
+                $telClean, // Le numéro destinataire formaté (+336...)
+                [
+                    "messagingServiceSid" => $messagingServiceSid,
+                    "body" => $messageContent
+                ]
+            );
+
+            // Log pour garder une trace serveur
+            Log::info("SMS TWILIO SENT | To: $telClean | Msg: $messageContent");
+
+            return back()->with('success', "✅ SMS envoyé avec succès à $nom ($telClean) !");
+
+        } catch (\Exception $e) {
+            // En cas d'erreur (Numéro invalide, plus de crédit, erreur connexion...)
+            Log::error("Twilio Error: " . $e->getMessage());
+            return back()->withErrors(['msg' => "Erreur Twilio : " . $e->getMessage()]);
+        }
     }
 }

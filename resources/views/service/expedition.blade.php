@@ -1,7 +1,7 @@
 @extends('layout')
 
 @section('content')
-{{-- Style in-line pour le look App --}}
+{{-- Style pour le look Dashboard --}}
 <style>
     body { background-color: #f4f6f9; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
     .kpi-card { transition: transform 0.2s; border: none; border-radius: 12px; }
@@ -76,7 +76,7 @@
         </div>
     </div>
 
-    {{-- MESSAGES FLASH (Succès / Erreur) --}}
+    {{-- MESSAGES FLASH --}}
     @if(session('success'))
         <div class="alert alert-success border-0 shadow-sm d-flex align-items-center mb-4 rounded-3">
             <i class="fas fa-check-circle fs-4 me-3"></i>
@@ -84,7 +84,6 @@
         </div>
     @endif
     
-    {{-- Affichage des erreurs de validation (ex: Message vide) --}}
     @if($errors->any())
         <div class="alert alert-danger border-0 shadow-sm mb-4 rounded-3">
             <ul class="mb-0">
@@ -146,7 +145,7 @@
                                     <div class="avatar-initials">{{ substr($c->utilisateur->prenom, 0, 1) }}{{ substr($c->utilisateur->nom, 0, 1) }}</div>
                                     <div>
                                         <div class="fw-bold text-dark searchable-text">{{ $c->utilisateur->nom }} {{ $c->utilisateur->prenom }}</div>
-                                        {{-- Utilisation de optional() pour éviter le crash si pas d'adresse --}}
+                                        {{-- Utilisation de optional() pour la ville --}}
                                         <div class="text-muted small searchable-text"><i class="fas fa-map-marker-alt text-secondary me-1"></i>{{ optional($c->adresse)->ville_adresse ?? 'Inconnue' }}</div>
                                     </div>
                                 </div>
