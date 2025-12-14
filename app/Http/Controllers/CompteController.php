@@ -7,8 +7,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use App\Models\Professionel;
-use App\Models\DemandeSpeciale; // Import indispensable
-use App\Models\Commande;        // <--- AJOUT pour le Sprint 1
+use App\Models\DemandeSpeciale;
+use App\Models\Commande;
 use Carbon\Carbon;
 
 class CompteController extends Controller
@@ -29,7 +29,6 @@ class CompteController extends Controller
         if ($user->professionel) {
             $estUnPro = true;
             $infosPro = $user->professionel;
-            // Récupération de l'historique des demandes
             $mesDemandes = DemandeSpeciale::where('id_utilisateur', $idUser)
                                           ->orderBy('date_demande', 'desc')
                                           ->get();
@@ -53,17 +52,25 @@ class CompteController extends Controller
     public function update(Request $request)
     {
         $user = Auth::user();
+        
+        // CORRECTION ID 8 : Ajout des champs manquants pour une modification complète
         $request->validate([
             'nom' => 'required|string|max:50',
             'prenom' => 'required|string|max:50',
             'surnom' => 'nullable|string|max:50',
+            'telephone' => 'nullable|string|max:20', // Ajouté suite migration
+            'date_naissance' => 'required|date|before:today|after:-120 years',
+            'pays_naissance' => 'required|string|max:50',
             'langue' => 'required|string|max:50',
-            'password' => 'nullable|string|min:4|confirmed',
+            'password' => 'nullable|string|min:8|confirmed',
         ]);
 
         $user->nom = $request->input('nom');
         $user->prenom = $request->input('prenom');
         $user->surnom = $request->input('surnom');
+        $user->telephone = $request->input('telephone');
+        $user->date_naissance = $request->input('date_naissance');
+        $user->pays_naissance = $request->input('pays_naissance');
         $user->langue = $request->input('langue');
 
         if ($request->input('password')) {
@@ -100,19 +107,16 @@ class CompteController extends Controller
     {
         $user = Auth::user();
         
-        // Sécurité : Vérifier si c'est bien un pro
         if (!$user->estProfessionnel()) {
             return redirect()->route('compte.index');
         }
 
-        // Validation des données reçues
         $request->validate([
             'sujet' => 'required|string|max:255',
             'telephone' => 'required|string|max:20',
             'description_besoin' => 'required|string|min:10',
         ]);
 
-        // Création de la demande
         $demande = new DemandeSpeciale();
         $demande->id_utilisateur = $user->id_utilisateur;
         $demande->sujet = $request->input('sujet');
@@ -123,17 +127,14 @@ class CompteController extends Controller
         
         $demande->save();
 
-        // Redirection vers le dashboard avec message de succès
         return redirect()->route('compte.index')->with('success', 'Votre demande spéciale a été transmise au bureau d\'étude !');
     }
 
-    // --- SPRINT 1 : AJOUT DE LA FONCTION MANQUANTE ---
+    // --- COMMANDES ---
 
     public function mesCommandes() 
     {
         $user = Auth::user();
-        
-        // On récupère les commandes avec le suivi
         $commandes = Commande::where('id_utilisateur', $user->id_utilisateur)
                              ->with('suivi')
                              ->orderBy('date_commande', 'desc')

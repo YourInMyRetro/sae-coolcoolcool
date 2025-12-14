@@ -8,6 +8,7 @@
             <div>
                 <h1>Modifier mon profil</h1>
                 <p style="color: #888;">Mettez à jour vos informations personnelles.</p>
+                <p style="font-size: 0.8em; color: #ff6b6b; margin-top: 5px;">* Champs obligatoires</p>
             </div>
             <a href="{{ route('compte.index') }}" class="btn-cancel-dark">
                 <i class="fas fa-arrow-left"></i> Retour
@@ -26,14 +27,19 @@
 
                 <div style="display: flex; gap: 20px; flex-wrap: wrap;">
                     <div class="fifa-form-group" style="flex: 1; min-width: 300px;">
-                        <label>Prénom</label>
-                        <input type="text" name="prenom" value="{{ old('prenom', $user->prenom) }}" class="fifa-input" required>
+                        <label>Prénom *</label>
+                        <input type="text" name="prenom" 
+                               {{-- Si erreur, on vide. Sinon, on prend old (input précédent) ou valeur BDD --}}
+                               value="{{ $errors->has('prenom') ? '' : old('prenom', $user->prenom) }}" 
+                               class="fifa-input" required>
                         @error('prenom') <span style="color: #ff6b6b; font-size: 0.85em;">{{ $message }}</span> @enderror
                     </div>
 
                     <div class="fifa-form-group" style="flex: 1; min-width: 300px;">
-                        <label>Nom</label>
-                        <input type="text" name="nom" value="{{ old('nom', $user->nom) }}" class="fifa-input" required>
+                        <label>Nom *</label>
+                        <input type="text" name="nom" 
+                               value="{{ $errors->has('nom') ? '' : old('nom', $user->nom) }}" 
+                               class="fifa-input" required>
                         @error('nom') <span style="color: #ff6b6b; font-size: 0.85em;">{{ $message }}</span> @enderror
                     </div>
                 </div>
@@ -41,17 +47,45 @@
                 <div style="display: flex; gap: 20px; flex-wrap: wrap;">
                     <div class="fifa-form-group" style="flex: 1;">
                         <label>Surnom</label>
-                        <input type="text" name="surnom" value="{{ old('surnom', $user->surnom) }}" class="fifa-input">
+                        <input type="text" name="surnom" 
+                               value="{{ $errors->has('surnom') ? '' : old('surnom', $user->surnom) }}" 
+                               class="fifa-input">
                     </div>
                     <div class="fifa-form-group" style="flex: 1;">
-                        <label>Langue</label>
-                        <select name="langue" class="fifa-input">
-                            <option value="Français" {{ $user->langue == 'Français' ? 'selected' : '' }}>Français</option>
-                            <option value="Anglais" {{ $user->langue == 'Anglais' ? 'selected' : '' }}>Anglais</option>
-                            <option value="Espagnol" {{ $user->langue == 'Espagnol' ? 'selected' : '' }}>Espagnol</option>
-                            <option value="Allemand" {{ $user->langue == 'Allemand' ? 'selected' : '' }}>Allemand</option>
-                        </select>
+                        <label>Téléphone</label>
+                        <input type="text" name="telephone" 
+                               value="{{ $errors->has('telephone') ? '' : old('telephone', $user->telephone) }}" 
+                               class="fifa-input" placeholder="+33 6 00 00 00 00">
                     </div>
+                </div>
+
+                <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                    <div class="fifa-form-group" style="flex: 1;">
+                        <label>Date de Naissance *</label>
+                        <input type="date" name="date_naissance" 
+                               value="{{ $errors->has('date_naissance') ? '' : old('date_naissance', $user->date_naissance) }}" 
+                               class="fifa-input" required
+                               max="{{ date('Y-m-d') }}"
+                               min="{{ date('Y-m-d', strtotime('-120 years')) }}">
+                        @error('date_naissance') <span style="color: #ff6b6b; font-size: 0.85em;">{{ $message }}</span> @enderror
+                    </div>
+                    <div class="fifa-form-group" style="flex: 1;">
+                        <label>Pays de Résidence *</label>
+                        <input type="text" name="pays_naissance" 
+                               value="{{ $errors->has('pays_naissance') ? '' : old('pays_naissance', $user->pays_naissance) }}" 
+                               class="fifa-input" required>
+                    </div>
+                </div>
+
+                <div class="fifa-form-group">
+                    <label>Langue *</label>
+                    <select name="langue" class="fifa-input" required>
+                        @php $val = old('langue', $user->langue); @endphp
+                        <option value="Français" {{ $val == 'Français' ? 'selected' : '' }}>Français</option>
+                        <option value="Anglais" {{ $val == 'Anglais' ? 'selected' : '' }}>Anglais</option>
+                        <option value="Espagnol" {{ $val == 'Espagnol' ? 'selected' : '' }}>Espagnol</option>
+                        <option value="Allemand" {{ $val == 'Allemand' ? 'selected' : '' }}>Allemand</option>
+                    </select>
                 </div>
 
                 {{-- EMAIL (Lecture seule pour sécurité) --}}
@@ -67,13 +101,17 @@
                     <p style="color: #ccc; font-size: 0.9em; margin-bottom: 15px;">Espace réservé aux comptes B2B.</p>
 
                     <div class="fifa-form-group">
-                        <label>Raison Sociale</label>
-                        <input type="text" name="nom_societe" value="{{ old('nom_societe', $user->professionel->nom_societe) }}" class="fifa-input" required>
+                        <label>Raison Sociale *</label>
+                        <input type="text" name="nom_societe" 
+                               value="{{ $errors->has('nom_societe') ? '' : old('nom_societe', $user->professionel->nom_societe) }}" 
+                               class="fifa-input" required>
                     </div>
 
                     <div class="fifa-form-group">
-                        <label>Secteur d'activité</label>
-                        <input type="text" name="activite" value="{{ old('activite', $user->professionel->activite) }}" class="fifa-input" required>
+                        <label>Secteur d'activité *</label>
+                        <input type="text" name="activite" 
+                               value="{{ $errors->has('activite') ? '' : old('activite', $user->professionel->activite) }}" 
+                               class="fifa-input" required>
                     </div>
 
                     <div class="fifa-form-group">
@@ -90,13 +128,13 @@
                 
                 <div class="fifa-form-group">
                     <label>Nouveau mot de passe <small>(Laisser vide pour ne pas changer)</small></label>
-                    <input type="password" name="password" class="fifa-input" placeholder="••••••••">
+                    <input type="password" name="password" class="fifa-input" placeholder="••••••••" minlength="8">
                     @error('password') <span style="color: #ff6b6b; font-size: 0.85em;">{{ $message }}</span> @enderror
                 </div>
 
                 <div class="fifa-form-group">
                     <label>Confirmer le nouveau mot de passe</label>
-                    <input type="password" name="password_confirmation" class="fifa-input" placeholder="••••••••">
+                    <input type="password" name="password_confirmation" class="fifa-input" placeholder="••••••••" minlength="8">
                 </div>
 
                 {{-- ACTIONS --}}

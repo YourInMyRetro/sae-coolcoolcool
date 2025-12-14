@@ -7,9 +7,9 @@
         <div class="auth-header">
             <h1>Créer un compte</h1>
             <p>Rejoignez la communauté FIFA et profitez d'avantages exclusifs.</p>
+            <p style="font-size: 0.8em; color: #ff6b6b; margin-top: 5px;">* Champs obligatoires</p>
         </div>
 
-        {{-- Le navigateur fera la validation native grâce aux attributs ajoutés --}}
         <form action="{{ route('register.submit') }}" method="POST">
             @csrf
             
@@ -20,7 +20,8 @@
                            name="prenom" 
                            id="prenom" 
                            class="fifa-input" 
-                           value="{{ old('prenom') }}" 
+                           {{-- LOGIQUE : Si erreur sur 'prenom', on vide. Sinon on remet l'ancienne valeur --}}
+                           value="{{ $errors->has('prenom') ? '' : old('prenom') }}" 
                            required 
                            minlength="2" 
                            maxlength="50"
@@ -34,7 +35,7 @@
                            name="nom" 
                            id="nom" 
                            class="fifa-input" 
-                           value="{{ old('nom') }}" 
+                           value="{{ $errors->has('nom') ? '' : old('nom') }}" 
                            required 
                            minlength="2" 
                            maxlength="50"
@@ -50,9 +51,10 @@
                        name="surnom" 
                        id="surnom" 
                        class="fifa-input" 
-                       value="{{ old('surnom') }}" 
+                       value="{{ $errors->has('surnom') ? '' : old('surnom') }}" 
                        maxlength="50"
                        placeholder="Kyks">
+                @error('surnom') <span style="color:red; font-size:0.8em;">{{ $message }}</span> @enderror
             </div>
 
             <div style="display: flex; gap: 15px;">
@@ -62,16 +64,19 @@
                            name="date_naissance" 
                            id="date_naissance" 
                            class="fifa-input" 
-                           value="{{ old('date_naissance') }}" 
-                           required>
+                           value="{{ $errors->has('date_naissance') ? '' : old('date_naissance') }}" 
+                           required
+                           max="{{ date('Y-m-d') }}"
+                           min="{{ date('Y-m-d', strtotime('-120 years')) }}">
+                     @error('date_naissance') <span style="color:red; font-size:0.8em;">{{ $message }}</span> @enderror
                 </div>
                 <div class="fifa-form-group" style="flex: 1;">
                     <label for="langue">Langue *</label>
                     <select name="langue" id="langue" class="fifa-input" required>
-                        <option value="Français">Français</option>
-                        <option value="Anglais">Anglais</option>
-                        <option value="Espagnol">Espagnol</option>
-                        <option value="Allemand">Allemand</option>
+                        <option value="Français" {{ old('langue') == 'Français' ? 'selected' : '' }}>Français</option>
+                        <option value="Anglais" {{ old('langue') == 'Anglais' ? 'selected' : '' }}>Anglais</option>
+                        <option value="Espagnol" {{ old('langue') == 'Espagnol' ? 'selected' : '' }}>Espagnol</option>
+                        <option value="Allemand" {{ old('langue') == 'Allemand' ? 'selected' : '' }}>Allemand</option>
                     </select>
                 </div>
             </div>
@@ -82,23 +87,23 @@
                        name="pays_naissance" 
                        id="pays_naissance" 
                        class="fifa-input" 
-                       value="{{ old('pays_naissance') }}" 
+                       value="{{ $errors->has('pays_naissance') ? '' : old('pays_naissance') }}" 
                        required 
                        minlength="3"
                        placeholder="France">
+                @error('pays_naissance') <span style="color:red; font-size:0.8em;">{{ $message }}</span> @enderror
             </div>
 
             <div class="fifa-form-group">
                 <label for="mail">Adresse Email *</label>
-                {{-- PATTERN : Force le format quelquechose@domaine.extension --}}
                 <input type="email" 
                        name="mail" 
                        id="mail" 
                        class="fifa-input" 
-                       value="{{ old('mail') }}" 
+                       value="{{ $errors->has('mail') ? '' : old('mail') }}" 
                        required 
                        pattern="[^@\s]+@[^@\s]+\.[^@\s]+"
-                       title="Veuillez entrer une adresse email valide contenant un '@' et un point '.' (ex: nom@domaine.com)"
+                       title="Veuillez entrer une adresse email valide."
                        placeholder="exemple@email.com">
                 @error('mail') <span style="color:red; font-size:0.8em;">{{ $message }}</span> @enderror
             </div>
@@ -111,7 +116,7 @@
                        class="fifa-input" 
                        required 
                        minlength="8"
-                       title="Le mot de passe doit contenir au moins 8 caractères pour votre sécurité."
+                       title="Le mot de passe doit contenir au moins 8 caractères."
                        placeholder="Minimum 8 caractères">
                 @error('password') <span style="color:red; font-size:0.8em;">{{ $message }}</span> @enderror
             </div>
@@ -129,16 +134,15 @@
 
             <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
 
-          {{-- CHECKBOX 1 : OBLIGATOIRE (CGU & Politique Confidentialité) --}}
             <div class="fifa-form-group" style="display: flex; align-items: flex-start; gap: 10px;">
-                <input type="checkbox" name="cgu_consent" id="cgu_consent" required style="margin-top: 4px; width: auto;">
+                {{-- Checkbox : On garde coché si old('cgu_consent') est vrai --}}
+                <input type="checkbox" name="cgu_consent" id="cgu_consent" required style="margin-top: 4px; width: auto;" {{ old('cgu_consent') ? 'checked' : '' }}>
                 <label for="cgu_consent" style="font-size: 0.85rem; line-height: 1.4; color: #555; font-weight: normal;">
                     J'accepte les 
-                    {{-- LIEN VERS LES CGU OFFICIELLES DE LA FIFA --}}
                     <a href="https://www.fifa.com/fr/legal/terms-of-service" target="_blank" rel="noopener noreferrer" style="text-decoration: underline; color: #00cfb7;">
                         Conditions Générales d'Utilisation
                     </a> 
-                    {{-- LIEN VERS TA POLITIQUE (Que tu as rédigée en Q2) --}}
+                    et la 
                     <a href="{{ route('privacy') }}" target="_blank" style="text-decoration: underline; color: #00cfb7;">
                         Politique de Confidentialité
                     </a>. *
@@ -146,9 +150,8 @@
             </div>
             @error('cgu_consent') <div style="color:red; font-size:0.8em; margin-bottom: 10px;">{{ $message }}</div> @enderror
 
-            {{-- CHECKBOX 2 : FACULTATIVE (Newsletter - Privacy by Default) --}}
             <div class="fifa-form-group" style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 25px;">
-                <input type="checkbox" name="newsletter_optin" id="newsletter_optin" value="1" style="margin-top: 4px; width: auto;">
+                <input type="checkbox" name="newsletter_optin" id="newsletter_optin" value="1" style="margin-top: 4px; width: auto;" {{ old('newsletter_optin') ? 'checked' : '' }}>
                 <label for="newsletter_optin" style="font-size: 0.85rem; line-height: 1.4; color: #555; font-weight: normal;">
                     J'accepte de recevoir les offres et actualités de la FIFA par email.
                 </label>
@@ -157,11 +160,6 @@
             <button type="submit" class="btn-fifa-submit">
                 S'inscrire <i class="fas fa-arrow-right" style="margin-left: 8px;"></i>
             </button>
-
-            {{-- MENTION LÉGALE SOUS LE BOUTON --}}
-            <p style="margin-top: 15px; font-size: 0.75rem; color: #888; text-align: center; line-height: 1.4;">
-                Vos données sont traitées par la FIFA pour gérer votre compte. Vous disposez d'un droit d'accès et de rectification.
-            </p>
 
         </form>
 
