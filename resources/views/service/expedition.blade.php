@@ -1,7 +1,7 @@
 @extends('layout')
 
 @section('content')
-{{-- Style in-line pour forcer le look "App" sans toucher au CSS global pour l'instant --}}
+{{-- Style in-line pour le look App --}}
 <style>
     body { background-color: #f4f6f9; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
     .kpi-card { transition: transform 0.2s; border: none; border-radius: 12px; }
@@ -31,9 +31,9 @@
         </div>
     </div>
 
-    {{-- 2. KPI / WIDGETS (La vue d'ensemble) --}}
+    {{-- 2. KPI / WIDGETS --}}
     <div class="row g-4 mb-5">
-        {{-- KPI EXPRESS (Urgence) --}}
+        {{-- KPI EXPRESS --}}
         <div class="col-md-6">
             <div class="card kpi-card shadow-sm h-100" style="background: linear-gradient(135deg, #fff 0%, #fff5f5 100%); border-left: 6px solid #dc3545;">
                 <div class="card-body p-4 d-flex justify-content-between align-items-center">
@@ -54,7 +54,7 @@
             </div>
         </div>
 
-        {{-- KPI STANDARD (Flux normal) --}}
+        {{-- KPI STANDARD --}}
         <div class="col-md-6">
             <div class="card kpi-card shadow-sm h-100" style="background: linear-gradient(135deg, #fff 0%, #f0f7ff 100%); border-left: 6px solid #0d6efd;">
                 <div class="card-body p-4 d-flex justify-content-between align-items-center">
@@ -76,20 +76,31 @@
         </div>
     </div>
 
-    {{-- MESSAGES FLASH --}}
+    {{-- MESSAGES FLASH (Succès / Erreur) --}}
     @if(session('success'))
         <div class="alert alert-success border-0 shadow-sm d-flex align-items-center mb-4 rounded-3">
             <i class="fas fa-check-circle fs-4 me-3"></i>
             <div class="fw-medium">{{ session('success') }}</div>
         </div>
     @endif
+    
+    {{-- Affichage des erreurs de validation (ex: Message vide) --}}
+    @if($errors->any())
+        <div class="alert alert-danger border-0 shadow-sm mb-4 rounded-3">
+            <ul class="mb-0">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
 
     <form action="{{ route('service.expedition.pickup') }}" method="POST" id="pickupForm">
         @csrf
 
-        {{-- 3. LISTE DES EXPÉDITIONS (Tableau Unifié ou Séparé par Card) --}}
+        {{-- 3. LISTE DES EXPÉDITIONS --}}
         
-        {{-- BLOC 1 : URGENCES --}}
+        {{-- TABLEAU 1 : URGENCES (EXPRESS) --}}
         <div class="card table-card shadow-sm mb-5">
             <div class="card-header bg-white py-3 px-4 border-bottom">
                 <div class="d-flex justify-content-between align-items-center">
@@ -114,7 +125,7 @@
                             <th>Horodatage</th>
                             <th>Destinataire</th>
                             <th>Mode & Transporteur</th>
-                            <th class="text-end pe-4">Actions</th>
+                            <th class="text-end pe-4">Actions (ID 28)</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -123,9 +134,7 @@
                             <td class="ps-4 text-center">
                                 <input type="checkbox" name="commandes[]" value="{{ $c->id_commande }}" class="form-check-input fs-5 checkbox-Autre" style="cursor: pointer;">
                             </td>
-                            <td>
-                                <span class="fw-bold text-dark">#{{ $c->id_commande }}</span>
-                            </td>
+                            <td><span class="fw-bold text-dark">#{{ $c->id_commande }}</span></td>
                             <td>
                                 <div class="d-flex flex-column">
                                     <span class="fw-bold text-dark">{{ \Carbon\Carbon::parse($c->date_commande)->format('d/m/Y') }}</span>
@@ -137,7 +146,8 @@
                                     <div class="avatar-initials">{{ substr($c->utilisateur->prenom, 0, 1) }}{{ substr($c->utilisateur->nom, 0, 1) }}</div>
                                     <div>
                                         <div class="fw-bold text-dark searchable-text">{{ $c->utilisateur->nom }} {{ $c->utilisateur->prenom }}</div>
-                                        <div class="text-muted small searchable-text"><i class="fas fa-map-marker-alt text-secondary me-1"></i>{{ $c->adresse->ville_adresse ?? 'Ville inconnue' }}</div>
+                                        {{-- Utilisation de optional() pour éviter le crash si pas d'adresse --}}
+                                        <div class="text-muted small searchable-text"><i class="fas fa-map-marker-alt text-secondary me-1"></i>{{ optional($c->adresse)->ville_adresse ?? 'Inconnue' }}</div>
                                     </div>
                                 </div>
                             </td>
@@ -149,34 +159,32 @@
                                 @else
                                     <span class="status-badge bg-secondary text-white">{{ strtoupper($c->type_livraison) }}</span>
                                 @endif
-                                <div class="small text-muted mt-1 ms-1">DHL / Chronopost</div>
                             </td>
                             <td class="text-end pe-4">
+                                {{-- BOUTON AVEC MODALE --}}
                                 @if(!empty($c->utilisateur->telephone))
-                                    <button type="button" onclick="document.getElementById('sms-form-{{ $c->id_commande }}').submit();" class="btn btn-sm btn-outline-primary fw-bold border-0 bg-light text-primary" title="Envoyer confirmation SMS">
-                                        <i class="fas fa-comment-dots me-1"></i> Notifier
+                                    <button type="button" class="btn btn-sm btn-outline-dark fw-bold border-0 bg-light text-dark" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#smsModal-{{ $c->id_commande }}"
+                                            title="Saisir et envoyer un SMS">
+                                        <i class="fas fa-pen me-1"></i> Saisir SMS
                                     </button>
                                 @else
-                                    <span class="d-inline-flex align-items-center justify-content-center text-danger bg-danger bg-opacity-10 rounded-circle" style="width: 32px; height: 32px;" title="Numéro de téléphone manquant - Action impossible">
-                                        <i class="fas fa-phone-slash"></i>
+                                    <span class="d-inline-flex align-items-center justify-content-center text-muted bg-light rounded px-2 py-1 small border" title="Pas de numéro">
+                                        <i class="fas fa-phone-slash me-1"></i> Sans Tél
                                     </span>
                                 @endif
                             </td>
                         </tr>
                         @empty
-                        <tr>
-                            <td colspan="6" class="text-center py-5">
-                                <img src="https://cdn-icons-png.flaticon.com/512/4076/4076432.png" width="60" class="opacity-25 mb-3" alt="Empty">
-                                <p class="text-muted fw-bold">Aucune commande prioritaire en attente.</p>
-                            </td>
-                        </tr>
+                        <tr><td colspan="6" class="text-center py-5 text-muted">Aucune commande prioritaire.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
         </div>
 
-        {{-- BLOC 2 : STANDARD --}}
+        {{-- TABLEAU 2 : STANDARD --}}
         <div class="card table-card shadow-sm mb-5">
             <div class="card-header bg-white py-3 px-4 border-bottom">
                 <div class="d-flex justify-content-between align-items-center">
@@ -198,7 +206,7 @@
                         <tr>
                             <th class="ps-4 text-center" style="width: 60px;"><i class="fas fa-check-square"></i></th>
                             <th>Référence</th>
-                            <th>Horodatage</th>
+                            <th>Date</th>
                             <th>Destinataire</th>
                             <th>Transporteur</th>
                             <th class="text-end pe-4">Actions</th>
@@ -210,52 +218,41 @@
                             <td class="ps-4 text-center">
                                 <input type="checkbox" name="commandes[]" value="{{ $c->id_commande }}" class="form-check-input fs-5 checkbox-Domicile" style="cursor: pointer;">
                             </td>
-                            <td>
-                                <span class="fw-bold text-secondary">#{{ $c->id_commande }}</span>
-                            </td>
-                            <td>
-                                <div class="d-flex flex-column">
-                                    <span class="fw-bold text-dark">{{ \Carbon\Carbon::parse($c->date_commande)->format('d/m/Y') }}</span>
-                                    <span class="text-muted small">{{ \Carbon\Carbon::parse($c->date_commande)->format('H:i') }}</span>
-                                </div>
-                            </td>
+                            <td><span class="fw-bold text-secondary">#{{ $c->id_commande }}</span></td>
+                            <td>{{ \Carbon\Carbon::parse($c->date_commande)->format('d/m/Y') }}</td>
                             <td>
                                 <div class="d-flex align-items-center">
                                     <div class="avatar-initials">{{ substr($c->utilisateur->prenom, 0, 1) }}{{ substr($c->utilisateur->nom, 0, 1) }}</div>
                                     <div>
                                         <div class="fw-bold text-dark searchable-text">{{ $c->utilisateur->nom }} {{ $c->utilisateur->prenom }}</div>
-                                        <div class="text-muted small searchable-text"><i class="fas fa-map-marker-alt text-secondary me-1"></i>{{ $c->adresse->ville_adresse ?? 'Ville inconnue' }}</div>
+                                        <div class="text-muted small searchable-text"><i class="fas fa-map-marker-alt text-secondary me-1"></i>{{ optional($c->adresse)->ville_adresse ?? 'Inconnue' }}</div>
                                     </div>
                                 </div>
                             </td>
                             <td>
-                                <span class="status-badge bg-light text-dark border border-light-subtle">
-                                    <i class="fas fa-truck me-1 text-muted"></i> La Poste / Colissimo
-                                </span>
+                                <span class="status-badge bg-light text-dark border border-light-subtle"><i class="fas fa-truck me-1"></i> Standard</span>
                             </td>
                             <td class="text-end pe-4">
                                 @if(!empty($c->utilisateur->telephone))
-                                    <button type="button" onclick="document.getElementById('sms-form-{{ $c->id_commande }}').submit();" class="btn btn-sm btn-light text-muted border-0" title="Envoyer SMS">
-                                        <i class="far fa-comment-alt"></i>
+                                    <button type="button" class="btn btn-sm btn-outline-dark fw-bold border-0 bg-light text-dark" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#smsModal-{{ $c->id_commande }}">
+                                        <i class="fas fa-pen me-1"></i> Saisir SMS
                                     </button>
                                 @else
-                                    <span class="text-muted opacity-25" title="Pas de numéro"><i class="fas fa-phone-slash"></i></span>
+                                    <span class="text-muted small"><i class="fas fa-phone-slash"></i></span>
                                 @endif
                             </td>
                         </tr>
                         @empty
-                        <tr>
-                            <td colspan="6" class="text-center py-5">
-                                <p class="text-muted fw-bold">Aucune commande standard en attente.</p>
-                            </td>
-                        </tr>
+                        <tr><td colspan="6" class="text-center py-5 text-muted">Aucune commande standard.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
         </div>
 
-        {{-- 4. ACTION BAR FLOTTANTE (Sticky Footer) --}}
+        {{-- 4. ACTION BAR FLOTTANTE (ID 27) --}}
         <div class="floating-action-bar fixed-bottom py-3 px-4">
             <div class="container-fluid d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center">
@@ -281,14 +278,52 @@
 
     </form>
 
-    {{-- Formulaires cachés (SMS) --}}
+    {{-- ============================================================== --}}
+    {{-- MODALES DE SAISIE SMS (ID 28 - VALIDATION OBLIGATOIRE) --}}
+    {{-- ============================================================== --}}
     @foreach($commandesDomicile->merge($commandesAutre) as $c)
         @if(!empty($c->utilisateur->telephone))
-            <form id="sms-form-{{ $c->id_commande }}" action="{{ route('service.expedition.sms', $c->id_commande) }}" method="POST" class="d-none">@csrf</form>
+        <div class="modal fade" id="smsModal-{{ $c->id_commande }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow">
+                    <form action="{{ route('service.expedition.sms', $c->id_commande) }}" method="POST">
+                        @csrf
+                        <div class="modal-header bg-light">
+                            <h5 class="modal-title fw-bold"><i class="fas fa-sms text-primary me-2"></i>Notifier le client</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body p-4">
+                            <div class="mb-3 p-3 bg-light rounded border">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span class="small text-uppercase text-muted fw-bold">Client</span>
+                                    <span class="small text-uppercase text-muted fw-bold">Mobile</span>
+                                </div>
+                                <div class="d-flex justify-content-between fw-bold text-dark">
+                                    <span>{{ $c->utilisateur->nom }} {{ $c->utilisateur->prenom }}</span>
+                                    <span class="text-success"><i class="fas fa-mobile-alt me-1"></i>{{ $c->utilisateur->telephone }}</span>
+                                </div>
+                            </div>
+
+                            <div class="mb-1">
+                                <label for="msg-{{ $c->id_commande }}" class="form-label small text-muted text-uppercase fw-bold">Message à envoyer</label>
+                                {{-- LE CHAMP SAISIE OBLIGATOIRE --}}
+                                <textarea name="message_sms" id="msg-{{ $c->id_commande }}" class="form-control" rows="4" required>Bonjour {{ $c->utilisateur->prenom }}, votre commande #{{ $c->id_commande }} a été préparée et remise au transporteur ce jour. Elle sera livrée très prochainement.</textarea>
+                                <div class="form-text text-end">Vous pouvez personnaliser ce message.</div>
+                            </div>
+                        </div>
+                        <div class="modal-footer border-top-0 pt-0">
+                            <button type="button" class="btn btn-link text-muted text-decoration-none" data-bs-dismiss="modal">Annuler</button>
+                            <button type="submit" class="btn btn-primary fw-bold px-4">
+                                <i class="fas fa-paper-plane me-2"></i> Envoyer
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
         @endif
     @endforeach
 
-    {{-- Spacer pour ne pas cacher le bas de page avec la barre flottante --}}
     <div style="height: 100px;"></div>
 
 </div>
@@ -305,10 +340,7 @@
     document.getElementById('globalSearch').addEventListener('keyup', function() {
         const value = this.value.toLowerCase();
         const rows = document.querySelectorAll('.search-table tbody tr');
-        
         rows.forEach(row => {
-            // On cherche uniquement dans les éléments marqués 'searchable-text' ou les IDs
-            // Si pas de résultat, on cache.
             if(row.innerText.toLowerCase().indexOf(value) > -1) {
                 row.style.display = '';
             } else {
