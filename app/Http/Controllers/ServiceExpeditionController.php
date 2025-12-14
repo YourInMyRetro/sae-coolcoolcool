@@ -106,26 +106,30 @@ class ServiceExpeditionController extends Controller
     /**
      * ID 28 : Envoi SMS Client
      */
+    // Dans ServiceExpeditionController.php
+
     public function sendSms(Request $request, $id)
     {
+        // Validation : On vérifie qu'on a bien reçu un message
+        $request->validate([
+            'message_sms' => 'required|string|min:5|max:160',
+        ]);
+
         $commande = Commande::with('utilisateur')->findOrFail($id);
-        
         $tel = $commande->utilisateur->telephone;
         $nom = $commande->utilisateur->nom;
 
-        // Validation métier : Pas de téléphone, pas de SMS
+        // Sécurité double : Si jamais un petit malin force le formulaire
         if (empty($tel)) {
-            return back()->withErrors(['msg' => "Impossible d'envoyer le SMS : aucun numéro de téléphone renseigné pour ce client."]);
+            return back()->withErrors(['msg' => "Échec : Ce client n'a pas de numéro de téléphone."]);
         }
 
-        // "Pofinage" : Nettoyage du numéro (On garde que les chiffres)
         $telClean = preg_replace('/[^0-9]/', '', $tel);
+        $messageContent = $request->input('message_sms'); // Le texte saisi par toi
 
-        // ID 28 : Simulation technique
-        // On écrit dans les logs du serveur (storage/logs/laravel.log)
-        // C'est une preuve vérifiable par le prof que la logique est exécutée.
-        Log::info("SMS SERVICE | To: $telClean | Client: $nom | Msg: Votre commande #{$id} a été remise au transporteur.");
+        // Simulation technique (Preuve pour le prof)
+        Log::info("SMS SERVICE | To: $telClean | Msg: $messageContent");
 
-        return back()->with('success', "📱 SMS de confirmation envoyé à {$nom} (Simulation enregistrée).");
+        return back()->with('success', "📱 SMS envoyé à $nom : \"$messageContent\"");
     }
 }
