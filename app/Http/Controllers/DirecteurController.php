@@ -15,17 +15,16 @@ use Carbon\Carbon;
 class DirecteurController extends Controller
 {
     // =================================================================
-    // US 29 & 30 : DASHBOARD
+    // DASHBOARD (Inchangé)
     // =================================================================
     public function dashboard()
     {
-        // 1. Calcul CA Mensuel
         $commandes = Commande::where('statut_livraison', '!=', 'Annulée')
                              ->orderBy('date_commande', 'desc')
                              ->get();
 
         $ventesMensuelles = $commandes->groupBy(function($c) {
-            return substr($c->date_commande, 0, 7); // YYYY-MM
+            return substr($c->date_commande, 0, 7); 
         })->map(function ($groupe, $mois) {
             return (object) [
                 'mois' => $mois,
@@ -33,7 +32,6 @@ class DirecteurController extends Controller
             ];
         })->take(12);
 
-        // 2. Calcul par Catégorie
         $lignes = DB::table('ligne_commande')
             ->join('commande', 'ligne_commande.id_commande', '=', 'commande.id_commande')
             ->join('estplacee', 'ligne_commande.id_ligne_commande', '=', 'estplacee.id_ligne_commande')
@@ -41,11 +39,7 @@ class DirecteurController extends Controller
             ->join('produit_couleur', 'stock_article.id_produit_couleur', '=', 'produit_couleur.id_produit_couleur')
             ->join('produit', 'produit_couleur.id_produit', '=', 'produit.id_produit')
             ->join('categorie', 'produit.id_categorie', '=', 'categorie.id_categorie')
-            ->select(
-                'categorie.nom_categorie', 
-                'commande.date_commande',
-                DB::raw('(ligne_commande.prix_unitaire_negocie * ligne_commande.quantite_commande) as montant')
-            )
+            ->select('categorie.nom_categorie', 'commande.date_commande', DB::raw('(ligne_commande.prix_unitaire_negocie * ligne_commande.quantite_commande) as montant'))
             ->where('commande.statut_livraison', '!=', 'Annulée')
             ->get();
 
@@ -53,11 +47,7 @@ class DirecteurController extends Controller
             return substr($l->date_commande, 0, 7) . ' - ' . $l->nom_categorie;
         })->map(function ($groupe, $key) {
             list($mois, $cat) = explode(' - ', $key);
-            return (object) [
-                'mois' => $mois,
-                'nom_categorie' => $cat,
-                'total' => $groupe->sum('montant')
-            ];
+            return (object) ['mois' => $mois, 'nom_categorie' => $cat, 'total' => $groupe->sum('montant')];
         })->sortByDesc('mois');
 
         $nbProduitsIncomplets = Produit::whereDoesntHave('produitCouleurs')->count();
@@ -66,33 +56,38 @@ class DirecteurController extends Controller
     }
 
     // =================================================================
-    // US 40 & 54 : GESTION DES PRODUITS (Correction Nom de Vue)
+    // GESTION PRODUITS (MODIFIÉ : PLUS DE COULEUR)
     // =================================================================
     public function produitsIncomplets()
     {
         $produitsSansPrix = Produit::whereDoesntHave('produitCouleurs')->get();
-        $couleurs = Couleur::all();
         
-        // --- CORRECTION ICI : "produits_incomplet" SANS S ---
-        return view('directeur.produits_incomplet', compact('produitsSansPrix', 'couleurs'));
+        // On n'envoie plus les couleurs à la vue, on n'en a plus besoin
+        return view('directeur.produits_incomplet', compact('produitsSansPrix'));
     }
 
     public function updatePrix(Request $request, $id)
     {
-        // Validation simplifiée (Juste Prix/Couleur)
+        // 1. Validation : ON NE DEMANDE QUE LE PRIX
         $request->validate([
-            'id_couleur' => 'required|exists:couleur,id_couleur',
             'prix_total' => 'required|numeric|min:0',
         ]);
 
-        // 1. Création prix
+        // 2. Attribution automatique d'une couleur par défaut
+        // On prend la première couleur dispo en base (ex: ID 1) pour satisfaire la BDD
+        $defaultCouleur = Couleur::first();
+        if (!$defaultCouleur) {
+            return back()->with('error', 'Aucune couleur n\'existe en base de données. Impossible de créer la déclinaison.');
+        }
+
+        // 3. Création de la déclinaison
         $produitCouleur = new ProduitCouleur();
         $produitCouleur->id_produit = $id;
-        $produitCouleur->id_couleur = $request->input('id_couleur');
+        $produitCouleur->id_couleur = $defaultCouleur->id_couleur; // Automatique
         $produitCouleur->prix_total = $request->input('prix_total');
         $produitCouleur->save();
 
-        // 2. Stock auto à 0
+        // 4. Stock auto à 0
         $tailles = Taille::all();
         foreach($tailles as $taille) {
             $stock = new StockArticle();
@@ -102,13 +97,12 @@ class DirecteurController extends Controller
             $stock->save();
         }
 
-        // 3. Activation produit
+        // 5. Activation produit
         $produit = Produit::findOrFail($id);
         $produit->visibilite = 'visible';
         $produit->save();
 
-        // Redirection vers la route (qui elle a des tirets et un 's', c'est normal pour l'URL)
         return redirect()->route('directeur.produits_incomplets')
-                         ->with('success', "Prix validé : {$produitCouleur->prix_total}€. Produit en ligne.");
+                         ->with('success', "Prix fixé à {$produitCouleur->prix_total}€. Produit en ligne (Couleur: {$defaultCouleur->type_couleur}).");
     }
 }

@@ -49,22 +49,15 @@
                             @endif
                         @endauth
 
+                        {{-- BLOC CORRIGÉ : Un lien direct et stylisé pour l'expédition --}}
                         @auth
-                            {{-- Menu spécifique au Service Expédition (Midas - Sprint 3) --}}
                             @if(Auth::user()->isExpedition())
-                                <li class="nav-item dropdown">
-                                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                                        🚚 Service Expédition
+                                <li>
+                                    <a href="{{ route('service.expedition') }}" 
+                                    class="{{ request()->routeIs('service.expedition') ? 'active' : '' }}" 
+                                    style="color: #e67e22; font-weight: 700; display: flex; align-items: center; gap: 5px;">
+                                        <i class="fas fa-truck"></i> EXPÉDITION
                                     </a>
-                                    <ul class="dropdown-menu">
-                                        {{-- ID 25 & 26 : Consulter les commandes à livrer --}}
-                                        <li>
-                                            <a class="dropdown-item" href="{{ route('service.expedition') }}">
-                                                Tableau de bord (Départs)
-                                            </a>
-                                        </li>
-                                        {{-- ID 27 & 28 sont gérés DANS le tableau de bord, pas besoin de sous-menu --}}
-                                    </ul>
                                 </li>
                             @endif
                         @endauth

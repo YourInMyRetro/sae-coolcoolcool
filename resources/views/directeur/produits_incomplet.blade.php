@@ -30,7 +30,7 @@
                         <span class="badge bg-danger bg-opacity-25 text-danger border border-danger">
                             ID #{{ $produit->id_produit }}
                         </span>
-                        <i class="fas fa-tshirt text-muted fa-2x opacity-25"></i>
+                        <i class="fas fa-box-open text-muted fa-2x opacity-25"></i>
                     </div>
 
                     <h4 class="text-white mb-2">{{ $produit->nom_produit }}</h4>
@@ -42,26 +42,15 @@
                         @csrf
                         <div class="bg-dark bg-opacity-50 p-3 rounded-3 border border-secondary border-opacity-25">
                             
-                            <div class="mb-2">
-                                <label class="text-muted small fw-bold text-uppercase">Couleur</label>
-                                <select name="id_couleur" class="form-select form-select-sm input-dark" required>
-                                    @foreach($couleurs as $couleur)
-                                        <option value="{{ $couleur->id_couleur }}">{{ $couleur->type_couleur }}</option>
-                                    @endforeach
-                                </select>
+                            <label class="text-muted small fw-bold text-uppercase mb-2">Fixer le Prix (€)</label>
+                            
+                            <div class="input-group">
+                                <input type="number" step="0.01" name="prix_total" class="form-control input-dark fw-bold text-white" placeholder="0.00" required>
+                                <button type="submit" class="btn btn-fifa-cyan fw-bold shadow-sm">
+                                    OK
+                                </button>
                             </div>
-
-                            <div class="row g-2 align-items-end">
-                                <div class="col-7">
-                                    <label class="text-muted small fw-bold text-uppercase">Prix (€)</label>
-                                    <input type="number" step="0.01" name="prix_total" class="form-control form-control-sm input-dark fw-bold text-white" placeholder="0.00" required>
-                                </div>
-                                <div class="col-5">
-                                    <button type="submit" class="btn btn-sm btn-fifa-cyan w-100 fw-bold shadow-sm">
-                                        VALIDER
-                                    </button>
-                                </div>
-                            </div>
+                            
                         </div>
                     </form>
 

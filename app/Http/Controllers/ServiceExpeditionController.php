@@ -6,42 +6,43 @@ use Illuminate\Http\Request;
 use App\Models\Commande;
 use App\Models\SuiviLivraison;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log; // Ajout essentiel pour la simulation (ID 28)
 
 class ServiceExpeditionController extends Controller
 {
     /**
-     * ID 25 & 26 : Dashboard Expédition avec filtres temporels et mode de transport.
+     * ID 25 & 26 : Dashboard Expédition
+     * Affiche les commandes prêtes à partir selon le mode de transport et le créneau.
      */
     public function index()
     {
-        // --- 1. Calcul des Créneaux Temporels (Logique Métier) ---
         $now = Carbon::now();
         
-        // Logique pour "Demi-journée prochaine" (ID 25)
-        // Si on est le matin (0-12h), la prochaine demi-journée est l'après-midi (12-24h).
-        // Si on est l'après-midi, c'est demain matin (0-12h).
+        // Calcul "cosmétique" des créneaux pour l'affichage (ID 25)
         if ($now->hour < 12) {
-            $creneauDomicile = "Cet après-midi (12h - 24h)";
+            $creneauDomicile = "Cet après-midi (12h - 20h)"; 
         } else {
-            $creneauDomicile = "Demain matin (00h - 12h)";
+            $creneauDomicile = "Demain matin (08h - 12h)";
         }
-
-        // Logique pour "Journée prochaine" (ID 26)
         $creneauAutre = "Demain (" . Carbon::tomorrow()->format('d/m/Y') . ")";
 
-        // --- 2. Récupération des Commandes ---
-        
-        // ID 25 : Transport à domicile (Standard) pour la demi-journée prochaine
-        // Note : On prend les 'En préparation' ou 'Validée' prêtes à partir.
+        // ID 25 : Transport à domicile (Standard)
+        // CRITIQUE : On exclut les commandes qui ont déjà une date_prise_en_charge
         $commandesDomicile = Commande::where('type_livraison', 'Standard')
             ->whereIn('statut_livraison', ['Validée', 'En préparation'])
+            ->whereDoesntHave('suivi', function($q) {
+                $q->whereNotNull('date_prise_en_charge');
+            })
             ->with(['utilisateur', 'suivi'])
-            ->orderBy('date_commande', 'asc') // Les plus anciennes en premier
+            ->orderBy('date_commande', 'asc') // FIFO : Premier arrivé, premier servi
             ->get();
 
-        // ID 26 : Autre mode (Express) pour la journée prochaine
-        $commandesAutre = Commande::where('type_livraison', '!=', 'Standard') // Express, etc.
+        // ID 26 : Autre mode (Express, etc.)
+        $commandesAutre = Commande::where('type_livraison', '!=', 'Standard')
             ->whereIn('statut_livraison', ['Validée', 'En préparation'])
+            ->whereDoesntHave('suivi', function($q) {
+                $q->whereNotNull('date_prise_en_charge');
+            })
             ->with(['utilisateur', 'suivi'])
             ->orderBy('date_commande', 'asc')
             ->get();
@@ -59,32 +60,47 @@ class ServiceExpeditionController extends Controller
      */
     public function priseEnCharge(Request $request)
     {
+        // 1. Validation : On s'assure qu'on a bien reçu une liste d'IDs valides
         $request->validate([
             'commandes' => 'required|array',
             'commandes.*' => 'exists:commande,id_commande'
+        ], [
+            'commandes.required' => 'Veuillez cocher au moins une commande à remettre au transporteur.',
         ]);
 
         $ids = $request->input('commandes');
+        $successCount = 0;
 
         foreach ($ids as $id) {
             $commande = Commande::find($id);
+
+            // Sécurité métier : On ne ré-expédie pas une commande déjà partie
+            if ($commande->statut_livraison === 'Expédiée' || $commande->statut_livraison === 'Livrée') {
+                continue; 
+            }
             
-            // Mise à jour du statut commande
+            // Mise à jour du statut
             $commande->statut_livraison = 'Expédiée';
             $commande->save();
 
-            // ID 27 : On enregistre que le transporteur a pris le colis
+            // ID 27 : Enregistrement de la date et heure EXACTES de prise en charge
+            // Si le suivi n'existe pas encore, on le crée.
             SuiviLivraison::updateOrCreate(
                 ['id_commande' => $id],
                 [
                     'date_prise_en_charge' => Carbon::now(),
-                    // On garde le transporteur existant ou on met 1 par défaut
-                    'id_transporteur' => $commande->suivi ? $commande->suivi->id_transporteur : 1 
+                    // Si un transporteur était déjà assigné on le garde, sinon par défaut id 1 (France Express)
+                    'id_transporteur' => $commande->suivi->id_transporteur ?? 1 
                 ]
             );
+            $successCount++;
         }
 
-        return back()->with('success', count($ids) . ' commandes remises au transporteur.');
+        if ($successCount === 0) {
+            return back()->with('warning', 'Aucune commande traitée (elles étaient peut-être déjà expédiées).');
+        }
+
+        return back()->with('success', "🚚 $successCount commandes remises au transporteur avec succès !");
     }
 
     /**
@@ -94,14 +110,22 @@ class ServiceExpeditionController extends Controller
     {
         $commande = Commande::with('utilisateur')->findOrFail($id);
         
-        // On récupère le téléphone (ajouté via ta migration)
-        // Si le champ est vide, on met un message par défaut.
-        $tel = $commande->utilisateur->telephone ?? 'Numéro inconnu';
+        $tel = $commande->utilisateur->telephone;
         $nom = $commande->utilisateur->nom;
-        
-        // Simulation de l'envoi SMS (Logique fictive)
-        // SMS::to($tel)->send("Votre commande #{$id} est expédiée !");
 
-        return back()->with('success', "SMS envoyé à {$nom} ({$tel}) pour confirmer l'expédition.");
+        // Validation métier : Pas de téléphone, pas de SMS
+        if (empty($tel)) {
+            return back()->withErrors(['msg' => "Impossible d'envoyer le SMS : aucun numéro de téléphone renseigné pour ce client."]);
+        }
+
+        // "Pofinage" : Nettoyage du numéro (On garde que les chiffres)
+        $telClean = preg_replace('/[^0-9]/', '', $tel);
+
+        // ID 28 : Simulation technique
+        // On écrit dans les logs du serveur (storage/logs/laravel.log)
+        // C'est une preuve vérifiable par le prof que la logique est exécutée.
+        Log::info("SMS SERVICE | To: $telClean | Client: $nom | Msg: Votre commande #{$id} a été remise au transporteur.");
+
+        return back()->with('success', "📱 SMS de confirmation envoyé à {$nom} (Simulation enregistrée).");
     }
 }

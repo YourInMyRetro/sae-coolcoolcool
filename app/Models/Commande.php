@@ -34,8 +34,15 @@ class Commande extends Model
         return $this->belongsTo(User::class, 'id_utilisateur', 'id_utilisateur');
     }
 
-    // Scope pour filtrer facilement les commandes Express (Sprint 2)
-    public function scopeExpress($query) {
-        return $query->where('type_livraison', 'Express');
+    public function scopeExpress($query) 
+    {
+        return $query->where('type_livraison', 'Express')
+                     ->where('statut_livraison', 'Payée'); // On ne livre que ce qui est payé
+    }
+
+    public function scopeStandard($query) 
+    {
+        return $query->where('type_livraison', '!=', 'Express')
+                     ->where('statut_livraison', 'Payée');
     }
 }
