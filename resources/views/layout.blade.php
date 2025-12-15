@@ -32,40 +32,53 @@
             <div class="header-center">
                 <nav class="main-nav">
                     <ul class="nav-list">
-                        <li><a href="{{ route('home') }}" class="{{ request()->routeIs('home') ? 'active' : '' }}">Accueil</a></li>
-                        <li><a href="{{ route('produits.index') }}" class="{{ request()->routeIs('produits.index') ? 'active' : '' }}">Boutique</a></li>
-                        
-                       {{-- --- AJOUT DU LIEN VOTE ICI --- --}}
-                        <li><a href="{{ route('vote.index') }}" class="{{ request()->routeIs('vote.*') ? 'active' : '' }}">Votes</a></li>
+    <li><a href="{{ route('home') }}" class="{{ request()->routeIs('home') ? 'active' : '' }}">Accueil</a></li>
+    <li><a href="{{ route('produits.index') }}" class="{{ request()->routeIs('produits.index') ? 'active' : '' }}">Boutique</a></li>
+    
+    {{-- LIEN VOTE --}}
+    <li><a href="{{ route('vote.index') }}" class="{{ request()->routeIs('vote.*') ? 'active' : '' }}">Votes</a></li>
 
-                        {{-- --- BLOC DIRECTEUR (SEULEMENT POUR LE BOSS) --- --}}
-                        @auth
-                            @if(Auth::user()->isDirector())
-                                <li>
-                                    <a href="{{ route('directeur.dashboard') }}" style="color: #e74c3c; font-weight: bold;">
-                                        <i class="fas fa-lock"></i> DIRECTION
-                                    </a>
-                                </li>
-                            @endif
-                        @endauth
+    {{-- === AJOUT ICI : LIEN SERVICE VENTE === --}}
+    @auth
+        @if(Auth::user()->role === 'service_vente')
+            <li>
+                <a href="{{ route('vente.dashboard') }}" 
+                   class="{{ request()->routeIs('vente.*') ? 'active' : '' }}"
+                   style="color: #ffd700; font-weight: bold; border: 1px solid #ffd700; padding: 5px 10px; border-radius: 4px;">
+                   <i class="fas fa-tools"></i> SERVICE VENTE
+                </a>
+            </li>
+        @endif
+    @endauth
+    {{-- ====================================== --}}
 
-                        {{-- BLOC CORRIGÉ : Un lien direct et stylisé pour l'expédition --}}
-                        @auth
-                            @if(Auth::user()->isExpedition())
-                                <li>
-                                    <a href="{{ route('service.expedition') }}" 
-                                    class="{{ request()->routeIs('service.expedition') ? 'active' : '' }}" 
-                                    style="color: #e67e22; font-weight: 700; display: flex; align-items: center; gap: 5px;">
-                                        <i class="fas fa-truck"></i> EXPÉDITION
-                                    </a>
-                                </li>
-                            @endif
-                        @endauth
+    {{-- BLOC DIRECTEUR (SEULEMENT POUR LE BOSS) --}}
+    @auth
+        @if(Auth::user()->isDirector())
+            <li>
+                <a href="{{ route('directeur.dashboard') }}" style="color: #e74c3c; font-weight: bold;">
+                    <i class="fas fa-lock"></i> DIRECTION
+                </a>
+            </li>
+        @endif
+    @endauth
 
-                        {{-- Exemples de filtres rapides --}}
-                        <li><a href="{{ route('produits.index', ['categorie' => 1]) }}">Maillots</a></li>
-                        <!--<li><a href="{{ route('matcher.index') }}">Matcher</a></li>-->
-                    </ul>
+    {{-- BLOC EXPÉDITION --}}
+    @auth
+        @if(Auth::user()->isExpedition())
+            <li>
+                <a href="{{ route('service.expedition') }}" 
+                class="{{ request()->routeIs('service.expedition') ? 'active' : '' }}" 
+                style="color: #e67e22; font-weight: 700; display: flex; align-items: center; gap: 5px;">
+                    <i class="fas fa-truck"></i> EXPÉDITION
+                </a>
+            </li>
+        @endif
+    @endauth
+
+    {{-- Exemples de filtres rapides --}}
+    <li><a href="{{ route('produits.index', ['categorie' => 1]) }}">Maillots</a></li>
+</ul>
                 </nav>
             </div>
 

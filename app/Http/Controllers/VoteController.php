@@ -4,15 +4,15 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use App\Models\VoteTheme;
+use App\Models\Vote;
 
 class VoteController extends Controller
 {
     public function index()
     {
-        // MODIFICATION ICI : On prend tout, peu importe la date
         $competitions = VoteTheme::all(); 
-                        
         return view('vote.index', compact('competitions'));
     }
 
@@ -36,5 +36,45 @@ class VoteController extends Controller
             ->get();
 
         return view('vote.show', compact('competition', 'joueurs'));
+    }
+
+    public function store(Request $request, $id)
+    {
+        $request->validate([
+            'id_vote_candidat' => 'required|integer'
+        ]);
+
+        $theme = VoteTheme::findOrFail($id);
+        $userId = Auth::id();
+
+        $alreadyVoted = DB::table('vote')
+            ->join('faitvote', 'vote.id_vote', '=', 'faitvote.id_vote')
+            ->where('vote.idtheme', $id)
+            ->where('faitvote.id_utilisateur', $userId)
+            ->exists();
+
+        if ($alreadyVoted) {
+            return back()->with('error', 'Vous avez déjà voté pour cette catégorie.');
+        }
+
+        DB::transaction(function () use ($id, $userId, $request) {
+            $voteId = DB::table('vote')->insertGetId([
+                'idtheme' => $id,
+                'date_vote' => now()
+            ]);
+
+            DB::table('faitvote')->insert([
+                'id_vote' => $voteId,
+                'id_utilisateur' => $userId
+            ]);
+
+            DB::table('concernevote')->insert([
+                'id_vote' => $voteId,
+                'id_vote_candidat' => $request->id_vote_candidat,
+                'classement' => 1
+            ]);
+        });
+
+        return redirect()->route('vote.index')->with('success', 'Votre vote a bien été pris en compte !');
     }
 }
