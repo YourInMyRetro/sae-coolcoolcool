@@ -59,8 +59,8 @@ class ServiceExpeditionController extends Controller
 
         foreach ($ids as $id) {
             $commande = Commande::find($id);
-            if ($commande->statut_livraison === 'Expédiée' || $commande->statut_livraison === 'Livrée') {
-                continue; 
+            if (in_array($commande->statut_livraison, ['Expédiée', 'Livrée', 'Réserve', 'Annulée'])) {
+                continue;
             }
             $commande->statut_livraison = 'Expédiée';
             $commande->save();

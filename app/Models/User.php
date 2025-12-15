@@ -90,4 +90,10 @@ class User extends Authenticatable
         // On suppose que le rôle en base de données sera 'service_expedition'
         return $this->role === 'service_expedition';
     }
+
+    public function isServiceCommande()
+    {
+        // On définit le rôle 'service_commande' pour ce poste
+        return $this->role === 'service_commande';
+    }
 }

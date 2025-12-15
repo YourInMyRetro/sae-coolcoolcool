@@ -61,7 +61,7 @@ class VoteController extends Controller
             $voteId = DB::table('vote')->insertGetId([
                 'idtheme' => $id,
                 'date_vote' => now()
-            ]);
+            ], 'id_vote');
 
             DB::table('faitvote')->insert([
                 'id_vote' => $voteId,
