@@ -11,13 +11,13 @@ class ToolController extends Controller
 {
     public function index()
     {
-        // 1. Dossier Source
+
         $sourcePath = public_path('temp_images');
         if (!File::isDirectory($sourcePath)) {
             File::makeDirectory($sourcePath, 0755, true);
         }
 
-        // 2. On exclut le dossier '_skipped' de la liste des fichiers
+
         $files = File::files($sourcePath);
         
         if (empty($files)) {
@@ -26,7 +26,6 @@ class ToolController extends Controller
 
         $currentFile = $files[0]->getFilename();
 
-        // 3. Liste des produits
         $produits = DB::table('produit')->orderBy('nom_produit')->get();
 
         return view('matcher', compact('currentFile', 'produits'));
@@ -51,7 +50,12 @@ class ToolController extends Controller
             if (File::exists($destination)) { File::delete($destination); }
             File::move($source, $destination);
 
-            // Mise à jour BDD (Upsert)
+
+            
+
+
+
+
             $exists = DB::table('photo_produit')->where('id_produit', $produit->id_produit)->exists();
             if ($exists) {
                 DB::table('photo_produit')->where('id_produit', $produit->id_produit)->update(['url_photo' => 'img/produits/' . $cleanName]);
@@ -64,7 +68,7 @@ class ToolController extends Controller
         return back()->with('error', 'Fichier introuvable');
     }
 
-    // --- NOUVELLES FONCTIONS ---
+
 
     public function skip(Request $request)
     {

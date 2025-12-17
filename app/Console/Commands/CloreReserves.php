@@ -8,58 +8,64 @@ use Carbon\Carbon;
 
 class CloreReserves extends Command
 {
+    // Le nom de la commande à taper dans le terminal
     protected $signature = 'commandes:clore-reserves';
-    protected $description = 'Clôture les réserves (Mode Débogage)';
+    
+    protected $description = 'Clôture les réserves (Mode Débogage 1 minute)';
 
     public function handle()
     {
-        $this->info("--- DÉBUT DU DIAGNOSTIC ---");
+        $this->info("--- DÉBUT DU DIAGNOSTIC (Mode Test 1 minute) ---");
         
-        // 1. On cherche TOUTES les commandes en Réserve, sans filtrer la date
+        // 1. On cherche les commandes en statut 'Réserve'
         $commandes = Commande::where('statut_livraison', 'Réserve')->get();
         
-        $this->info("Commandes trouvées avec statut 'Réserve' : " . $commandes->count());
+        $this->info("Commandes en 'Réserve' trouvées : " . $commandes->count());
 
         if ($commandes->count() === 0) {
-            $this->error("ERREUR : Aucune commande n'a le statut 'Réserve'. Vérifiez l'orthographe exacte dans la base de données (accent ?).");
+            $this->error("Aucune commande à traiter.");
             return;
         }
 
-        $dateLimite = Carbon::now()->subMinutes(1);
+        // --- C'EST ICI LA MODIFICATION ---
+        // On considère qu'une réserve est "vieille" si elle a plus de 1 minute
+        $dateLimite = Carbon::now()->subMinutes(1); 
+        
         $count = 0;
 
         foreach ($commandes as $cmd) {
             $this->info("\nCommande #{$cmd->id_commande} :");
 
-            // Vérification de la relation
             if (!$cmd->suivi) {
-                $this->error("  [X] ERREUR CRITIQUE : Pas de ligne dans la table 'suivi_livraison' !");
-                $this->line("      -> La date de la réserve n'a pas pu être enregistrée.");
-                $this->line("      -> Solution : Il faut que le contrôleur crée cette ligne si elle n'existe pas.");
+                $this->error("  [ERREUR] Pas de suivi associé.");
                 continue;
             }
 
-            $date = $cmd->suivi->date_statut_final;
+            $dateReserve = $cmd->suivi->date_statut_final; // Date de la réserve
             
-            if (!$date) {
-                $this->error("  [X] ERREUR : La ligne suivi existe, mais 'date_statut_final' est vide (NULL).");
+            if (!$dateReserve) {
+                $this->error("  [ERREUR] Date de statut vide.");
                 continue;
             }
 
-            $dateCarbone = Carbon::parse($date);
-            $this->line("  - Date de la réserve : " . $dateCarbone->format('H:i:s'));
-            $this->line("  - Date limite (il y a 1 min) : " . $dateLimite->format('H:i:s'));
+            $dateCarbone = Carbon::parse($dateReserve);
+            
+            // Affichage pour t'aider à comprendre ce qui se passe
+            $this->line("  - Heure de la réserve : " . $dateCarbone->format('H:i:s'));
+            $this->line("  - Heure limite (now - 1min) : " . $dateLimite->format('H:i:s'));
 
+            // Si la réserve est plus vieille que la limite (1 minute)
             if ($dateCarbone < $dateLimite) {
-                $this->info("  [V] SUCCÈS : Le délai est passé. Validation...");
+                $this->info("  [OK] Le délai d'une minute est écoulé. Validation !");
+                
                 $cmd->statut_livraison = 'Validée';
                 $cmd->save();
                 $count++;
             } else {
-                $this->warn("  [!] ATTENTE : Délai pas encore écoulé. Attendez encore un peu.");
+                $this->warn("  [ATTENTE] Moins d'une minute écoulée.");
             }
         }
 
-        $this->info("\n--- FIN : $count réserves validées ---");
+        $this->info("\n--- FIN : $count réserves validées automatiquement ---");
     }
 }

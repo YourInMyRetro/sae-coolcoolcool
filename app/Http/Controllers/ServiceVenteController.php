@@ -50,35 +50,28 @@ class ServiceVenteController extends Controller
         $request->validate([
             'nom_produit' => 'required|max:255',
             'id_categorie' => 'required|exists:categorie,id_categorie',
-            'prix' => 'required|numeric|min:0',
-            'photo' => 'nullable|image|max:2048', 
+            'photo' => 'nullable|image|max:2048',
+           'prix' => 'nullable|numeric|min:0',
+            'variantes' => 'required|array',
+            'variantes.*.id_couleur' => 'required|exists:couleur,id_couleur',
+            'variantes.*.id_taille' => 'required|exists:taille,id_taille',
+            'variantes.*.quantite' => 'required|integer|min:0',
         ]);
 
         DB::beginTransaction();
 
         try {
+
             $produit = new Produit();
             $produit->nom_produit = $request->nom_produit;
             $produit->description_produit = $request->description_produit;
             $produit->id_categorie = $request->id_categorie;
-            $produit->visibilite = 'cache'; 
+            
+
+            $prixSaisi = $request->filled('prix') ? $request->prix : 0;
+            $produit->visibilite = ($prixSaisi > 0) ? 'visible' : 'cache';
             $produit->save();
             
-            if ($request->has('id_couleur')) {
-                $pc = new ProduitCouleur();
-                $pc->id_produit = $produit->id_produit;
-                $pc->id_couleur = $request->id_couleur;
-                $pc->prix_total = $request->prix;
-                $pc->save();
-
-                if ($request->has('id_taille')) {
-                    $stock = new StockArticle();
-                    $stock->id_produit_couleur = $pc->id_produit_couleur;
-                    $stock->id_taille = $request->id_taille;
-                    $stock->stock = $request->stock ?? 0;
-                    $stock->save();
-                }
-            }
 
             if ($request->hasFile('photo')) {
                 $fileName = time() . '_' . $request->file('photo')->getClientOriginalName();
@@ -90,12 +83,42 @@ class ServiceVenteController extends Controller
                 $photo->save();
             }
 
+            $groupesCouleurs = [];
+            foreach ($request->variantes as $variante) {
+                $idCouleur = $variante['id_couleur'];
+                if (!isset($groupesCouleurs[$idCouleur])) {
+                    $groupesCouleurs[$idCouleur] = [];
+                }
+                $groupesCouleurs[$idCouleur][] = $variante;
+            }
+
+            foreach ($groupesCouleurs as $idCouleur => $lignes) {
+                $pc = new ProduitCouleur();
+                $pc->id_produit = $produit->id_produit;
+                $pc->id_couleur = $idCouleur;
+                $pc->prix_total = $prixSaisi; 
+                $pc->save();
+
+                foreach ($lignes as $ligne) {
+                    $stock = new StockArticle();
+                    $stock->id_produit_couleur = $pc->id_produit_couleur;
+                    $stock->id_taille = $ligne['id_taille'];
+                    $stock->stock = $ligne['quantite'];
+                    $stock->save();
+                }
+            }
+
             DB::commit();
-            return redirect()->route('vente.produits.list')->with('success', 'Produit créé ! Vous pouvez maintenant le rendre visible.');
+
+            if ($prixSaisi > 0) {
+                return redirect()->route('vente.produits.list')->with('success', 'Produit créé, prix fixé et mis en ligne !');
+            } else {
+                return redirect()->route('vente.produits.list')->with('success', 'Stocks enregistrés. Produit envoyé au Directeur pour fixation du prix.');
+            }
 
         } catch (\Exception $e) {
             DB::rollback();
-            return back()->withInput()->with('error', 'Erreur lors de la création : ' . $e->getMessage());
+            return back()->withInput()->with('error', 'Erreur : ' . $e->getMessage());
         }
     }
 

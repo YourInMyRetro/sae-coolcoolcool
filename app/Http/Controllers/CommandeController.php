@@ -15,9 +15,7 @@ use Carbon\Carbon;
 
 class CommandeController extends Controller
 {
-    // ------------------------------------------------------------------
-    // ÉTAPE 1 : CHOIX DU MODE DE LIVRAISON (ADRESSE + MODE)
-    // ------------------------------------------------------------------
+
     public function livraison()
     {
         $panier = session()->get('panier');
@@ -36,14 +34,12 @@ class CommandeController extends Controller
         return view('commande.livraison', compact('adresses'));
     }
 
-    // ------------------------------------------------------------------
-    // TRAITEMENT DE L'ADRESSE ET DU MODE
-    // ------------------------------------------------------------------
+
     public function validerLivraison(Request $request)
     {
         $userId = Auth::id();
 
-        // 1. Gestion de l'adresse
+        // 
         if ($request->filled('id_adresse_existante')) {
             $idAdresse = $request->id_adresse_existante;
         } 
@@ -71,7 +67,7 @@ class CommandeController extends Controller
             $idAdresse = $adresse->id_adresse;
         }
 
-        // 2. Sauvegarde du mode de transport en session
+
         $modeLivraison = $request->input('mode_livraison', 'Standard'); 
         session()->put('type_livraison_choisi', $modeLivraison);
 
@@ -80,9 +76,7 @@ class CommandeController extends Controller
         return redirect()->route('commande.paiement');
     }
 
-    // ------------------------------------------------------------------
-    // ÉTAPE 2 : PAGE DE PAIEMENT (C'était celle qui manquait !)
-    // ------------------------------------------------------------------
+
     public function paiement()
     {
         if (!session()->has('id_adresse_livraison')) {
@@ -94,13 +88,13 @@ class CommandeController extends Controller
         
         $panier = session()->get('panier', []);
         
-        // Calcul du total produits
+
         $totalProduits = 0;
         foreach($panier as $item) {
             $totalProduits += $item['prix'] * $item['quantite'];
         }
 
-        // Ajout des frais de port pour l'affichage
+
         $typeLivraison = session()->get('type_livraison_choisi', 'Standard');
         $fraisPort = match($typeLivraison) {
             'Express' => 14.90,
@@ -108,15 +102,12 @@ class CommandeController extends Controller
             default => 5.00,
         };
 
-        // Le total affiché inclut maintenant les frais
+        // total + frais port
         $total = $totalProduits + $fraisPort;
 
         return view('commande.paiement', compact('cartes', 'total', 'fraisPort'));
     }
 
-    // ------------------------------------------------------------------
-    // TRAITEMENT DU PAIEMENT ET CRÉATION DE LA COMMANDE
-    // ------------------------------------------------------------------
     public function processPaiement(Request $request)
     {
         $userId = Auth::id();
@@ -124,7 +115,7 @@ class CommandeController extends Controller
         $idAdresse = session()->get('id_adresse_livraison');
         $typeLivraison = session()->get('type_livraison_choisi', 'Standard');
         
-        // --- 0. VERIFICATION ULTIME DU STOCK ---
+        
         foreach($panier as $item) {
             $stockReel = StockArticle::find($item['id_stock']);
             if (!$stockReel || $stockReel->stock < $item['quantite']) {
@@ -133,13 +124,13 @@ class CommandeController extends Controller
             }
         }
 
-        // Calcul du total
+        
         $totalProduits = 0;
         foreach($panier as $item) {
             $totalProduits += $item['prix'] * $item['quantite'];
         }
 
-        // Logique de prix selon le mode
+        // prix pour mode
         $fraisPort = match($typeLivraison) {
             'Express' => 14.90,
             'Relais' => 3.50,
@@ -148,7 +139,7 @@ class CommandeController extends Controller
 
         $montantTotal = $totalProduits + $fraisPort;
 
-        // === 1. GESTION DE LA CARTE BANCAIRE ===
+
         $idCb = $request->input('use_saved_card');
 
         if (!$idCb) {
@@ -173,7 +164,7 @@ class CommandeController extends Controller
             $idCb = $carte->id_cb;
         }
 
-        // === 2. CRÉATION DE LA COMMANDE ===
+        // creat ela commande de Midas la menace 
         $commande = Commande::create([
             'id_adresse'       => $idAdresse,
             'id_utilisateur'   => $userId,
@@ -185,7 +176,7 @@ class CommandeController extends Controller
             'type_livraison'   => $typeLivraison
         ]);
 
-        // === 3. CRÉATION DES LIGNES ET MISE À JOUR STOCK ===
+        
         foreach($panier as $key => $item) {
             $ligne = LigneCommande::create([
                 'id_commande'           => $commande->id_commande,
@@ -204,7 +195,7 @@ class CommandeController extends Controller
             }
         }
 
-        // === 4. ENREGISTREMENT DU RÈGLEMENT ===
+        
         Reglement::create([
             'id_cb'             => $idCb,
             'id_commande'       => $commande->id_commande,
@@ -213,7 +204,7 @@ class CommandeController extends Controller
             'mode_reglement'    => 'Carte Bancaire'
         ]);
 
-        // === 5. NETTOYAGE ===
+        
         $dbPanier = \App\Models\Panier::where('id_utilisateur', $userId)->first();
         if ($dbPanier) {
             \App\Models\LignePanier::where('id_panier', $dbPanier->id_panier)->delete();

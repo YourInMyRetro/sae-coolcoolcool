@@ -14,14 +14,14 @@ use Carbon\Carbon;
 
 class DirecteurController extends Controller
 {
-    // =================================================================
-    // DASHBOARD (Inchangé)
-    // =================================================================
+
     public function dashboard()
     {
+
         $commandes = Commande::where('statut_livraison', '!=', 'Annulée')
                              ->orderBy('date_commande', 'desc')
                              ->get();
+
 
         $ventesMensuelles = $commandes->groupBy(function($c) {
             return substr($c->date_commande, 0, 7); 
@@ -31,6 +31,7 @@ class DirecteurController extends Controller
                 'total_ventes' => $groupe->sum('montant_total')
             ];
         })->take(12);
+
 
         $lignes = DB::table('ligne_commande')
             ->join('commande', 'ligne_commande.id_commande', '=', 'commande.id_commande')
@@ -50,59 +51,78 @@ class DirecteurController extends Controller
             return (object) ['mois' => $mois, 'nom_categorie' => $cat, 'total' => $groupe->sum('montant')];
         })->sortByDesc('mois');
 
-        $nbProduitsIncomplets = Produit::whereDoesntHave('produitCouleurs')->count();
+
+        $nbProduitsIncomplets = Produit::where(function($query) {
+            $query->whereDoesntHave('produitCouleurs')
+                  ->orWhereHas('produitCouleurs', function($q) {
+                      $q->where('prix_total', '<', 0.01);
+                  });
+        })->count();
 
         return view('directeur.dashboard', compact('ventesMensuelles', 'ventesParCategorie', 'nbProduitsIncomplets'));
     }
 
-    // =================================================================
-    // GESTION PRODUITS (MODIFIÉ : PLUS DE COULEUR)
-    // =================================================================
+
     public function produitsIncomplets()
     {
-        $produitsSansPrix = Produit::whereDoesntHave('produitCouleurs')->get();
+
         
-        // On n'envoie plus les couleurs à la vue, on n'en a plus besoin
+        $produitsSansPrix = Produit::with('produitCouleurs')
+            ->where(function($query) {
+                $query->whereDoesntHave('produitCouleurs')
+                      ->orWhereHas('produitCouleurs', function($q) {
+                          $q->where('prix_total', '<', 0.01);
+                      });
+            })
+            ->orderBy('id_produit', 'desc') // Pour voir le dernier crée en premier
+            ->get();
+        
         return view('directeur.produits_incomplet', compact('produitsSansPrix'));
     }
 
     public function updatePrix(Request $request, $id)
     {
-        // 1. Validation : ON NE DEMANDE QUE LE PRIX
         $request->validate([
-            'prix_total' => 'required|numeric|min:0',
+            'prix_total' => 'required|numeric|min:0.01',
         ]);
 
-        // 2. Attribution automatique d'une couleur par défaut
-        // On prend la première couleur dispo en base (ex: ID 1) pour satisfaire la BDD
-        $defaultCouleur = Couleur::first();
-        if (!$defaultCouleur) {
-            return back()->with('error', 'Aucune couleur n\'existe en base de données. Impossible de créer la déclinaison.');
-        }
-
-        // 3. Création de la déclinaison
-        $produitCouleur = new ProduitCouleur();
-        $produitCouleur->id_produit = $id;
-        $produitCouleur->id_couleur = $defaultCouleur->id_couleur; // Automatique
-        $produitCouleur->prix_total = $request->input('prix_total');
-        $produitCouleur->save();
-
-        // 4. Stock auto à 0
-        $tailles = Taille::all();
-        foreach($tailles as $taille) {
-            $stock = new StockArticle();
-            $stock->id_produit_couleur = $produitCouleur->id_produit_couleur;
-            $stock->id_taille = $taille->id_taille;
-            $stock->stock = 0; 
-            $stock->save();
-        }
-
-        // 5. Activation produit
+        $prix = $request->input('prix_total');
         $produit = Produit::findOrFail($id);
+
+        if ($produit->produitCouleurs()->count() > 0) {
+            foreach($produit->produitCouleurs as $pc) {
+                $pc->prix_total = $prix;
+                $pc->save();
+            }
+        } 
+        else {
+            $defaultCouleur = Couleur::first(); 
+            if (!$defaultCouleur) {
+                return back()->with('error', 'Aucune couleur disponible.');
+            }
+
+            $pc = new ProduitCouleur();
+            $pc->id_produit = $id;
+            $pc->id_couleur = $defaultCouleur->id_couleur;
+            $pc->prix_total = $prix;
+            $pc->save();
+            
+            
+            $tailles = Taille::all();
+            foreach($tailles as $taille) {
+                $stock = new StockArticle();
+                $stock->id_produit_couleur = $pc->id_produit_couleur;
+                $stock->id_taille = $taille->id_taille;
+                $stock->stock = 0;
+                $stock->save();
+            }
+        }
+
+
         $produit->visibilite = 'visible';
         $produit->save();
 
         return redirect()->route('directeur.produits_incomplets')
-                         ->with('success', "Prix fixé à {$produitCouleur->prix_total}€. Produit en ligne (Couleur: {$defaultCouleur->type_couleur}).");
+                         ->with('success', "Prix fixé à {$prix}€. Le produit est en ligne !");
     }
 }

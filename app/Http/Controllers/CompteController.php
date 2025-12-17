@@ -53,7 +53,6 @@ class CompteController extends Controller
     {
         $user = Auth::user();
         
-        // CORRECTION ID 8 : Ajout des champs manquants pour une modification complète
         $request->validate([
             'nom' => 'required|string|max:50',
             'prenom' => 'required|string|max:50',
@@ -92,7 +91,7 @@ class CompteController extends Controller
         return redirect()->route('compte.index')->with('success', 'Informations mises à jour !');
     }
 
-    // --- GESTION DEMANDES SPÉCIALES ---
+
 
     public function createDemande()
     {
@@ -130,7 +129,7 @@ class CompteController extends Controller
         return redirect()->route('compte.index')->with('success', 'Votre demande spéciale a été transmise au bureau d\'étude !');
     }
 
-    // --- COMMANDES ---
+
 
     public function mesCommandes() 
     {

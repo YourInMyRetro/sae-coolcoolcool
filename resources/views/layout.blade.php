@@ -38,7 +38,7 @@
     {{-- LIEN VOTE --}}
     <li><a href="{{ route('vote.index') }}" class="{{ request()->routeIs('vote.*') ? 'active' : '' }}">Votes</a></li>
 
-    {{-- === AJOUT ICI : LIEN SERVICE VENTE === --}}
+    {{-- LIEN SERVICE VENTE --}}
     @auth
         @if(Auth::user()->role === 'service_vente')
             <li>
@@ -50,7 +50,20 @@
             </li>
         @endif
     @endauth
-    {{-- ====================================== --}}
+
+    {{-- === AJOUT ICI : LIEN SERVICE COMMANDE (SAV) === --}}
+    @auth
+        @if(Auth::user()->isServiceCommande())
+            <li>
+                <a href="{{ route('service.dashboard') }}" 
+                   class="{{ request()->routeIs('service.dashboard') ? 'active' : '' }}"
+                   style="color: #9b59b6; font-weight: bold; display: flex; align-items: center; gap: 5px;">
+                   <i class="fas fa-headset"></i> SAV
+                </a>
+            </li>
+        @endif
+    @endauth
+    {{-- =============================================== --}}
 
     {{-- BLOC DIRECTEUR (SEULEMENT POUR LE BOSS) --}}
     @auth
@@ -123,10 +136,10 @@
         </div>
     </header>
 
-    {{-- Espaceur pour compenser le header fixe (si tu as mis position:fixed en CSS) --}}
+    {{-- Espaceur pour compenser le header fixe --}}
     <div class="header-spacer"></div>
 
-    {{-- Messages Flash (Succès/Erreur) --}}
+    {{-- Messages Flash --}}
     @if(session('success'))
         <div class="alert-success-fifa" style="background: #55e6c1; color: #101010; padding: 15px; text-align: center; margin-bottom: 20px;">
             <i class="fas fa-check-circle"></i> {{ session('success') }}

@@ -11,16 +11,16 @@ use Illuminate\Http\Request;
 
 class ProduitController extends Controller
 {
-    // ... imports
+
 
     public function index(Request $request)
     {
-        // 1. REQUÊTE DE BASE (Sans JOIN, sans DISTINCT)
+
         $query = Produit::query()
             ->with(['premierPrix', 'premierePhoto', 'categorie', 'nations'])
             ->where('visibilite', 'visible');
 
-        // Moteur de recherche
+
         if ($request->filled('search')) {
             $search = $request->input('search');
             $query->where(function($q) use ($search) {
@@ -32,7 +32,7 @@ class ProduitController extends Controller
             });
         }
 
-        // Filtres (Utilisation de whereHas pour éviter les jointures parasites)
+
         if ($request->filled('categorie')) {
             $query->where('id_categorie', $request->categorie);
         }
@@ -52,16 +52,14 @@ class ProduitController extends Controller
             });
         }
 
-        // --- CORRECTION DU TRI ---
+
         if ($request->filled('sort')) {
             $direction = $request->sort == 'price_asc' ? 'asc' : 'desc';
 
-            // On trie via une sous-requête SQL directe sur la table produit_couleur
-            // Cela évite d'avoir à faire un JOIN et un DISTINCT qui font planter PostgreSQL
             $query->orderBy(
                 \App\Models\ProduitCouleur::select('prix_total')
                     ->whereColumn('produit_couleur.id_produit', 'produit.id_produit')
-                    ->orderBy('prix_total', 'asc') // On prend le prix le plus bas du produit comme référence
+                    ->orderBy('prix_total', 'asc')
                     ->limit(1),
                 $direction
             );
@@ -69,13 +67,13 @@ class ProduitController extends Controller
 
         $produits = $query->get();
 
-        // 2. DONNÉES DE FILTRAGE (Inchangé)
+
         $allColors = Couleur::orderBy('type_couleur')->pluck('type_couleur');
         $allSizes = Taille::orderBy('id_taille')->pluck('type_taille');
         $allNations = Nation::orderBy('nom_nation')->get();
         $categoriesPlates = Categorie::orderBy('nom_categorie')->get();
 
-        // Construction manuelle des groupes de catégories
+
         $mapping = [
             'UNIVERS VÊTEMENTS' => ['Maillots', 'Vêtement'], 
             'ÉQUIPEMENTS'       => ['Accessoires', 'Ballons'],

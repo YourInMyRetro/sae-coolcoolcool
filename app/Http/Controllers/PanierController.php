@@ -20,7 +20,7 @@ class PanierController extends Controller
         foreach($panier as $id => &$item) {
             $total += $item['prix'] * $item['quantite'];
             
-            // Récupération du stock frais pour affichage
+          
             $stockItem = StockArticle::find($item['id_stock']);
             $item['stock_max'] = $stockItem ? $stockItem->stock : 0;
         }

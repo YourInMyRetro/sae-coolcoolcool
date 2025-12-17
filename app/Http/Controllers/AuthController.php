@@ -12,13 +12,13 @@ use App\Models\StockArticle;
 
 class AuthController extends Controller
 {
-    // --- LOGIN ---
+    
     public function login() {
         return view('auth.login');
     }
 
     public function authenticate(Request $request) {
-        // 1. Validation des entrées
+        
         $credentials = $request->validate([
             'mail' => ['required', 'email'],
             'password' => ['required'],
@@ -26,27 +26,27 @@ class AuthController extends Controller
 
         $remember = $request->boolean('remember');
 
-        // 2. Tentative de connexion (Pour TOUT LE MONDE)
+        // la Connexion
         if (Auth::attempt($credentials, $remember)) {
             $request->session()->regenerate();
             $this->restoreCartFromDatabase(Auth::user());
 
-            // --- LOGIQUE DE DÉRIVATION ---
             
-            // CAS A : C'est le Directeur
+            
+            // directeur
             if (Auth::user()->isDirector()) {
                 return redirect()->route('directeur.dashboard');
             }
 
-            // CAS B : C'est un utilisateur normal (Client ou Pro)
+            // client ou pro
             return redirect()->intended(route('home'));
         }
 
-        // 3. Echec de connexion
+        //  Echec de connexion
         return back()->withErrors(['mail' => 'Mauvais identifiant ou mot de passe.'])->onlyInput('mail');
     }
 
-    // --- LOGOUT ---
+    // deco
     public function logout(Request $request) {
         Auth::logout();
         $request->session()->invalidate();
@@ -54,16 +54,16 @@ class AuthController extends Controller
         return redirect()->route('login');
     }
 
-    // --- INSCRIPTION PARTICULIER ---
+    // creation compte
     public function showRegisterForm() { return view('auth.register'); }
 
     public function register(Request $request) {
-        // 1. Validation avec les nouvelles règles RGPD et COHÉRENCE DATE
+       
         $request->validate([
             'nom' => 'required|max:50', 
             'prenom' => 'required|max:50',
             'mail' => 'required|email|unique:utilisateur', 
-            // AJOUT DU TÉLÉPHONE (Nullable mais formaté si présent)
+   
             'telephone' => ['nullable', 'string', 'min:10', 'max:20', 'regex:/^([0-9\s\-\+\(\)]*)$/'],
             'date_naissance' => 'required|date|before:today|after:-120 years',
             'pays_naissance' => 'required|max:50', 
@@ -79,12 +79,12 @@ class AuthController extends Controller
             'telephone.min' => 'Le numéro de téléphone est trop court.'
         ]);
 
-        // 2. Création de l'utilisateur
+
         $user = new User();
         $user->nom = $request->input('nom');
         $user->prenom = $request->input('prenom');
         $user->mail = $request->input('mail');
-        // SAUVEGARDE DU TÉLÉPHONE
+
         $user->telephone = $request->input('telephone');
         
         $user->date_naissance = $request->input('date_naissance');
@@ -101,7 +101,7 @@ class AuthController extends Controller
         return redirect()->route('home')->with('success', 'Bienvenue sur FIFA Store !');
     }
 
-    // --- INSCRIPTION PRO ---
+    // creation compte pto
     public function showRegisterProForm() { return view('auth.register_pro'); }
 
     public function registerPro(Request $request) {
@@ -113,7 +113,7 @@ class AuthController extends Controller
             'nom_societe' => 'required|max:100', 
             'numero_tva' => 'required|unique:professionel,numero_tva_intracommunautaire',
             'activite' => 'required|max:100', 
-            // CORRECTION ID 5 : Cohérence date de naissance Pro
+
             'date_naissance' => 'required|date|before:today|after:-120 years', 
             'pays_naissance' => 'required|max:50', 
             'langue' => 'required|max:50',
