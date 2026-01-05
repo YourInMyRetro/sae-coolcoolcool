@@ -103,7 +103,7 @@ class ProduitController extends Controller
     }
 
     public function show(Request $request, $id) {
-        $produit = Produit::with(['variantes.couleur', 'variantes.stocks.taille', 'nations', 'categorie', 'premierePhoto', 'premierPrix'])
+        $produit = Produit::with(['variantes.couleur', 'variantes.stocks.taille', 'nations', 'categorie', 'photos', 'premierPrix'])
             ->findOrFail($id);
         
         $viewed = session()->get('viewed_products', []);

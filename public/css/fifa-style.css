@@ -790,3 +790,297 @@ summary.parent-label:hover {
     border-color: var(--fifa-cyan) !important;
     box-shadow: 0 0 0 3px rgba(85, 230, 193, 0.2) !important;
 }
+
+
+/* ==========================================================================
+   STYLE COMPLET BLOG & COMMENTAIRES (FIFA STYLE)
+   ========================================================================== */
+
+/* 1. CONFIGURATION ET VARIABLES
+   -------------------------------------------------------------------------- */
+:root {
+    --fifa-cyan: #00cfb7;
+    --fifa-dark-bg: #0f1623;
+    --fifa-card-bg: #1a202c;
+    --fifa-hover: #2d3748;
+    --fifa-text-muted: #a0aec0;
+    --fifa-border: #2d3748;
+}
+
+/* Espacement grille blog */
+.blog-grid-gap {
+    row-gap: 3rem !important;
+    column-gap: 2rem !important;
+}
+
+/* 2. PAGE INDEX (CARTES)
+   -------------------------------------------------------------------------- */
+.blog-card {
+    background-color: var(--fifa-card-bg);
+    border: 1px solid var(--fifa-border);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    height: 100%;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.blog-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
+    border-color: var(--fifa-cyan);
+}
+
+.blog-card-img-wrapper {
+    position: relative;
+    height: 220px;
+    overflow: hidden;
+}
+
+.blog-card-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.blog-card:hover .blog-card-img {
+    transform: scale(1.05);
+}
+
+.blog-card-body {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.blog-date {
+    font-size: 0.85rem;
+    color: var(--fifa-cyan);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 0.5rem;
+}
+
+.blog-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 0.75rem;
+    line-height: 1.4;
+}
+
+.blog-excerpt {
+    color: var(--fifa-text-muted);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+    flex-grow: 1;
+}
+
+.btn-site-home {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s;
+}
+
+.btn-site-home:hover {
+    background-color: var(--fifa-cyan);
+    color: #000;
+    border-color: var(--fifa-cyan);
+}
+
+/* 3. PAGE DÉTAIL (HERO)
+   -------------------------------------------------------------------------- */
+.article-hero {
+    position: relative;
+    height: 400px;
+    border-radius: 20px;
+    overflow: hidden;
+    margin-bottom: 3rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.article-hero-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.article-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: linear-gradient(to top, rgba(15, 22, 35, 1) 0%, rgba(15, 22, 35, 0.8) 50%, rgba(15, 22, 35, 0) 100%);
+    padding: 3rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+.article-content {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: #e2e8f0;
+}
+
+/* 4. SECTION COMMENTAIRES
+   -------------------------------------------------------------------------- */
+.comments-section {
+    background-color: #1a202c;
+    border: 1px solid #2d3748;
+    border-radius: 16px;
+    padding: 2rem;
+    margin-top: 2rem;
+}
+
+.comment-wrapper {
+    position: relative;
+    margin-bottom: 2rem;
+}
+
+/* Avatars */
+.avatar-circle {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #00cfb7 0%, #008f7a 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 1.2rem;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    border: 2px solid #0f1623;
+    z-index: 2;
+    position: relative;
+}
+
+.avatar-small {
+    width: 35px;
+    height: 35px;
+    font-size: 0.9rem;
+    background: #4a5568; 
+    border: 2px solid #1a202c;
+}
+
+/* Bulles Commentaires PARENTS */
+.comment-content-box {
+    background-color: #2d3748;
+    border-radius: 0 16px 16px 16px;
+    padding: 1rem;
+    position: relative;
+}
+
+/* CORRECTION : Bulles RÉPONSES (Plus claires que le fond noir) */
+.reply-bubble {
+    background-color: #2d3748; /* Même gris bleuté que le parent */
+    border: 1px solid #4a5568;
+    padding: 0.8rem;
+    border-radius: 8px;
+    position: relative;
+}
+
+/* Textes */
+.comment-author {
+    color: var(--fifa-cyan) !important;
+    font-weight: 700;
+    font-size: 1rem;
+    margin-right: 10px;
+}
+
+.comment-date {
+    color: #a0aec0 !important;
+    font-size: 0.8rem;
+}
+
+.comment-text {
+    color: #edf2f7 !important;
+    margin-top: 6px;
+    margin-bottom: 0;
+    line-height: 1.5;
+    font-size: 0.95rem;
+}
+
+/* 5. ARBORESCENCE (LIGNES)
+   -------------------------------------------------------------------------- */
+.replies-container {
+    margin-left: 22px;
+    padding-left: 25px;
+    border-left: 2px solid #4a5568;
+    margin-top: 10px;
+}
+
+.reply-item {
+    margin-bottom: 15px;
+    position: relative;
+}
+
+.reply-item::before {
+    content: '';
+    position: absolute;
+    left: -27px;
+    top: 18px;
+    width: 20px;
+    height: 2px;
+    background-color: #4a5568;
+}
+
+.reply-form-container {
+    display: none;
+    margin-top: 15px;
+    margin-left: 55px;
+    background: #151c27;
+    padding: 15px;
+    border-radius: 10px;
+    border: 1px solid #2d3748;
+}
+
+.btn-fifa-cyan {
+    background-color: var(--fifa-cyan);
+    color: #0f1623;
+    border: none;
+    transition: all 0.2s;
+}
+.btn-fifa-cyan:hover {
+    background-color: #00b39d;
+    transform: translateY(-2px);
+}
+
+.reply-item .fw-bold {
+    color: var(--fifa-cyan) !important;
+    font-size: 0.9rem; /* Un tout petit peu plus gros pour la lisibilité */
+}
+
+/* 1. TITRES ET DATES SUR LA PHOTO (Doivent être CLAIRS) */
+.article-overlay h1, 
+.article-overlay .display-4, 
+.article-overlay .text-info, 
+.article-overlay span.badge {
+    color: #ffffff !important; /* Blanc pur forcé */
+    text-shadow: 0 3px 8px rgba(0,0,0,0.9) !important; /* Grosse ombre noire derrière pour le contraste */
+}
+
+/* 2. TEXTE DE L'HISTOIRE (Doit être FONCÉ sur le fond blanc) */
+.article-content,
+.lead {
+    color: #1a202c !important; /* Gris très foncé (presque noir) */
+    font-weight: 500; /* Légèrement plus épais pour bien lire */
+}
+
+#chat-box .text-muted {
+    color: #d1d5db !important; /* Gris très clair */
+}
+
+/* 2. Le texte du CLIENT (Toi) en Blanc pur */
+/* On cible uniquement les bulles alignées à droite (justify-content-end) */
+.justify-content-end .p-3 {
+    color: #ffffff !important; /* Blanc pur */
+}

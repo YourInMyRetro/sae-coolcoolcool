@@ -5,40 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FIFA Store Officiel - La Boutique des Fans</title>
     
-    {{-- CSS Principal --}}
     <link rel="stylesheet" href="{{ asset('css/fifa-style.css') }}">
-    
-    {{-- FontAwesome pour les icônes --}}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    {{-- Police officielle Google Fonts (Open Sans) --}}
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
 
-    {{-- HEADER PREMIUM FIFA STYLE --}}
     <header class="fifa-header">
         <div class="container header-inner">
             
-            {{-- BLOC GAUCHE : LOGO --}}
             <div class="header-left">
                 <a href="{{ route('home') }}" class="logo-link">
-                    {{-- Logo Textuel FIFA --}}
                     <span class="fifa-logo-text">FIFA STORE</span>
                 </a>
             </div>
 
-            {{-- BLOC CENTRE : NAVIGATION --}}
             <div class="header-center">
                 <nav class="main-nav">
                     <ul class="nav-list">
                         <li><a href="{{ route('home') }}" class="{{ request()->routeIs('home') ? 'active' : '' }}">Accueil</a></li>
                         <li><a href="{{ route('produits.index') }}" class="{{ request()->routeIs('produits.index') ? 'active' : '' }}">Boutique</a></li>
                         
-                        {{-- LIEN VOTE --}}
+                        <li><a href="{{ route('blog.index') }}" class="{{ request()->routeIs('blog.*') ? 'active' : '' }}">Actualités</a></li>
+
                         <li><a href="{{ route('vote.index') }}" class="{{ request()->routeIs('vote.*') ? 'active' : '' }}">Votes</a></li>
 
-                        {{-- LIEN SERVICE VENTE --}}
                         @auth
                             @if(Auth::user()->role === 'service_vente')
                                 <li>
@@ -51,7 +42,6 @@
                             @endif
                         @endauth
 
-                        {{-- LIEN SERVICE COMMANDE (SAV) --}}
                         @auth
                             @if(Auth::user()->isServiceCommande())
                                 <li>
@@ -64,7 +54,6 @@
                             @endif
                         @endauth
 
-                        {{-- BLOC DIRECTEUR --}}
                         @auth
                             @if(Auth::user()->isDirector())
                                 <li>
@@ -75,7 +64,6 @@
                             @endif
                         @endauth
 
-                        {{-- BLOC EXPÉDITION --}}
                         @auth
                             @if(Auth::user()->isExpedition())
                                 <li>
@@ -88,40 +76,32 @@
                             @endif
                         @endauth
 
-                        {{-- Exemples de filtres rapides --}}
                         <li><a href="{{ route('produits.index', ['categorie' => 1]) }}">Maillots</a></li>
                     </ul>
                 </nav>
             </div>
 
-            {{-- BLOC DROITE : RECHERCHE & PANIER & USER --}}
             <div class="header-right">
                 
-                {{-- Barre de recherche intégrée --}}
                 <form action="{{ route('produits.index') }}" method="GET" class="search-bar-container">
                     <input type="text" name="search" class="search-input" placeholder="Rechercher..." value="{{ request('search') }}">
                     <button type="submit" class="search-btn"><i class="fas fa-search"></i></button>
                 </form>
 
-                {{-- Icônes Utilisateur & Panier --}}
                 <div class="header-icons">
                     
-                    {{-- 1. LE BONHOMME (Logique Connexion / Compte) --}}
                     @guest
-                        {{-- Si VISITEUR : Lien vers Login --}}
                         <a href="{{ route('login') }}" class="icon-btn" title="Se connecter">
                             <i class="far fa-user"></i>
                         </a>
                     @endguest
 
                     @auth
-                        {{-- Si CONNECTÉ : Lien vers Compte (Icône pleine + couleur distinctive) --}}
                         <a href="{{ route('compte.index') }}" class="icon-btn" title="Mon Compte">
                             <i class="fas fa-user" style="color: #55e6c1;"></i>
                         </a>
                     @endauth
 
-                    {{-- 2. LE PANIER --}}
                     <a href="{{ route('panier.index') }}" class="icon-btn cart-btn-wrapper" title="Mon Panier">
                         <i class="fas fa-shopping-bag"></i>
                         @if(count(session('panier', [])) > 0)
@@ -135,10 +115,8 @@
         </div>
     </header>
 
-    {{-- Espaceur pour compenser le header fixe --}}
     <div class="header-spacer"></div>
 
-    {{-- Messages Flash --}}
     @if(session('success'))
         <div class="alert-success-fifa" style="background: #55e6c1; color: #101010; padding: 15px; text-align: center; margin-bottom: 20px;">
             <i class="fas fa-check-circle"></i> {{ session('success') }}
@@ -151,12 +129,10 @@
         </div>
     @endif
 
-    {{-- CONTENU PRINCIPAL --}}
     <main>
         @yield('content')
     </main>
 
-    {{-- FOOTER --}}
     <footer class="fifa-footer">
         <div class="container footer-content">
             <div class="footer-logo">
@@ -171,7 +147,6 @@
         </div>
     </footer>
 
-    {{-- BANDEAU COOKIES (ID 56 & 58) --}}
     <div id="cookie-banner" style="position: fixed; bottom: 0; left: 0; right: 0; background-color: #333; color: white; padding: 20px; text-align: center; display: none; z-index: 9999; box-shadow: 0 -2px 10px rgba(0,0,0,0.3);">
         <p style="margin-bottom: 10px;">Nous utilisons des cookies pour améliorer votre expérience sur le FIFA Store. Acceptez-vous les cookies ?</p>
         <button onclick="acceptCookies()" style="background-color: #55e6c1; border: none; padding: 10px 20px; cursor: pointer; color: black; font-weight: bold; border-radius: 4px;">Accepter</button>
@@ -180,7 +155,6 @@
 
     <script>
         function checkCookies() {
-            // ID 56 : Si aucun choix n'a été fait, on affiche le bandeau
             if (!localStorage.getItem('cookie_consent')) {
                 document.getElementById('cookie-banner').style.display = 'block';
             }
@@ -196,9 +170,15 @@
             document.getElementById('cookie-banner').style.display = 'none';
         }
 
-        // Lancer la vérification au chargement
         window.onload = checkCookies;
     </script>
+
+    <a href="{{ route('chat.index') }}" 
+       style="position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; background-color: #00cfb7; color: #000; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 9999; text-decoration: none; transition: transform 0.3s;"
+       onmouseover="this.style.transform='scale(1.1)'" 
+       onmouseout="this.style.transform='scale(1)'">
+        <i class="fas fa-comments fa-2x"></i>
+    </a>
 
 </body>
 </html>

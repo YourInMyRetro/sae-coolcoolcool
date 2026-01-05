@@ -9,6 +9,8 @@
             $stockTotalProduit += $stock->stock;
         }
     }
+    
+    $mainPhoto = $produit->photos->first() ? asset($produit->photos->first()->url_photo) : asset('img/placeholder.jpg');
 @endphp
 
 <div class="container" style="padding: 50px 0;">
@@ -16,9 +18,26 @@
     <div class="product-detail" style="display: flex; gap: 40px; flex-wrap: wrap; margin-bottom: 80px;">
         
         <div class="product-image" style="flex: 1; min-width: 300px;">
-            <img src="{{ asset($produit->premierePhoto->url_photo ?? 'img/placeholder.jpg') }}" 
-                 alt="{{ $produit->nom_produit }}" 
-                 style="width: 100%; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+            <div style="margin-bottom: 15px; position: relative;">
+                <img id="mainImage" src="{{ $mainPhoto }}" 
+                     alt="{{ $produit->nom_produit }}" 
+                     onclick="openFullscreen()"
+                     style="width: 100%; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); object-fit: cover; aspect-ratio: 1/1; cursor: zoom-in;">
+                <div style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; pointer-events: none;">
+                    <i class="fas fa-search-plus"></i> Agrandir
+                </div>
+            </div>
+
+            @if($produit->photos->count() > 1)
+            <div style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px;">
+                @foreach($produit->photos as $photo)
+                    <img src="{{ asset($photo->url_photo) }}" 
+                         class="thumbnail-img"
+                         style="width: 80px; height: 80px; object-fit: cover; border-radius: 6px; cursor: pointer; border: 2px solid transparent; opacity: 0.7; transition: all 0.2s;"
+                         onclick="changeImage(this.src)">
+                @endforeach
+            </div>
+            @endif
         </div>
 
         <div class="product-info" style="flex: 1; min-width: 300px;">
@@ -142,4 +161,33 @@
     @endif
 
 </div>
+
+<div id="fullscreenOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999; justify-content: center; align-items: center; cursor: zoom-out;" onclick="closeFullscreen()">
+    <img id="fullscreenImage" src="" style="max-width: 90%; max-height: 90%; border-radius: 5px; box-shadow: 0 0 20px rgba(0,0,0,0.5);">
+</div>
+
+<script>
+    function changeImage(src) {
+        document.getElementById('mainImage').src = src;
+        
+        const thumbnails = document.querySelectorAll('.thumbnail-img');
+        thumbnails.forEach(img => {
+            img.style.borderColor = 'transparent';
+            img.style.opacity = '0.7';
+        });
+        
+        event.target.style.borderColor = '#326295';
+        event.target.style.opacity = '1';
+    }
+
+    function openFullscreen() {
+        const src = document.getElementById('mainImage').src;
+        document.getElementById('fullscreenImage').src = src;
+        document.getElementById('fullscreenOverlay').style.display = 'flex';
+    }
+
+    function closeFullscreen() {
+        document.getElementById('fullscreenOverlay').style.display = 'none';
+    }
+</script>
 @endsection

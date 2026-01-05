@@ -3,7 +3,6 @@
 @section('content')
 <div class="container py-5">
     
-    {{-- Header de la page --}}
     <div class="d-flex justify-content-between align-items-center mb-5">
         <div>
             <h6 class="text-uppercase text-muted fw-bold mb-1">Service Vente</h6>
@@ -24,7 +23,6 @@
         @csrf
         
         <div class="row g-4">
-            {{-- COLONNE GAUCHE : INFOS GÉNÉRALES --}}
             <div class="col-lg-8">
                 <div class="dashboard-card mb-4">
                     <h3 class="border-bottom border-secondary pb-2 mb-4">
@@ -51,13 +49,12 @@
                             </select>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="text-muted small fw-bold text-uppercase mb-2">Photo du produit</label>
-                            <input type="file" name="photo" id="photoInput" accept="image/*" class="form-control input-dark">
+                            <label class="text-muted small fw-bold text-uppercase mb-2">Photos du produit</label>
+                            <input type="file" name="photos[]" id="photoInput" accept="image/*" class="form-control input-dark" multiple>
                         </div>
                     </div>
                 </div>
 
-                {{-- SECTION VARIANTES & STOCKS --}}
                 <div class="dashboard-card">
                     <h3 class="border-bottom border-secondary pb-2 mb-4">
                         <i class="fas fa-boxes me-2"></i> Stocks & Variantes
@@ -106,19 +103,15 @@
                 </div>
             </div>
 
-            {{-- COLONNE DROITE : APERÇU & PRIX --}}
             <div class="col-lg-4">
                 
-                {{-- APERÇU PHOTO --}}
                 <div class="dashboard-card mb-4 text-center">
-                    <h3 class="mb-3">Aperçu Photo</h3>
-                    <div style="width: 100%; height: 250px; background: #0f1623; border: 2px dashed #2d3b55; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 8px;">
-                        <img id="previewImage" src="" style="max-width: 100%; max-height: 100%; display: none;">
-                        <span id="previewText" class="text-muted"><i class="fas fa-image fa-2x mb-2"></i><br>Aucune image</span>
+                    <h3 class="mb-3">Aperçu Photos</h3>
+                    <div id="previewContainer" style="width: 100%; min-height: 250px; background: #0f1623; border: 2px dashed #2d3b55; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; padding: 10px; gap: 10px; border-radius: 8px;">
+                        <span id="previewText" class="text-muted"><i class="fas fa-images fa-2x mb-2"></i><br>Aucune image sélectionnée</span>
                     </div>
                 </div>
 
-                {{-- PRIX (OPTIONNEL) --}}
                 <div class="dashboard-card mb-4" style="border-color: #f39c12;">
                     <h3 class="text-warning mb-3"><i class="fas fa-tag me-2"></i> Prix de vente</h3>
                     <p class="small text-muted mb-3">
@@ -138,25 +131,31 @@
     </form>
 </div>
 
-{{-- SCRIPT JS --}}
 <script>
-    // 1. Prévisualisation image
     document.getElementById('photoInput').addEventListener('change', function(event) {
-        const file = event.target.files[0];
-        const previewImage = document.getElementById('previewImage');
+        const files = event.target.files;
+        const previewContainer = document.getElementById('previewContainer');
         const previewText = document.getElementById('previewText');
 
-        if (file) {
-            previewImage.src = URL.createObjectURL(file);
-            previewImage.style.display = 'block';
-            previewText.style.display = 'none';
+        previewContainer.innerHTML = '';
+
+        if (files && files.length > 0) {
+            Array.from(files).forEach(file => {
+                const img = document.createElement('img');
+                img.src = URL.createObjectURL(file);
+                img.style.maxWidth = '100px';
+                img.style.maxHeight = '100px';
+                img.style.objectFit = 'cover';
+                img.style.borderRadius = '4px';
+                img.style.border = '1px solid #555';
+                previewContainer.appendChild(img);
+            });
         } else {
-            previewImage.style.display = 'none';
+            previewContainer.appendChild(previewText);
             previewText.style.display = 'inline';
         }
     });
 
-    // 2. Gestion des lignes de variantes
     let rowIdx = 1;
     const couleursOptions = `@foreach($couleurs as $c)<option value="{{ $c->id_couleur }}">{{ $c->type_couleur }}</option>@endforeach`;
     const taillesOptions = `@foreach($tailles as $t)<option value="{{ $t->id_taille }}">{{ $t->type_taille }}</option>@endforeach`;

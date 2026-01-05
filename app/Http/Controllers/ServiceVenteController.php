@@ -50,8 +50,9 @@ class ServiceVenteController extends Controller
         $request->validate([
             'nom_produit' => 'required|max:255',
             'id_categorie' => 'required|exists:categorie,id_categorie',
-            'photo' => 'nullable|image|max:2048',
-           'prix' => 'nullable|numeric|min:0',
+            'photos' => 'nullable|array',
+            'photos.*' => 'image|max:2048',
+            'prix' => 'nullable|numeric|min:0',
             'variantes' => 'required|array',
             'variantes.*.id_couleur' => 'required|exists:couleur,id_couleur',
             'variantes.*.id_taille' => 'required|exists:taille,id_taille',
@@ -73,14 +74,16 @@ class ServiceVenteController extends Controller
             $produit->save();
             
 
-            if ($request->hasFile('photo')) {
-                $fileName = time() . '_' . $request->file('photo')->getClientOriginalName();
-                $request->file('photo')->move(public_path('img/produits'), $fileName);
+            if ($request->hasFile('photos')) {
+                foreach ($request->file('photos') as $image) {
+                    $fileName = time() . '_' . uniqid() . '_' . $image->getClientOriginalName();
+                    $image->move(public_path('img/produits'), $fileName);
 
-                $photo = new PhotoProduit();
-                $photo->id_produit = $produit->id_produit;
-                $photo->url_photo = 'img/produits/' . $fileName;
-                $photo->save();
+                    $photo = new PhotoProduit();
+                    $photo->id_produit = $produit->id_produit;
+                    $photo->url_photo = 'img/produits/' . $fileName;
+                    $photo->save();
+                }
             }
 
             $groupesCouleurs = [];

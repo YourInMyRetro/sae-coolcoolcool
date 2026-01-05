@@ -12,6 +12,7 @@ use App\Http\Controllers\ServiceCommandeController;
 use App\Http\Controllers\ServiceVenteController;
 use App\Http\Controllers\ServiceExpeditionController;
 use App\Http\Controllers\DirecteurController;
+use App\Http\Controllers\ChatController;
 
 Route::view('/cgu', 'legal.cgu')->name('cgu');
 Route::view('/privacy', 'legal.privacy')->name('privacy');
@@ -115,3 +116,18 @@ Route::middleware(['auth'])->prefix('service-vente')->name('vente.')->group(func
     Route::get('/produits', [ServiceVenteController::class, 'listProduits'])->name('produits.list');
     Route::post('/produit/{id}/visibilite', [ServiceVenteController::class, 'toggleVisibilite'])->name('produit.visibilite');
 });
+
+
+
+Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
+Route::get('/chat/fetch', [ChatController::class, 'fetchMessages'])->name('chat.fetch');
+Route::post('/chat/send', [ChatController::class, 'sendMessage'])->name('chat.send');
+Route::post('/chat/clear', [ChatController::class, 'clearMessages'])->name('chat.clear');
+
+
+
+use App\Http\Controllers\BlogController;
+
+Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
+Route::get('/blog/{id}', [BlogController::class, 'show'])->name('blog.show');
+Route::post('/blog/{id}/comment', [BlogController::class, 'storeComment'])->name('blog.comment.store');
