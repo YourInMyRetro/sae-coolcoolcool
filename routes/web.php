@@ -44,11 +44,30 @@ Route::post('/inscription', [AuthController::class, 'register'])->name('register
 Route::get('/inscription/pro', [AuthController::class, 'showRegisterProForm'])->name('register.pro.form');
 Route::post('/inscription/pro', [AuthController::class, 'registerPro'])->name('register.pro.submit');
 
+// --- LOGIN 2FA ---
+Route::get('/login/2fa', [App\Http\Controllers\AuthController::class, 'show2FAForm'])->name('login.2fa.form');
+Route::post('/login/2fa', [App\Http\Controllers\AuthController::class, 'verify2FA'])->name('login.2fa.verify');
+
+// --- MOT DE PASSE OUBLIÉ ---
+Route::get('/mot-de-passe-oublie', [App\Http\Controllers\AuthController::class, 'showForgotPasswordForm'])->name('password.request');
+Route::post('/mot-de-passe-oublie', [App\Http\Controllers\AuthController::class, 'sendResetLink'])->name('password.email');
+Route::get('/reinitialiser-mot-de-passe/{token}', [App\Http\Controllers\AuthController::class, 'showResetPasswordForm'])->name('password.reset');
+Route::post('/reinitialiser-mot-de-passe', [App\Http\Controllers\AuthController::class, 'resetPassword'])->name('password.update');
+
+// --- SOCIAL LOGIN ---
+Route::get('/auth/google', [App\Http\Controllers\AuthController::class, 'redirectToGoogle'])->name('login.google');
+Route::get('/auth/google/callback', [App\Http\Controllers\AuthController::class, 'handleGoogleCallback']);
+
 Route::middleware(['auth'])->group(function () {
     
     Route::get('/compte', [CompteController::class, 'index'])->name('compte.index');
     Route::get('/compte/modifier', [CompteController::class, 'edit'])->name('compte.edit');
     Route::post('/compte/modifier', [CompteController::class, 'update'])->name('compte.update');
+    
+// --- 2FA / SÉCURITÉ ---
+    Route::post('/compte/2fa/send', [CompteController::class, 'send2FACode'])->name('compte.2fa.send');
+    Route::post('/compte/2fa/verify', [CompteController::class, 'verify2FACode'])->name('compte.2fa.verify');
+    Route::post('/compte/2fa/disable', [CompteController::class, 'disable2FA'])->name('compte.2fa.disable');
 
    Route::get('/compte/demande-speciale', [CompteController::class, 'createDemande'])
          ->name('compte.demande.create'); 
@@ -76,8 +95,10 @@ Route::middleware(['auth', 'directeur'])->group(function () {
     Route::post('/directeur/produit/{id}/fixer-prix', [DirecteurController::class, 'updatePrix'])->name('directeur.update_prix');
 });
 
+// Routes Service Commande (SAV)
 Route::get('/service/dashboard', [ServiceCommandeController::class, 'dashboard'])->name('service.dashboard');
 Route::post('/service/reserve', [ServiceCommandeController::class, 'storeReserve'])->name('service.reserve.store');
+Route::post('/service/commande/{id}/valider', [ServiceCommandeController::class, 'validerReception'])->name('service.commande.valider'); // <--- NOUVELLE ROUTE ID 42
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/service/expedition', [ServiceExpeditionController::class, 'index'])->name('service.expedition');

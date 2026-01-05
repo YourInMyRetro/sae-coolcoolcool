@@ -10,6 +10,9 @@ use App\Models\Professionel;
 use App\Models\DemandeSpeciale;
 use App\Models\Commande;
 use Carbon\Carbon;
+use Twilio\Rest\Client;
+use Illuminate\Support\Facades\Log;
+
 
 class CompteController extends Controller
 {
@@ -140,5 +143,84 @@ class CompteController extends Controller
                              ->get();
         
         return view('compte.commandes', compact('commandes'));
+    }
+
+    // 1. Génère le code et envoie le SMS
+    public function send2FACode(Request $request)
+    {
+        $user = auth()->user();
+
+        if (empty($user->telephone)) {
+            return back()->withErrors(['msg' => "Veuillez d'abord renseigner votre numéro de téléphone dans 'Modifier mes informations'."]);
+        }
+
+        // Génération du code à 6 chiffres
+        $code = rand(100000, 999999);
+        
+        // Sauvegarde en base (en clair pour le moment comme demandé, expiration +10min)
+        $user->code_auth_temporaire = $code;
+        $user->code_auth_expiration = Carbon::now()->addMinutes(10);
+        $user->save();
+
+        // Envoi SMS (Logique Twilio identique au service expédition)
+        try {
+            // Nettoyage du numéro
+            $telClean = preg_replace('/[^0-9]/', '', $user->telephone);
+            if (str_starts_with($telClean, '0')) $telClean = '+33' . substr($telClean, 1);
+            if (!str_starts_with($telClean, '+')) $telClean = '+' . $telClean;
+
+            $sid = env('TWILIO_SID');
+            $token = env('TWILIO_AUTH_TOKEN');
+            $messagingServiceSid = env('TWILIO_MESSAGING_SERVICE_SID');
+
+            $client = new Client($sid, $token);
+            $message = "FIFA SECURITY : Votre code de validation est $code. Ne le partagez pas.";
+
+            $client->messages->create($telClean, [
+                "messagingServiceSid" => $messagingServiceSid,
+                "body" => $message
+            ]);
+
+            // On renvoie vers la vue avec une variable de session pour afficher le formulaire de code
+            return back()->with('verify_2fa', true)->with('success', "Code envoyé par SMS au $telClean !");
+
+        } catch (\Exception $e) {
+            Log::error("Erreur SMS 2FA : " . $e->getMessage());
+            return back()->withErrors(['msg' => "Erreur d'envoi SMS (Vérifiez votre configuration Twilio). Code généré (Debug) : $code"]);
+        }
+    }
+
+    // 2. Vérifie le code saisi par l'utilisateur
+    public function verify2FACode(Request $request)
+    {
+        $request->validate(['code' => 'required|numeric']);
+        $user = auth()->user();
+
+        // Vérifications
+        if ($user->code_auth_temporaire != $request->code) {
+            return back()->with('verify_2fa', true)->withErrors(['code' => 'Code incorrect.']);
+        }
+
+        if (Carbon::now()->greaterThan($user->code_auth_expiration)) {
+            return back()->withErrors(['msg' => 'Le code a expiré. Veuillez recommencer.']);
+        }
+
+        // Succès : Activation
+        $user->double_auth_active = true;
+        $user->code_auth_temporaire = null; // Nettoyage
+        $user->code_auth_expiration = null;
+        $user->save();
+
+        return back()->with('success', 'Double Authentification activée avec succès ! Votre compte est sécurisé.');
+    }
+
+    // 3. Désactiver l'option
+    public function disable2FA()
+    {
+        $user = auth()->user();
+        $user->double_auth_active = false;
+        $user->save();
+
+        return back()->with('success', 'Double Authentification désactivée.');
     }
 }

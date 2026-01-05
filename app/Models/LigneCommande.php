@@ -10,7 +10,7 @@ class LigneCommande extends Model
 
     protected $fillable = ['id_commande', 'quantite_commande', 'prix_unitaire_negocie'];
 
-    // Relation vers le stock via la table 'estplacee'
+
     public function stocks()
     {
         return $this->belongsToMany(StockArticle::class, 'estplacee', 'id_ligne_commande', 'id_stock_article');

@@ -12,7 +12,7 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    // --- CONFIGURATION AUTHENTIFICATION (Tuto Prof) ---
+
     protected $table = 'utilisateur';
     protected $primaryKey = 'id_utilisateur';
     public $timestamps = false;
@@ -20,14 +20,17 @@ class User extends Authenticatable
     protected $fillable = [
         'nom', 'prenom', 'mail','telephone', 'date_naissance', 
         'pays_naissance', 'langue', 'mot_de_passe_chiffre', 
-        'surnom', 'newsletter_optin','role'
+        'surnom', 'newsletter_optin','role',
+        'double_auth_active', 
+        'code_auth_temporaire',
+        'code_auth_expiration'
     ];
 
     protected $hidden = [
-        'mot_de_passe_chiffre', 'remember_token',
+        'mot_de_passe_chiffre', 'remember_token', 'code_auth_temporaire',
     ];
 
-    // Création automatique de l'acheteur
+
     protected static function booted()
     {
         static::created(function ($user) {
@@ -40,9 +43,9 @@ class User extends Authenticatable
         return $this->mot_de_passe_chiffre;
     }
 
-    // --- RELATIONS MÉTIERS (Ce qui manquait) ---
 
-    // 1. Relation Pro (Existante)
+
+
     public function professionel() { 
         return $this->hasOne(Professionel::class, 'id_utilisateur', 'id_utilisateur'); 
     }
@@ -51,23 +54,21 @@ class User extends Authenticatable
         return $this->professionel != null; 
     }
 
-    // 2. Relation Panier (Pour la restauration AuthController)
+
     public function panier() {
         return $this->hasOne(Panier::class, 'id_utilisateur', 'id_utilisateur');
     }
 
-    // 3. Relation Adresses (Pour la Commande)
     public function adresses() {
         return $this->belongsToMany(Adresse::class, 'possedeadresse', 'id_utilisateur', 'id_adresse');
     }
 
-    // 4. Relation Commandes (Pour l'historique)
+
     public function commandes() {
         return $this->hasMany(Commande::class, 'id_utilisateur', 'id_utilisateur');
     }
 
-    // 5. Relation Votes (Pour le Système de Vote)
-    // Table pivot 'faitvote'
+
     public function votes() {
         return $this->belongsToMany(Vote::class, 'faitvote', 'id_utilisateur', 'id_vote');
     }
@@ -82,18 +83,16 @@ class User extends Authenticatable
         return $this->role === 'directeur';
     }
 
-    /**
-     * Vérifie si l'utilisateur est membre du service expédition.
-     */
+
     public function isExpedition()
     {
-        // On suppose que le rôle en base de données sera 'service_expedition'
+
         return $this->role === 'service_expedition';
     }
 
     public function isServiceCommande()
     {
-        // On définit le rôle 'service_commande' pour ce poste
+
         return $this->role === 'service_commande';
     }
 }

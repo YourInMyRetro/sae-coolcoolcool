@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class DemandeSpeciale extends Model
 {
-    // On force le schéma 'fifa' pour être sûr que Laravel tape au bon endroit
+
     protected $table = 'fifa.demande_speciale';
     protected $primaryKey = 'id_demande';
     public $timestamps = false;

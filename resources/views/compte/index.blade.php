@@ -49,6 +49,61 @@
                 </a>
             </div>
 
+
+            {{-- CARTE 3 : SÉCURITÉ (NOUVELLE CARTE INTEGRÉE AU DESIGN) --}}
+            <div class="account-card">
+                <h2><i class="fas fa-shield-alt"></i> Sécurité 2FA</h2>
+                <p style="color: #aaa; margin-bottom: 15px;">Protégez votre compte avec la double authentification SMS.</p>
+
+                <ul style="margin-bottom: 20px;">
+                    <li>
+                        <strong>Statut :</strong>
+                        @if(Auth::user()->double_auth_active)
+                            <span style="color: #00ff87; font-weight: bold;"><i class="fas fa-check-circle"></i> Activé</span>
+                        @else
+                            <span style="color: #ff6347; font-weight: bold;"><i class="fas fa-times-circle"></i> Désactivé</span>
+                        @endif
+                    </li>
+                    <li><strong>Tél :</strong> {{ Auth::user()->telephone ?? 'Non renseigné' }}</li>
+                </ul>
+
+                {{-- ZONE DE VALIDATION DU CODE (Apparait si session active) --}}
+                @if(session('verify_2fa'))
+                    <div style="background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 5px; margin-bottom: 15px;">
+                        <p style="color: #00d4ff; font-size: 0.9em; margin-bottom: 10px;">
+                            <i class="fas fa-sms"></i> Code envoyé ! Vérifiez votre mobile.
+                        </p>
+                        <form action="{{ route('compte.2fa.verify') }}" method="POST" style="display: flex; gap: 10px;">
+                            @csrf
+                            <input type="text" name="code" placeholder="Code (6 chiffres)" maxlength="6" required 
+                                   style="background: #222; border: 1px solid #444; color: white; padding: 8px; border-radius: 4px; width: 100%; text-align: center;">
+                            <button type="submit" class="btn-account-action" style="margin: 0; padding: 8px 15px; background: #00ff87; color: #000; border: none;">
+                                OK
+                            </button>
+                        </form>
+                    </div>
+                @else
+                    {{-- BOUTONS D'ACTION --}}
+                    @if(!Auth::user()->double_auth_active)
+                        <form action="{{ route('compte.2fa.send') }}" method="POST">
+                            @csrf
+                            <button type="submit" class="btn-account-action" style="width: 100%; cursor: pointer;">
+                                <i class="fas fa-lock"></i> Activer la sécurité
+                            </button>
+                        </form>
+                    @else
+                        <form action="{{ route('compte.2fa.disable') }}" method="POST">
+                            @csrf
+                            <button type="submit" class="btn-account-action" style="width: 100%; cursor: pointer; border-color: #ff6347; color: #ff6347;">
+                                <i class="fas fa-unlock"></i> Désactiver
+                            </button>
+                        </form>
+                    @endif
+                @endif
+            </div>
+
+
+
             {{-- CARTE 3 : ESPACE PRO (Si applicable) --}}
             @if($estPro)
             <div class="account-card" style="border-color: #00d4ff;">

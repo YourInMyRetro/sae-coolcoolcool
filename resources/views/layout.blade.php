@@ -32,66 +32,65 @@
             <div class="header-center">
                 <nav class="main-nav">
                     <ul class="nav-list">
-    <li><a href="{{ route('home') }}" class="{{ request()->routeIs('home') ? 'active' : '' }}">Accueil</a></li>
-    <li><a href="{{ route('produits.index') }}" class="{{ request()->routeIs('produits.index') ? 'active' : '' }}">Boutique</a></li>
-    
-    {{-- LIEN VOTE --}}
-    <li><a href="{{ route('vote.index') }}" class="{{ request()->routeIs('vote.*') ? 'active' : '' }}">Votes</a></li>
+                        <li><a href="{{ route('home') }}" class="{{ request()->routeIs('home') ? 'active' : '' }}">Accueil</a></li>
+                        <li><a href="{{ route('produits.index') }}" class="{{ request()->routeIs('produits.index') ? 'active' : '' }}">Boutique</a></li>
+                        
+                        {{-- LIEN VOTE --}}
+                        <li><a href="{{ route('vote.index') }}" class="{{ request()->routeIs('vote.*') ? 'active' : '' }}">Votes</a></li>
 
-    {{-- LIEN SERVICE VENTE --}}
-    @auth
-        @if(Auth::user()->role === 'service_vente')
-            <li>
-                <a href="{{ route('vente.dashboard') }}" 
-                   class="{{ request()->routeIs('vente.*') ? 'active' : '' }}"
-                   style="color: #ffd700; font-weight: bold; border: 1px solid #ffd700; padding: 5px 10px; border-radius: 4px;">
-                   <i class="fas fa-tools"></i> SERVICE VENTE
-                </a>
-            </li>
-        @endif
-    @endauth
+                        {{-- LIEN SERVICE VENTE --}}
+                        @auth
+                            @if(Auth::user()->role === 'service_vente')
+                                <li>
+                                    <a href="{{ route('vente.dashboard') }}" 
+                                       class="{{ request()->routeIs('vente.*') ? 'active' : '' }}"
+                                       style="color: #ffd700; font-weight: bold; border: 1px solid #ffd700; padding: 5px 10px; border-radius: 4px;">
+                                       <i class="fas fa-tools"></i> SERVICE VENTE
+                                    </a>
+                                </li>
+                            @endif
+                        @endauth
 
-    {{-- === AJOUT ICI : LIEN SERVICE COMMANDE (SAV) === --}}
-    @auth
-        @if(Auth::user()->isServiceCommande())
-            <li>
-                <a href="{{ route('service.dashboard') }}" 
-                   class="{{ request()->routeIs('service.dashboard') ? 'active' : '' }}"
-                   style="color: #9b59b6; font-weight: bold; display: flex; align-items: center; gap: 5px;">
-                   <i class="fas fa-headset"></i> SAV
-                </a>
-            </li>
-        @endif
-    @endauth
-    {{-- =============================================== --}}
+                        {{-- LIEN SERVICE COMMANDE (SAV) --}}
+                        @auth
+                            @if(Auth::user()->isServiceCommande())
+                                <li>
+                                    <a href="{{ route('service.dashboard') }}" 
+                                       class="{{ request()->routeIs('service.dashboard') ? 'active' : '' }}"
+                                       style="color: #9b59b6; font-weight: bold; display: flex; align-items: center; gap: 5px;">
+                                       <i class="fas fa-headset"></i> SAV
+                                    </a>
+                                </li>
+                            @endif
+                        @endauth
 
-    {{-- BLOC DIRECTEUR (SEULEMENT POUR LE BOSS) --}}
-    @auth
-        @if(Auth::user()->isDirector())
-            <li>
-                <a href="{{ route('directeur.dashboard') }}" style="color: #e74c3c; font-weight: bold;">
-                    <i class="fas fa-lock"></i> DIRECTION
-                </a>
-            </li>
-        @endif
-    @endauth
+                        {{-- BLOC DIRECTEUR --}}
+                        @auth
+                            @if(Auth::user()->isDirector())
+                                <li>
+                                    <a href="{{ route('directeur.dashboard') }}" style="color: #e74c3c; font-weight: bold;">
+                                        <i class="fas fa-lock"></i> DIRECTION
+                                    </a>
+                                </li>
+                            @endif
+                        @endauth
 
-    {{-- BLOC EXPÉDITION --}}
-    @auth
-        @if(Auth::user()->isExpedition())
-            <li>
-                <a href="{{ route('service.expedition') }}" 
-                class="{{ request()->routeIs('service.expedition') ? 'active' : '' }}" 
-                style="color: #e67e22; font-weight: 700; display: flex; align-items: center; gap: 5px;">
-                    <i class="fas fa-truck"></i> EXPÉDITION
-                </a>
-            </li>
-        @endif
-    @endauth
+                        {{-- BLOC EXPÉDITION --}}
+                        @auth
+                            @if(Auth::user()->isExpedition())
+                                <li>
+                                    <a href="{{ route('service.expedition') }}" 
+                                    class="{{ request()->routeIs('service.expedition') ? 'active' : '' }}" 
+                                    style="color: #e67e22; font-weight: 700; display: flex; align-items: center; gap: 5px;">
+                                        <i class="fas fa-truck"></i> EXPÉDITION
+                                    </a>
+                                </li>
+                            @endif
+                        @endauth
 
-    {{-- Exemples de filtres rapides --}}
-    <li><a href="{{ route('produits.index', ['categorie' => 1]) }}">Maillots</a></li>
-</ul>
+                        {{-- Exemples de filtres rapides --}}
+                        <li><a href="{{ route('produits.index', ['categorie' => 1]) }}">Maillots</a></li>
+                    </ul>
                 </nav>
             </div>
 
@@ -171,6 +170,35 @@
             <p class="copyright">&copy; 2025 FIFA. Tous droits réservés.</p>
         </div>
     </footer>
+
+    {{-- BANDEAU COOKIES (ID 56 & 58) --}}
+    <div id="cookie-banner" style="position: fixed; bottom: 0; left: 0; right: 0; background-color: #333; color: white; padding: 20px; text-align: center; display: none; z-index: 9999; box-shadow: 0 -2px 10px rgba(0,0,0,0.3);">
+        <p style="margin-bottom: 10px;">Nous utilisons des cookies pour améliorer votre expérience sur le FIFA Store. Acceptez-vous les cookies ?</p>
+        <button onclick="acceptCookies()" style="background-color: #55e6c1; border: none; padding: 10px 20px; cursor: pointer; color: black; font-weight: bold; border-radius: 4px;">Accepter</button>
+        <button onclick="refuseCookies()" style="background-color: #e74c3c; border: none; padding: 10px 20px; cursor: pointer; color: white; font-weight: bold; margin-left: 10px; border-radius: 4px;">Refuser</button>
+    </div>
+
+    <script>
+        function checkCookies() {
+            // ID 56 : Si aucun choix n'a été fait, on affiche le bandeau
+            if (!localStorage.getItem('cookie_consent')) {
+                document.getElementById('cookie-banner').style.display = 'block';
+            }
+        }
+
+        function acceptCookies() {
+            localStorage.setItem('cookie_consent', 'accepted');
+            document.getElementById('cookie-banner').style.display = 'none';
+        }
+
+        function refuseCookies() {
+            localStorage.setItem('cookie_consent', 'refused');
+            document.getElementById('cookie-banner').style.display = 'none';
+        }
+
+        // Lancer la vérification au chargement
+        window.onload = checkCookies;
+    </script>
 
 </body>
 </html>

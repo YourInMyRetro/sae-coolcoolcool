@@ -39,9 +39,22 @@
                 </label>
             </div>
 
+            <a href="{{ route('password.request') }}" class="text-primary small fw-bold text-decoration-none">
+            Mot de passe oublié ?
+            </a>
+
             <button type="submit" class="btn-fifa-submit">
                 Se connecter <i class="fas fa-sign-in-alt" style="margin-left: 8px;"></i>
             </button>
+
+            <hr class="my-4">
+
+            <div class="d-grid">
+                <a href="{{ route('login.google') }}" class="btn btn-light border fw-bold" style="border-radius: 50px;">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width="20" class="me-2">
+                    Se connecter avec Google
+                </a>
+            </div>
         </form>
 
         {{-- Section Création de Compte --}}

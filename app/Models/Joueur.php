@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Joueur extends Model
 {
-    protected $table = 'joueur'; // Nom de ta table dans la BDD
+    protected $table = 'joueur'; 
     protected $primaryKey = 'id_joueur';
     public $timestamps = false;
 

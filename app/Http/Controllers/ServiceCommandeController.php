@@ -18,7 +18,29 @@ class ServiceCommandeController extends Controller
         
         $commandesLivre = Commande::where('statut_livraison', 'Livrée')->get();
 
-        return view('service.dashboard', compact('commandesExpress', 'commandesLivre'));
+
+        $commandesEnCours = Commande::where('statut_livraison', 'Expédiée')
+                                    ->orderBy('date_commande', 'asc')
+                                    ->get();
+
+        return view('service.dashboard', compact('commandesExpress', 'commandesLivre', 'commandesEnCours'));
+    }
+
+    public function validerReception(Request $request, $id) {
+        $commande = Commande::findOrFail($id);
+        
+        $commande->statut_livraison = 'Livrée';
+        $commande->save();
+    
+        SuiviLivraison::updateOrCreate(
+            ['id_commande' => $commande->id_commande],
+            [
+                'date_statut_final' => Carbon::now(),
+                'id_transporteur' => $commande->suivi ? $commande->suivi->id_transporteur : 1 
+            ]
+        );
+    
+        return back()->with('success', 'La commande #' . $id . ' a été marquée comme Livrée.');
     }
 
 
@@ -31,20 +53,17 @@ class ServiceCommandeController extends Controller
         $commande = Commande::with('suivi')->findOrFail($request->commande_id);
         
 
-        $commande->statut_livraison = 'Réserve';
-        $commande->save();
-
-
         SuiviLivraison::updateOrCreate(
             ['id_commande' => $commande->id_commande],
             [
                 'reserve_client' => $request->motif,
                 'date_statut_final' => Carbon::now(), 
-
                 'id_transporteur' => $commande->suivi ? $commande->suivi->id_transporteur : 1 
             ]
         );
+        $commande->statut_livraison = 'Réserve';
+        $commande->save();
 
-        return back()->with('success', 'La réserve a bien été enregistrée et le suivi mis à jour.');
+        return back()->with('success', 'La réserve a bien été enregistrée et le statut corrigé en Réserve.');
     }
 }

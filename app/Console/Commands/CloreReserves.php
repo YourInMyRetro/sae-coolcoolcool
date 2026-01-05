@@ -29,7 +29,7 @@ class CloreReserves extends Command
 
         // --- C'EST ICI LA MODIFICATION ---
         // On considère qu'une réserve est "vieille" si elle a plus de 1 minute
-        $dateLimite = Carbon::now()->subMinutes(1); 
+        $dateLimite = Carbon::now()->subDays(7);
         
         $count = 0;
 
