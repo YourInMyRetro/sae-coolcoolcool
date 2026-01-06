@@ -4,6 +4,10 @@
 
 {{-- 1. MAIN HERO : L'affiche principale --}}
 <section class="fifa-hero-fullscreen">
+    <video autoplay muted playsinline class="video-bg">
+        <source src="{{ asset('img/Intro.mp4') }}" type="video/mp4">
+        Votre navigateur ne supporte pas la vidéo
+    </video>
     <div class="hero-overlay-dark"></div>
     <div class="hero-content-center">
         <h2 class="hero-sub">BOUTIQUE OFFICIELLE</h2>
