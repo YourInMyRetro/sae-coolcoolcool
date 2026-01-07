@@ -9,108 +9,159 @@ class RealProductSeeder extends Seeder
 {
     public function run()
     {
+        // 1. On s'assure que les données de référence (Catégories, Couleurs, etc.) existent
         $this->ensureBaseData();
 
-        // LISTE COMPLÈTE (Maillots + Nouveaux équipements)
+        // 2. Liste STRICTE des produits avec tes vrais noms de fichiers
         $produits = [
-            // --- MAILLOTS EXISTANTS (Tu les as déjà) ---
+            // --- MAILLOTS ---
             [
                 'nom' => 'Maillot Allemagne Domicile 2024',
-                'desc' => 'Le maillot officiel de la Mannschaft pour l\'Euro. Design classique.',
+                'desc' => 'Le maillot officiel de la Mannschaft pour l\'Euro à domicile.',
                 'img' => '/img/produits/maillot-allemagne-domicile-2024.jpg',
                 'cat' => 'Maillots', 'nation' => 'Allemagne', 'prix' => 90.00, 'couleur' => 'Blanc'
             ],
             [
+                'nom' => 'Veste de survêtement Allemagne',
+                'desc' => 'Veste noire officielle de l\'équipe d\'Allemagne.',
+                'img' => '/img/produits/vestedesurvetementnoireallemagne.jpg',
+                'cat' => 'Vêtements', 'nation' => 'Allemagne', 'prix' => 85.00, 'couleur' => 'Noir'
+            ],
+            [
                 'nom' => 'Maillot France 2026 Authentic',
-                'desc' => 'Technologie Dri-Fit ADV pour les joueurs pro.',
+                'desc' => 'Le futur maillot des Bleus, technologie Dri-Fit ADV.',
                 'img' => '/img/produits/maillot-france-2026-authentic.jpg',
                 'cat' => 'Maillots', 'nation' => 'France', 'prix' => 140.00, 'couleur' => 'Bleu'
             ],
             [
-                'nom' => 'Maillot Argentine 3 Étoiles',
-                'desc' => 'Le maillot des champions du monde.',
-                'img' => '/img/produits/maillot-argentine-3-etoiles.jpg',
-                'cat' => 'Maillots', 'nation' => 'Argentine', 'prix' => 110.00, 'couleur' => 'Bleu'
-            ],
-
-            // --- 1. CHAUSSURES (CRAMPONS) ---
-            [
-                'nom' => 'Nike Mercurial Superfly 9 Elite',
-                'desc' => 'Vitesse explosive. Portée par Kylian Mbappé. Couleur rose flashy pour ne pas passer inaperçu.',
-                'img' => '/img/produits/crampons-nike-mercurial-rose.jpg',
-                'cat' => 'Crampons', 'nation' => null, 'prix' => 270.00, 'couleur' => 'Rose'
-            ],
-            [
-                'nom' => 'Adidas Predator Elite FT',
-                'desc' => 'Le retour de la languette repliée. Contrôle absolu. Modèle porté par Jude Bellingham.',
-                'img' => '/img/produits/crampons-adidas-predator-noir.jpg',
-                'cat' => 'Crampons', 'nation' => null, 'prix' => 280.00, 'couleur' => 'Noir'
-            ],
-            [
-                'nom' => 'Puma Future Ultimate',
-                'desc' => 'Agilité et créativité. La chaussure de Neymar Jr.',
-                'img' => '/img/produits/crampons-puma-future-orange.jpg',
-                'cat' => 'Crampons', 'nation' => null, 'prix' => 220.00, 'couleur' => 'Orange'
-            ],
-            [
-                'nom' => 'Nike Phantom GX 2',
-                'desc' => 'Précision mortelle devant le but. Texture Gripknit.',
-                'img' => '/img/produits/crampons-nike-phantom-bleu.jpg',
-                'cat' => 'Crampons', 'nation' => null, 'prix' => 260.00, 'couleur' => 'Bleu'
-            ],
-            [
-                'nom' => 'Adidas Copa Pure 2',
-                'desc' => 'Toucher de balle en cuir premium. Élégance et confort.',
-                'img' => '/img/produits/crampons-adidas-copa-blanc.jpg',
-                'cat' => 'Crampons', 'nation' => null, 'prix' => 230.00, 'couleur' => 'Blanc'
-            ],
-
-            // --- 2. BALLONS ---
-            [
-                'nom' => 'Ballon Euro 2024 Fussballliebe',
-                'desc' => 'Ballon officiel de match de l\'UEFA Euro 2024 en Allemagne.',
-                'img' => '/img/produits/ballon-euro-2024-officiel.jpg',
-                'cat' => 'Ballons', 'nation' => 'Allemagne', 'prix' => 150.00, 'couleur' => 'Blanc'
-            ],
-            [
-                'nom' => 'Ballon Champions League 2025',
-                'desc' => 'Le design iconique aux étoiles pour la finale à Munich.',
-                'img' => '/img/produits/ballon-ucl-2025-finale.jpg',
-                'cat' => 'Ballons', 'nation' => null, 'prix' => 140.00, 'couleur' => 'Multicolore'
-            ],
-            [
-                'nom' => 'Ballon Nike Flight Premier League',
-                'desc' => 'Trajectoire stable à 30% supérieure aux ballons standard.',
-                'img' => '/img/produits/ballon-premier-league-nike.jpg',
-                'cat' => 'Ballons', 'nation' => 'Angleterre', 'prix' => 135.00, 'couleur' => 'Jaune'
-            ],
-
-            // --- 3. ACCESSOIRES (Gardiens) ---
-            [
-                'nom' => 'Gants Adidas Predator Pro',
-                'desc' => 'Gants de gardien pro portés par Manuel Neuer. Grip URG 2.0.',
-                'img' => '/img/produits/gants-adidas-predator-neuer.jpg',
-                'cat' => 'Accessoires', 'nation' => 'Allemagne', 'prix' => 120.00, 'couleur' => 'Rouge'
-            ],
-            [
-                'nom' => 'Echarpe France "Allez les Bleus"',
-                'desc' => 'Indispensable pour supporter l\'équipe au stade.',
-                'img' => '/img/produits/echarpe-france-bleu.jpg',
-                'cat' => 'Accessoires', 'nation' => 'France', 'prix' => 20.00, 'couleur' => 'Bleu'
-            ],
-
-            // --- 4. VINTAGE / COLLECTOR ---
-            [
                 'nom' => 'Maillot France 1998 (Zidane)',
-                'desc' => 'Réédition du maillot de la finale contre le Brésil. Flocage 10 inclus.',
+                'desc' => 'Réédition collector de la finale 98.',
                 'img' => '/img/produits/maillot-france-1998-zidane.jpg',
                 'cat' => 'Vintage', 'nation' => 'France', 'prix' => 180.00, 'couleur' => 'Bleu'
             ],
             [
+                'nom' => 'Maillot Argentine 3 Étoiles',
+                'desc' => 'Le maillot des champions du monde en titre.',
+                'img' => '/img/produits/maillot-argentine-3-etoiles.jpg',
+                'cat' => 'Maillots', 'nation' => 'Argentine', 'prix' => 110.00, 'couleur' => 'Bleu'
+            ],
+            [
+                'nom' => 'Maillot Échauffement Argentine',
+                'desc' => 'Maillot pré-match porté par Messi et ses coéquipiers.',
+                'img' => '/img/produits/maillotechauffementargentine.jpg',
+                'cat' => 'Maillots', 'nation' => 'Argentine', 'prix' => 65.00, 'couleur' => 'Bleu'
+            ],
+            [
+                'nom' => 'Bas de survêtement Argentine',
+                'desc' => 'Pantalon d\'entraînement officiel.',
+                'img' => '/img/produits/basdesurvetementargentine.jpg',
+                'cat' => 'Vêtements', 'nation' => 'Argentine', 'prix' => 55.00, 'couleur' => 'Bleu'
+            ],
+            [
+                'nom' => 'Maillot Brésil 1970 (Pelé)',
+                'desc' => 'Le maillot jaune légendaire du Roi Pelé.',
+                'img' => '/img/produits/maillot-bresil-1970-pele.jpg',
+                'cat' => 'Vintage', 'nation' => 'Brésil', 'prix' => 200.00, 'couleur' => 'Jaune'
+            ],
+            [
                 'nom' => 'Maillot Naples 1986 (Maradona)',
-                'desc' => 'Le maillot légendaire du grand Diego avec le sponsor Mars.',
+                'desc' => 'Maillot historique sponsor Mars, époque Diego.',
                 'img' => '/img/produits/maillot-naples-maradona-mars.jpg',
-                'cat' => 'Vintage', 'nation' => 'Italie', 'prix' => 200.00, 'couleur' => 'Bleu'
+                'cat' => 'Vintage', 'nation' => 'Italie', 'prix' => 220.00, 'couleur' => 'Bleu'
+            ],
+            [
+                'nom' => 'Maillot Japon Féminine 2022',
+                'desc' => 'Design unique origami pour l\'équipe nationale féminine.',
+                'img' => '/img/produits/maillotjaponfemme2022.jpg',
+                'cat' => 'Maillots', 'nation' => 'Japon', 'prix' => 90.00, 'couleur' => 'Rose'
+            ],
+            [
+                'nom' => 'Maillot Portugal 2026',
+                'desc' => 'Nouveau design pour la seleçao.',
+                'img' => '/img/produits/maillot-portugal-2026.jpg',
+                'cat' => 'Maillots', 'nation' => 'Portugal', 'prix' => 90.00, 'couleur' => 'Rouge'
+            ],
+             [
+                'nom' => 'Maillot Officiel Signé Jack Grealish',
+                'desc' => 'Pièce de collection signée par le joueur anglais.',
+                'img' => '/img/produits/maillot-officiel-signe-jack-grealish.jpg',
+                'cat' => 'Signés', 'nation' => 'Angleterre', 'prix' => 450.00, 'couleur' => 'Blanc'
+            ],
+
+            // --- CRAMPONS ---
+            [
+                'nom' => 'Nike Mercurial Rose',
+                'desc' => 'Vitesse explosive, coloris flashy.',
+                'img' => '/img/produits/crampons-nike-mercurial-rose.jpg',
+                'cat' => 'Crampons', 'nation' => null, 'prix' => 270.00, 'couleur' => 'Rose'
+            ],
+            [
+                'nom' => 'Adidas Predator Noir',
+                'desc' => 'Contrôle et précision, le retour de la languette.',
+                'img' => '/img/produits/crampons-adidas-predator-noir.jpg',
+                'cat' => 'Crampons', 'nation' => null, 'prix' => 280.00, 'couleur' => 'Noir'
+            ],
+            [
+                'nom' => 'Puma Future Orange',
+                'desc' => 'Agilité ultime pour les créateurs de jeu.',
+                'img' => '/img/produits/crampons-puma-future-orange.jpg',
+                'cat' => 'Crampons', 'nation' => null, 'prix' => 220.00, 'couleur' => 'Orange'
+            ],
+            [
+                'nom' => 'Nike Phantom Bleu',
+                'desc' => 'Gripknit pour un toucher de balle parfait.',
+                'img' => '/img/produits/crampons-nike-phantom-bleu.jpg',
+                'cat' => 'Crampons', 'nation' => null, 'prix' => 260.00, 'couleur' => 'Bleu'
+            ],
+
+            // --- BALLONS & ACCESSOIRES ---
+            [
+                'nom' => 'Ballon Euro 2024 Officiel',
+                'desc' => 'Ballon de match Fussballliebe.',
+                'img' => '/img/produits/ballon-euro-2024-officiel.jpg',
+                'cat' => 'Ballons', 'nation' => 'Allemagne', 'prix' => 150.00, 'couleur' => 'Blanc'
+            ],
+            [
+                'nom' => 'Ballon CDM 2022 Al Rihla',
+                'desc' => 'Le ballon officiel de la coupe du monde au Qatar.',
+                'img' => '/img/produits/ballon-cdm-2022-al-rihla.jpg',
+                'cat' => 'Ballons', 'nation' => null, 'prix' => 140.00, 'couleur' => 'Multicolore'
+            ],
+            [
+                'nom' => 'Ballon Premier League Nike',
+                'desc' => 'Ballon officiel du championnat anglais.',
+                'img' => '/img/produits/ballon-premier-league-nike.jpg',
+                'cat' => 'Ballons', 'nation' => 'Angleterre', 'prix' => 35.00, 'couleur' => 'Jaune'
+            ],
+            [
+                'nom' => 'Gants Adidas Predator Neuer',
+                'desc' => 'Gants pro portés par Manuel Neuer.',
+                'img' => '/img/produits/gants-adidas-predator-neuer.jpg',
+                'cat' => 'Accessoires', 'nation' => 'Allemagne', 'prix' => 120.00, 'couleur' => 'Rouge'
+            ],
+            [
+                'nom' => 'Gants Nike Vapor Grip',
+                'desc' => 'Adhérence par tous les temps.',
+                'img' => '/img/produits/gants-nike-vapor-grip.jpg',
+                'cat' => 'Accessoires', 'nation' => null, 'prix' => 110.00, 'couleur' => 'Noir'
+            ],
+            [
+                'nom' => 'Écharpe France Bleu',
+                'desc' => 'Allez les bleus !',
+                'img' => '/img/produits/echarpe-france-bleu.jpg',
+                'cat' => 'Accessoires', 'nation' => 'France', 'prix' => 20.00, 'couleur' => 'Bleu'
+            ],
+            [
+                'nom' => 'Peluche Mascotte CDM',
+                'desc' => 'Souvenir officiel pour les enfants.',
+                'img' => '/img/produits/pelucheMascottecdm.jpg',
+                'cat' => 'Accessoires', 'nation' => null, 'prix' => 25.00, 'couleur' => 'Blanc'
+            ],
+            [
+                'nom' => 'Réplique Trophée Coupe du Monde',
+                'desc' => 'Réplique 2014 en métal doré.',
+                'img' => '/img/produits/repliqueTropheecoupedumonde2014.jpg',
+                'cat' => 'Accessoires', 'nation' => null, 'prix' => 50.00, 'couleur' => 'Jaune'
             ]
         ];
 
@@ -120,20 +171,20 @@ class RealProductSeeder extends Seeder
     }
 
     private function ensureBaseData() {
-        // Création des catégories manquantes
-        $cats = ['Maillots', 'Crampons', 'Ballons', 'Accessoires', 'Vintage', 'Signés', 'Vêtement'];
+        // Catégories
+        $cats = ['Maillots', 'Crampons', 'Ballons', 'Accessoires', 'Vintage', 'Signés', 'Vêtements'];
         foreach ($cats as $c) DB::table('categorie')->insertOrIgnore(['nom_categorie' => $c]);
         
-        // Création des couleurs manquantes
+        // Couleurs
         $couleurs = ['Blanc', 'Bleu', 'Noir', 'Rouge', 'Jaune', 'Rose', 'Orange', 'Vert', 'Multicolore'];
         foreach ($couleurs as $col) DB::table('couleur')->insertOrIgnore(['type_couleur' => $col]);
 
-        // Création des tailles (Chaussures + Vêtements)
-        $tailles = ['S', 'M', 'L', 'XL', '39', '40', '41', '42', '43', '44', 'TU']; // TU = Taille Unique
+        // Tailles
+        $tailles = ['S', 'M', 'L', 'XL', 'XXL', '39', '40', '41', '42', '43', '44', 'TU'];
         foreach ($tailles as $t) DB::table('taille')->insertOrIgnore(['type_taille' => $t]);
 
         // Nations
-        $nations = ['France', 'Allemagne', 'Argentine', 'Brésil', 'Italie', 'Angleterre', 'Espagne'];
+        $nations = ['France', 'Allemagne', 'Argentine', 'Brésil', 'Italie', 'Angleterre', 'Espagne', 'Portugal', 'Japon'];
         foreach ($nations as $n) DB::table('nation')->insertOrIgnore(['nom_nation' => $n]);
     }
 
@@ -143,16 +194,22 @@ class RealProductSeeder extends Seeder
         $idNation = isset($data['nation']) ? DB::table('nation')->where('nom_nation', $data['nation'])->value('id_nation') : null;
         $idCouleur = DB::table('couleur')->where('type_couleur', $data['couleur'])->value('id_couleur');
 
-        // 2. Création Produit
+        if (!$idCat || !$idCouleur) {
+            // Sécurité si jamais une catégorie ou couleur est mal écrite
+            return; 
+        }
+
+        // 2. Création Produit (Correspondance stricte avec Nouveau.sql)
         $idProduit = DB::table('produit')->insertGetId([
             'id_categorie' => $idCat,
             'nom_produit' => $data['nom'],
             'description_produit' => $data['desc'],
             'visibilite' => 'visible',
             'date_creation' => now(),
+            // 'id_fiche_fabrication' est NULL par défaut, c'est OK
         ], 'id_produit');
 
-        // 3. Photo
+        // 3. Photo (Table séparée dans Nouveau.sql)
         DB::table('photo_produit')->insert([
             'id_produit' => $idProduit,
             'url_photo' => $data['img']
@@ -160,7 +217,7 @@ class RealProductSeeder extends Seeder
 
         // 4. Liaison Nation (Si applicable)
         if ($idNation) {
-            DB::table('produit_nation')->insert([
+            DB::table('produit_nation')->insertOrIgnore([
                 'id_produit' => $idProduit,
                 'id_nation' => $idNation
             ]);
@@ -173,11 +230,11 @@ class RealProductSeeder extends Seeder
             'prix_total' => $data['prix']
         ], 'id_produit_couleur');
 
-        // Définition des tailles selon le type de produit
+        // Définition des tailles logiques
         if ($data['cat'] === 'Crampons') {
             $taillesDispo = ['39', '40', '41', '42', '43', '44'];
-        } elseif (in_array($data['cat'], ['Ballons', 'Accessoires'])) {
-            $taillesDispo = ['TU']; // Taille Unique
+        } elseif (in_array($data['cat'], ['Ballons', 'Accessoires', 'Signés'])) {
+            $taillesDispo = ['TU']; 
         } else {
             $taillesDispo = ['S', 'M', 'L', 'XL']; // Vêtements
         }
@@ -188,7 +245,7 @@ class RealProductSeeder extends Seeder
                 DB::table('stock_article')->insert([
                     'id_produit_couleur' => $idProdCoul,
                     'id_taille' => $idTaille,
-                    'stock' => rand(0, 30) // Stock aléatoire
+                    'stock' => rand(5, 50) // Stock arbitraire mais positif
                 ]);
             }
         }

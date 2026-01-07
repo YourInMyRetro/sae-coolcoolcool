@@ -105,8 +105,8 @@ class DatabaseSeeder extends Seeder
         // 8. Lancement des autres seeders (Produits et Votes)
         // Vérifie bien que ces fichiers existent dans database/seeders/
         $this->call([
-            BoutiqueSeeder::class, // <-- AJOUTÉ : Pour avoir les produits
-            VoteSeeder::class,     // <-- AJOUTÉ : Pour avoir les votes
+            RealProductSeeder::class, // <-- C'est LUI qui contient les bonnes données
+            VoteSeeder::class,     
         ]);
     }
 }
