@@ -24,25 +24,36 @@ class VoteController extends Controller
 
    public function show($id)
     {
-        
+        // 1. Récupérer le thème de vote
         $vote = VoteTheme::where('idtheme', $id)->firstOrFail();
         
-       
+        // 2. Récupérer les candidats AVEC LEUR PHOTO
         $candidats = \Illuminate\Support\Facades\DB::table('candidat')
             ->join('concernecandidat', 'candidat.idjoueur', '=', 'concernecandidat.idjoueur')
             ->join('vote_candidat', 'concernecandidat.id_vote_candidat', '=', 'vote_candidat.id_vote_candidat')
+            
+            // --- C'est ici que la magie opère pour l'image ---
+            ->leftJoin('photo_candidat', 'candidat.idjoueur', '=', 'photo_candidat.idjoueur')
+            ->leftJoin('photo_publication', 'photo_candidat.id_photo_publication', '=', 'photo_publication.id_photo_publication')
+            // ------------------------------------------------
+            
             ->where('vote_candidat.idtheme', $id)
-            ->select('candidat.*', 'vote_candidat.id_vote_candidat') // On récupère l'ID vote_candidat pour le formulaire
+            ->select(
+                'candidat.*', 
+                'vote_candidat.id_vote_candidat', 
+                'vote_candidat.type_affichage', 
+                'photo_publication.url_photo' // <--- On sélectionne l'URL ici
+            ) 
             ->get();
 
-        
+        // 3. Récupérer les articles liés (Blog) pour la modale
         foreach($candidats as $candidat) {
-            $candidat->articles_lies = Publication::where('titre_publication', 'LIKE', "%{$candidat->nom_joueur}%") // Attention: nom_joueur dans votre SQL
-                                                  ->orWhere('resume_publication', 'LIKE', "%{$candidat->nom_joueur}%") // resume_publication dans SQL
+            $candidat->articles_lies = Publication::where('titre_publication', 'LIKE', "%{$candidat->nom_joueur}%")
                                                   ->limit(3)
                                                   ->get();
         }
 
+        // 4. Vérifier si l'utilisateur a déjà voté
         $aDejaVote = false;
         if (Auth::check()) {
             $aDejaVote = \Illuminate\Support\Facades\DB::table('vote')
@@ -57,6 +68,7 @@ class VoteController extends Controller
 
     public function store(Request $request, $id)
     {
+        // 1. Validation : On s'assure qu'il y a bien 3 joueurs cochés
         $request->validate([
             'candidats' => 'required|array|min:3|max:3', 
         ], [
@@ -69,24 +81,38 @@ class VoteController extends Controller
             return redirect()->route('login')->withErrors(['msg' => 'Connectez-vous pour voter.']);
         }
 
+        // 2. Vérification "A déjà voté" (CORRIGÉ)
+        // On doit joindre 'vote' pour vérifier si l'utilisateur a déjà voté POUR CE THÈME ($id)
         $exists = DB::table('faitvote')
-                    ->where('id_utilisateur', Auth::id())
-                    ->where('id_vote_theme', $id)
-                    ->exists();
+            ->join('vote', 'faitvote.id_vote', '=', 'vote.id_vote')
+            ->where('faitvote.id_utilisateur', Auth::id())
+            ->where('vote.idtheme', $id) // $id est l'idtheme passé dans l'URL
+            ->exists();
         
         if ($exists) {
             return back()->withErrors(['msg' => 'Vous avez déjà voté pour cette élection !']);
         }
 
-
+        // 3. Enregistrement du vote
         DB::transaction(function () use ($request, $id) {
+            
+            // A. Créer un bulletin de vote dans la table 'vote' pour ce thème
+            $idVote = DB::table('vote')->insertGetId([
+                'idtheme' => $id,
+                'date_vote' => now() 
+            ], 'id_vote'); // On précise la clé primaire de retour
+
+            // B. Lier l'utilisateur à ce bulletin dans 'faitvote'
             DB::table('faitvote')->insert([
                 'id_utilisateur' => Auth::id(),
-                'id_vote_theme' => $id,
-                'date_vote' => now() 
+                'id_vote' => $idVote
             ]);
 
-            Candidat::whereIn('id_candidat', $request->candidats)->increment('nombre_voix');
+            // C. Incrémenter les voix des joueurs (Simplicité pour le dashboard)
+            // Attention : Ta vue envoie des 'idjoueur' (via value="{{ $candidat->idjoueur }}")
+            // Mais la requête ici utilisait 'id_candidat'. 
+            // Si ta table candidat a pour clé 'idjoueur', utilise 'idjoueur'.
+            Candidat::whereIn('idjoueur', $request->candidats)->increment('nombre_voix');
         });
 
         return redirect()->route('vote.index')->with('success', 'Votre vote a bien été pris en compte. Merci !');

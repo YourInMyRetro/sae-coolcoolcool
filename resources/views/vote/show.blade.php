@@ -5,7 +5,7 @@
     
     {{-- En-tête du vote --}}
     <div class="text-center mb-5">
-        <h1 class="fw-bold text-primary">{{ $vote->nom_vote_theme }}</h1>
+        <h1 class="fw-bold text-primary">{{ $vote->nom_theme }}</h1>
         <p class="text-muted">Sélectionnez exactement <strong>3 joueurs</strong> et validez votre choix.</p>
         
         @if($aDejaVote)
@@ -25,17 +25,18 @@
         </div>
     @endif
 
-    <form action="{{ route('vote.store', $vote->id_vote_theme) }}" method="POST">
+    <form action="{{ route('vote.store', $vote->idtheme) }}" method="POST">
         @csrf
         <div class="row g-4">
             @foreach($candidats as $candidat)
                 <div class="col-md-4 col-lg-3">
                     <div class="card h-100 border-0 shadow-sm candidate-card position-relative">
                         
-                        {{-- [ID 23] Checkbox de sélection (Cachée si déjà voté) --}}
+                        {{-- Checkbox de sélection (Cachée si déjà voté) --}}
                         @if(!$aDejaVote)
                         <div class="position-absolute top-0 end-0 p-3" style="z-index: 10;">
-                            <input type="checkbox" name="candidats[]" value="{{ $candidat->id_candidat }}" 
+                            {{-- Utilisation de idjoueur --}}
+                            <input type="checkbox" name="candidats[]" value="{{ $candidat->idjoueur }}" 
                                    class="form-check-input shadow-sm border-2 border-primary candidate-checkbox" 
                                    style="width: 1.5em; height: 1.5em; cursor: pointer;">
                         </div>
@@ -43,48 +44,56 @@
 
                         {{-- Image du joueur --}}
                         <div class="ratio ratio-1x1 overflow-hidden rounded-top">
-                            <img src="{{ asset('img/joueurs/' . ($candidat->photo_url ?? 'default.jpg')) }}" 
-                                 class="card-img-top object-fit-cover" 
-                                 alt="{{ $candidat->nom_candidat }}">
+                            <img src="{{ $candidat->url_photo ?? 'https://placehold.co/400x400?text=Photo+Manquante' }}" 
+                                class="card-img-top object-fit-cover" 
+                                alt="{{ $candidat->nom_joueur }}"
+                                style="height: 300px; object-position: top;">
                         </div>
 
                         <div class="card-body text-center">
-                            <h5 class="fw-bold mb-1">{{ $candidat->nom_candidat }}</h5>
-                            <p class="text-muted small mb-3">{{ $candidat->nationalite ?? 'International' }}</p>
+                            {{-- CORRECTION : nom_joueur et prenom_joueur --}}
+                            <h5 class="fw-bold mb-1">{{ $candidat->prenom_joueur }} {{ $candidat->nom_joueur }}</h5>
+                            
+                            {{-- CORRECTION : type_affichage pour le poste --}}
+                            <p class="text-muted small mb-3">{{ $candidat->type_affichage ?? 'Joueur' }}</p>
 
-                            {{-- [ID 22] Bouton "En savoir plus" --}}
+                            {{-- Bouton "En savoir plus" --}}
                             <button type="button" class="btn btn-outline-dark btn-sm rounded-pill px-3" 
                                     data-bs-toggle="modal" 
-                                    data-bs-target="#modalCandidat{{ $candidat->id_candidat }}">
+                                    data-bs-target="#modalCandidat{{ $candidat->idjoueur }}">
                                 <i class="fas fa-info-circle me-1"></i> Infos & Stats
                             </button>
                         </div>
                     </div>
                 </div>
 
-                {{-- [ID 22] MODALE DÉTAILS JOUEUR + ARTICLES LIÉS --}}
-                <div class="modal fade" id="modalCandidat{{ $candidat->id_candidat }}" tabindex="-1" aria-hidden="true">
+                {{-- MODALE DÉTAILS --}}
+                <div class="modal fade" id="modalCandidat{{ $candidat->idjoueur }}" tabindex="-1" aria-hidden="true">
                     <div class="modal-dialog modal-dialog-centered modal-lg">
                         <div class="modal-content border-0 shadow">
                             <div class="modal-header bg-dark text-white">
-                                <h5 class="modal-title fw-bold">{{ $candidat->nom_candidat }}</h5>
+                                <h5 class="modal-title fw-bold">{{ $candidat->prenom_joueur }} {{ $candidat->nom_joueur }}</h5>
                                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
                                 <div class="row">
                                     <div class="col-md-4 text-center">
-                                        <img src="{{ asset('img/joueurs/' . ($candidat->photo_url ?? 'default.jpg')) }}" class="img-fluid rounded mb-3 shadow-sm">
+                                        <img src="{{ $candidat->url_photo ?? asset('img/joueurs/default.jpg') }}" class="img-fluid rounded mb-3 shadow-sm">
                                         <div class="bg-light p-2 rounded">
                                             <small class="text-muted d-block text-uppercase">Poste</small>
-                                            <strong>{{ $candidat->poste ?? 'Attaquant' }}</strong>
+                                            <strong>{{ $candidat->type_affichage ?? 'Joueur' }}</strong>
                                         </div>
                                     </div>
                                     <div class="col-md-8">
                                         <h6 class="fw-bold text-primary border-bottom pb-2 mb-3">Biographie</h6>
-                                        <p class="text-muted">{{ $candidat->description ?? "Aucune description disponible pour ce joueur légendaire." }}</p>
+                                        <p class="text-muted">
+                                            Taille : {{ $candidat->taille_joueur }} m <br>
+                                            Poids : {{ $candidat->poids_joueur }} kg <br>
+                                            Sélections : {{ $candidat->nombre_selection ?? 0 }}
+                                        </p>
 
                                         <h6 class="fw-bold text-primary border-bottom pb-2 mb-3 mt-4">Dans l'actualité (Blog)</h6>
-                                        @if($candidat->articles_lies->count() > 0)
+                                        @if(isset($candidat->articles_lies) && $candidat->articles_lies->count() > 0)
                                             <ul class="list-group list-group-flush">
                                                 @foreach($candidat->articles_lies as $article)
                                                     <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
@@ -105,7 +114,7 @@
             @endforeach
         </div>
 
-        {{-- [ID 23] Barre de validation flottante --}}
+        {{-- Barre de validation flottante --}}
         @if(!$aDejaVote)
         <div class="fixed-bottom bg-white border-top shadow py-3 px-4 d-flex justify-content-between align-items-center" style="z-index: 1000;">
             <div>
@@ -120,7 +129,6 @@
     </form>
 </div>
 
-{{-- Petit script JS pour limiter à 3 choix --}}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const checkboxes = document.querySelectorAll('.candidate-checkbox');
@@ -132,14 +140,11 @@ document.addEventListener('DOMContentLoaded', function() {
         cb.addEventListener('change', function() {
             const checked = document.querySelectorAll('.candidate-checkbox:checked');
             
-            // Mise à jour du compteur
             counter.innerText = checked.length + " / " + max;
             counter.className = checked.length === max ? "badge bg-success fs-6" : "badge bg-secondary fs-6";
 
-            // Activation du bouton
             btn.disabled = checked.length !== max;
 
-            // Bloquer les autres si 3 sélectionnés
             if (checked.length >= max) {
                 checkboxes.forEach(box => {
                     if (!box.checked) box.disabled = true;
@@ -155,7 +160,6 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <style>
-    /* Petit effet hover sur les cartes */
     .candidate-card { transition: transform 0.2s, box-shadow 0.2s; }
     .candidate-card:hover { transform: translateY(-5px); box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important; }
 </style>

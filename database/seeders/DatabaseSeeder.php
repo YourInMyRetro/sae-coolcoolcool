@@ -107,5 +107,7 @@ class DatabaseSeeder extends Seeder
             'statut_livraison' => 'En préparation', // Le statut clé pour l'expédition
             'type_livraison' => 'Standard'
         ]);
+
+        $this->call(VoteSeeder::class);
     }
 }
