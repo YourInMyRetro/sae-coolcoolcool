@@ -18,23 +18,23 @@ class VoteSeeder extends Seeder
             [
                 [
                     'nom' => 'Mbappe', 'prenom' => 'Kylian', 'poste' => 'Attaquant',
-                    'url' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/2022_FIFA_World_Cup_France_4%E2%80%931_Australia_-_Kylian_Mbapp%C3%A9_%28cropped%29.jpg/640px-2022_FIFA_World_Cup_France_4%E2%80%931_Australia_-_Kylian_Mbapp%C3%A9_%28cropped%29.jpg'
+                    'url' => '/img/vote/kylian-mbappe.jpg'
                 ],
                 [
                     'nom' => 'Haaland', 'prenom' => 'Erling', 'poste' => 'Attaquant',
-                    'url' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Erling_Haaland_2023_%28cropped%29.jpg/640px-Erling_Haaland_2023_%28cropped%29.jpg'
+                    'url' => '/img/vote/erling-haaland.jpg'
                 ],
                 [
                     'nom' => 'Vinicius', 'prenom' => 'Junior', 'poste' => 'Attaquant',
-                    'url' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Vinicius_Jr_2021.jpg/640px-Vinicius_Jr_2021.jpg'
+                    'url' => '/img/vote/vinicius-junior.jpg'
                 ],
                 [
                     'nom' => 'Bellingham', 'prenom' => 'Jude', 'poste' => 'Milieu',
-                    'url' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/57/Jude_Bellingham_2023.jpg/640px-Jude_Bellingham_2023.jpg'
+                    'url' => '/img/vote/jude-bellingham.jpg'
                 ],
                 [
                     'nom' => 'Kane', 'prenom' => 'Harry', 'poste' => 'Attaquant',
-                    'url' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Harry_Kane_2018.jpg/640px-Harry_Kane_2018.jpg'
+                    'url' => '/img/vote/harry-kane.jpg'
                 ],
             ]
         );
@@ -47,23 +47,23 @@ class VoteSeeder extends Seeder
             [
                 [
                     'nom' => 'Yamal', 'prenom' => 'Lamine', 'poste' => 'Attaquant',
-                    'url' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Lamine_Yamal_2023.jpg/640px-Lamine_Yamal_2023.jpg'
+                    'url' => '/img/vote/lamine-yamal.jpg'
                 ],
                 [
                     'nom' => 'Zaire-Emery', 'prenom' => 'Warren', 'poste' => 'Milieu',
-                    'url' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/Warren_Za%C3%AFre-Emery_2023.jpg/640px-Warren_Za%C3%AFre-Emery_2023.jpg'
+                    'url' => '/img/vote/warren-zaire-emery.jpg'
                 ],
                 [
                     'nom' => 'Endrick', 'prenom' => 'Felipe', 'poste' => 'Attaquant',
-                    'url' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/Endrick_Felipe_2023.jpg/640px-Endrick_Felipe_2023.jpg'
+                    'url' => '/img/vote/endrick-felipe.jpg'
                 ],
                 [
                     'nom' => 'Gavi', 'prenom' => 'Pablo', 'poste' => 'Milieu',
-                    'url' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Gavi_2022.jpg/640px-Gavi_2022.jpg'
+                    'url' => '/img/vote/pablo-gavi.jpg'
                 ],
                 [
                     'nom' => 'Guler', 'prenom' => 'Arda', 'poste' => 'Milieu',
-                    'url' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Arda_G%C3%BCler_2023.jpg/640px-Arda_G%C3%BCler_2023.jpg'
+                    'url' => '/img/vote/arda-guler.jpg'
                 ],
             ]
         );
@@ -76,29 +76,29 @@ class VoteSeeder extends Seeder
             [
                 [
                     'nom' => 'Courtois', 'prenom' => 'Thibaut', 'poste' => 'Gardien',
-                    'url' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/Courtois_2018.jpg/640px-Courtois_2018.jpg'
+                    'url' => '/img/vote/thibaut-courtois.jpg'
                 ],
                 [
                     'nom' => 'Maignan', 'prenom' => 'Mike', 'poste' => 'Gardien',
-                    'url' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e2/Mike_Maignan_2019.jpg/640px-Mike_Maignan_2019.jpg'
+                    'url' => '/img/vote/mike-maignan.jpg'
                 ],
                 [
                     'nom' => 'Martinez', 'prenom' => 'Emiliano', 'poste' => 'Gardien',
-                    'url' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Emiliano_Martinez_2022.jpg/640px-Emiliano_Martinez_2022.jpg'
+                    'url' => '/img/vote/emiliano-martinez.jpg'
                 ],
                 [
                     'nom' => 'Ederson', 'prenom' => 'Moraes', 'poste' => 'Gardien',
-                    'url' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Ederson_Moraes_2018.jpg/640px-Ederson_Moraes_2018.jpg'
+                    'url' => '/img/vote/ederson-moraes.jpg'
                 ],
                 [
                     'nom' => 'Alisson', 'prenom' => 'Becker', 'poste' => 'Gardien',
-                    'url' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Alisson_Becker_2018.jpg/640px-Alisson_Becker_2018.jpg'
+                    'url' => '/img/vote/alisson-becker.jpg'
                 ],
             ]
         );
     }
 
-    // --- FONCTIONS UTILITAIRES ---
+    // --- FONCTIONS UTILITAIRES (Inchangées mais nécessaires) ---
 
     private function getOrCreateClub($nom)
     {
@@ -151,16 +151,18 @@ class VoteSeeder extends Seeder
                 ], 'idjoueur');
             }
 
-            // C. Gestion de la Photo (URL dans photo_publication + liaison)
+            // C. Gestion de la Photo
             $photoLiee = DB::table('photo_candidat')->where('idjoueur', $idJoueur)->exists();
             
+            // NOTE : On vérifie si l'URL a changé pour mettre à jour si nécessaire
+            // Dans un seeder simple, on insère si ça n'existe pas.
+            // Pour forcer la mise à jour, on supprime l'ancienne liaison si elle existe (Optionnel mais propre)
+            
             if (!$photoLiee && !empty($c['url'])) {
-                // 1. Insertion de l'URL
                 $idPhoto = DB::table('photo_publication')->insertGetId([
                     'url_photo' => $c['url']
                 ], 'id_photo_publication');
 
-                // 2. Liaison
                 DB::table('photo_candidat')->insert([
                     'id_photo_publication' => $idPhoto,
                     'idjoueur' => $idJoueur

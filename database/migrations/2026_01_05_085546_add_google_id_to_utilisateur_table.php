@@ -8,18 +8,19 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('utilisateur', function (Blueprint $table) {
+        // CORRECTION : Table 'users'
+        Schema::table('users', function (Blueprint $table) {
             $table->string('google_id')->nullable()->unique();
-            // On rend le mot de passe nullable car via Google on n'en a pas
-            $table->string('mot_de_passe_chiffre')->nullable()->change(); 
+            // CORRECTION : La colonne s'appelle 'password', pas 'mot_de_passe_chiffre'
+            $table->string('password')->nullable()->change(); 
         });
     }
 
     public function down(): void
     {
-        Schema::table('utilisateur', function (Blueprint $table) {
+        Schema::table('users', function (Blueprint $table) {
             $table->dropColumn('google_id');
-            // Attention : remettre le password en 'nullable' false peut bloquer s'il y a des comptes Google
+            // On ne peut pas facilement annuler le changement nullable sans risque, donc on laisse comme ça
         });
     }
 };

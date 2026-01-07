@@ -6,26 +6,18 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        // CORRECTION 1 : On cible la table 'utilisateur'
-        Schema::table('utilisateur', function (Blueprint $table) {
-            // CORRECTION 2 : On ajoute la colonne telephone
-            // ->nullable() est important car tes utilisateurs existants n'ont pas de numéro
-            $table->string('telephone', 20)->nullable()->after('mail');
+        // CORRECTION : Table 'users'
+        Schema::table('users', function (Blueprint $table) {
+            // CORRECTION : 'email' au lieu de 'mail'
+            $table->string('telephone', 20)->nullable()->after('email');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::table('utilisateur', function (Blueprint $table) {
-            // Permet de supprimer la colonne si on annule la migration
+        Schema::table('users', function (Blueprint $table) {
             $table->dropColumn('telephone');
         });
     }
