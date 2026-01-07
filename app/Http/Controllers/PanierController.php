@@ -85,7 +85,7 @@ class PanierController extends Controller
 
         session()->put('panier', $panier);
 
-        // Synchro BDD si connecté
+        
         if (Auth::check()) {
             $this->syncPanierBdd(Auth::user(), $stockItem->id_stock_article, $panier[$panierId]['quantite']);
         }

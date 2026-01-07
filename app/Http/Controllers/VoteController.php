@@ -5,76 +5,90 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
-use App\Models\VoteTheme;
 use App\Models\Vote;
+use App\Models\VoteTheme;
+use App\Models\Candidat;
+use App\Models\Publication; 
 
 class VoteController extends Controller
 {
     public function index()
     {
-        $competitions = VoteTheme::all(); 
-        return view('vote.index', compact('competitions'));
+        $votes = VoteTheme::where('date_ouverture', '<=', now())
+                          ->where('date_fermeture', '>=', now())
+                          ->get();
+
+        
+        return view('vote.index', compact('votes'));
     }
 
-    public function show($id)
+   public function show($id)
     {
-        $competition = VoteTheme::findOrFail($id);
         
-        $joueurs = DB::table('candidat')
+        $vote = VoteTheme::where('idtheme', $id)->firstOrFail();
+        
+       
+        $candidats = \Illuminate\Support\Facades\DB::table('candidat')
             ->join('concernecandidat', 'candidat.idjoueur', '=', 'concernecandidat.idjoueur')
             ->join('vote_candidat', 'concernecandidat.id_vote_candidat', '=', 'vote_candidat.id_vote_candidat')
-            ->leftJoin('photo_candidat', 'candidat.idjoueur', '=', 'photo_candidat.idjoueur')
-            ->leftJoin('photo_publication', 'photo_candidat.id_photo_publication', '=', 'photo_publication.id_photo_publication')
             ->where('vote_candidat.idtheme', $id)
-            ->select(
-                'candidat.*', 
-                'photo_publication.url_photo', 
-                'vote_candidat.nom_affichage', 
-                'vote_candidat.id_vote_candidat'
-            )
-            ->distinct()
+            ->select('candidat.*', 'vote_candidat.id_vote_candidat') // On récupère l'ID vote_candidat pour le formulaire
             ->get();
 
-        return view('vote.show', compact('competition', 'joueurs'));
+        
+        foreach($candidats as $candidat) {
+            $candidat->articles_lies = Publication::where('titre_publication', 'LIKE', "%{$candidat->nom_joueur}%") // Attention: nom_joueur dans votre SQL
+                                                  ->orWhere('resume_publication', 'LIKE', "%{$candidat->nom_joueur}%") // resume_publication dans SQL
+                                                  ->limit(3)
+                                                  ->get();
+        }
+
+        $aDejaVote = false;
+        if (Auth::check()) {
+            $aDejaVote = \Illuminate\Support\Facades\DB::table('vote')
+                ->join('faitvote', 'vote.id_vote', '=', 'faitvote.id_vote')
+                ->where('vote.idtheme', $id)
+                ->where('faitvote.id_utilisateur', Auth::id())
+                ->exists();
+        }
+
+        return view('vote.show', compact('vote', 'candidats', 'aDejaVote'));
     }
 
     public function store(Request $request, $id)
     {
         $request->validate([
-            'id_vote_candidat' => 'required|integer'
+            'candidats' => 'required|array|min:3|max:3', 
+        ], [
+            'candidats.min' => 'Vous devez sélectionner exactement 3 joueurs.',
+            'candidats.max' => 'Vous devez sélectionner exactement 3 joueurs.',
+            'candidats.required' => 'Veuillez sélectionner 3 joueurs.'
         ]);
 
-        $theme = VoteTheme::findOrFail($id);
-        $userId = Auth::id();
-
-        $alreadyVoted = DB::table('vote')
-            ->join('faitvote', 'vote.id_vote', '=', 'faitvote.id_vote')
-            ->where('vote.idtheme', $id)
-            ->where('faitvote.id_utilisateur', $userId)
-            ->exists();
-
-        if ($alreadyVoted) {
-            return back()->with('error', 'Vous avez déjà voté pour cette catégorie.');
+        if (!Auth::check()) {
+            return redirect()->route('login')->withErrors(['msg' => 'Connectez-vous pour voter.']);
         }
 
-        DB::transaction(function () use ($id, $userId, $request) {
-            $voteId = DB::table('vote')->insertGetId([
-                'idtheme' => $id,
-                'date_vote' => now()
-            ], 'id_vote');
+        $exists = DB::table('faitvote')
+                    ->where('id_utilisateur', Auth::id())
+                    ->where('id_vote_theme', $id)
+                    ->exists();
+        
+        if ($exists) {
+            return back()->withErrors(['msg' => 'Vous avez déjà voté pour cette élection !']);
+        }
 
+
+        DB::transaction(function () use ($request, $id) {
             DB::table('faitvote')->insert([
-                'id_vote' => $voteId,
-                'id_utilisateur' => $userId
+                'id_utilisateur' => Auth::id(),
+                'id_vote_theme' => $id,
+                'date_vote' => now() 
             ]);
 
-            DB::table('concernevote')->insert([
-                'id_vote' => $voteId,
-                'id_vote_candidat' => $request->id_vote_candidat,
-                'classement' => 1
-            ]);
+            Candidat::whereIn('id_candidat', $request->candidats)->increment('nombre_voix');
         });
 
-        return redirect()->route('vote.index')->with('success', 'Votre vote a bien été pris en compte !');
+        return redirect()->route('vote.index')->with('success', 'Votre vote a bien été pris en compte. Merci !');
     }
 }

@@ -45,6 +45,11 @@ Route::post('/inscription', [AuthController::class, 'register'])->name('register
 Route::get('/inscription/pro', [AuthController::class, 'showRegisterProForm'])->name('register.pro.form');
 Route::post('/inscription/pro', [AuthController::class, 'registerPro'])->name('register.pro.submit');
 
+Route::get('/votes', [VoteController::class, 'index'])->name('vote.index');
+Route::get('/votes/{id}', [VoteController::class, 'show'])->name('vote.show');
+Route::post('/votes/{id}', [VoteController::class, 'store'])->middleware('auth')->name('vote.store');
+
+
 // --- LOGIN 2FA ---
 Route::get('/login/2fa', [App\Http\Controllers\AuthController::class, 'show2FAForm'])->name('login.2fa.form');
 Route::post('/login/2fa', [App\Http\Controllers\AuthController::class, 'verify2FA'])->name('login.2fa.verify');

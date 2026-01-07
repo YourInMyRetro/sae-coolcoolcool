@@ -6,13 +6,15 @@
     <p>Sélectionnez un événement pour voter pour vos candidats préférés.</p>
 
     <div style="display: flex; justify-content: center; gap: 30px; margin-top: 40px; flex-wrap: wrap;">
-        @foreach($competitions as $compet)
+        {{-- Remplacement de $competitions par $votes --}}
+        @foreach($votes as $vote) 
             <div class="card" style="width: 300px; padding: 20px; border: 1px solid #ddd; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-                <h3>{{ $compet->nom_theme }}</h3>
-                <p>Clôture le : {{ $compet->date_fermeture ?? 'Non définie' }}</p>
-                
+                <h3>{{ $vote->nom_theme }}</h3>
+                <p>Clôture le : {{ $vote->date_fermeture ?? 'Non définie' }}</p>
+
                 @auth
-                    <a href="{{ route('vote.show', $compet->idtheme) }}" class="btn-fifa-cta" style="display: block; margin-top: 15px; text-decoration: none;">
+                    {{-- Attention : bien utiliser la variable $vote ici aussi --}}
+                    <a href="{{ route('vote.show', $vote->idtheme) }}" class="btn-fifa-cta" style="display: block; margin-top: 15px; text-decoration: none;">
                         Voir les candidats
                     </a>
                 @else
