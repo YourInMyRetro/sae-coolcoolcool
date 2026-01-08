@@ -11,6 +11,7 @@ class Message extends Model
 
     protected $fillable = [
         'session_id',
+        'user_id',
         'content',
         'is_admin'
     ];

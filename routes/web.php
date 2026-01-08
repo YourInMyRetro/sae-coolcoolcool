@@ -89,8 +89,8 @@ Route::middleware(['auth'])->group(function () {
     
     Route::get('/commande/succes', [CommandeController::class, 'succes'])->name('commande.succes');
 
-    Route::get('/votes/{id_competition}', [VoteController::class, 'show'])->name('vote.show');
-    Route::post('/votes/{id_competition}/voter', [VoteController::class, 'store'])->name('vote.store');
+    Route::get('/votes/{id_competition}', [VoteController::class, 'show'])->name('vote.competition.show');
+    Route::post('/votes/{id_competition}/voter', [VoteController::class, 'store'])->name('vote.competition.store');
     
     Route::get('/compte/commandes', [CompteController::class, 'mesCommandes'])->name('compte.commandes');
 });

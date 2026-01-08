@@ -6,6 +6,19 @@
     #chat-box::-webkit-scrollbar { width: 8px; }
     #chat-box::-webkit-scrollbar-track { background: #0f1623; }
     #chat-box::-webkit-scrollbar-thumb { background: #326295; border-radius: 4px; }
+    .btn-suggestion {
+        background: rgba(0, 207, 183, 0.1);
+        border: 1px solid #00cfb7;
+        color: #00cfb7;
+        border-radius: 20px;
+        padding: 5px 15px;
+        font-size: 0.85rem;
+        transition: all 0.2s;
+    }
+    .btn-suggestion:hover {
+        background: #00cfb7;
+        color: #000;
+    }
 </style>
 
 <div class="container py-5">
@@ -15,14 +28,14 @@
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2 class="text-white fw-bold"><i class="fas fa-robot me-2" style="color: #00cfb7;"></i> Chatbot FIFA</h2>
                 <div>
-                    <button onclick="clearChat()" class="btn btn-sm btn-outline-danger me-2" title="Effacer la conversation">
+                    <button onclick="clearChat()" class="btn btn-sm btn-outline-danger me-2">
                         <i class="fas fa-trash-alt"></i>
                     </button>
                     <a href="{{ route('home') }}" class="text-white text-decoration-none"><i class="fas fa-times"></i> Fermer</a>
                 </div>
             </div>
 
-            <div class="card border-0 shadow-lg" style="height: 550px; display: flex; flex-direction: column; background: #1a202c; border-radius: 15px; overflow: hidden;">
+            <div class="card border-0 shadow-lg" style="height: 600px; display: flex; flex-direction: column; background: #1a202c; border-radius: 15px; overflow: hidden;">
                 
                 <div id="chat-box" class="card-body p-4" style="flex: 1; overflow-y: auto;">
                     <div class="text-center text-muted mt-5" id="loading-msg">
@@ -30,12 +43,18 @@
                     </div>
                 </div>
 
+                <div class="px-3 py-2 d-flex flex-wrap gap-2" style="background: #1a202c; border-top: 1px solid #2d3748;">
+                    <button class="btn btn-suggestion" onclick="sendQuickMessage('Voir les maillots')">👕 Maillots</button>
+                    <button class="btn btn-suggestion" onclick="sendQuickMessage('Comment voter ?')">🏆 Voter</button>
+                    <button class="btn btn-suggestion" onclick="sendQuickMessage('Suivre ma commande')">📦 Mon Compte</button>
+                </div>
+
                 <div class="card-footer p-3" style="background: #2d3748; border-top: 1px solid #4a5568;">
                     <form id="chat-form" class="d-flex gap-2">
                         @csrf
                         <input type="text" id="message-input" class="form-control" 
                                style="background: #1a202c; border: 1px solid #4a5568; color: white; padding: 12px;" 
-                               placeholder="Posez votre question sur le foot..." autocomplete="off">
+                               placeholder="Posez votre question..." autocomplete="off">
                         <button type="submit" class="btn fw-bold" style="background: #00cfb7; color: #000; padding: 0 20px;">
                             <i class="fas fa-paper-plane"></i>
                         </button>
@@ -51,9 +70,12 @@
     const chatBox = document.getElementById('chat-box');
     const chatForm = document.getElementById('chat-form');
     const messageInput = document.getElementById('message-input');
-    let isFirstLoad = true;
 
-    // Fonction pour vider le chat
+    function sendQuickMessage(text) {
+        messageInput.value = text;
+        chatForm.dispatchEvent(new Event('submit'));
+    }
+
     function clearChat() {
         if(!confirm('Voulez-vous vraiment effacer toute la conversation ?')) return;
 
@@ -65,7 +87,7 @@
             }
         }).then(() => {
             chatBox.innerHTML = '';
-            fetchMessages(); // Recharge pour afficher le message d'accueil
+            fetchMessages();
         });
     }
 
@@ -74,14 +96,12 @@
             .then(response => response.json())
             .then(data => {
                 if(data.length === 0) {
-                    // Message d'accueil par défaut
                     chatBox.innerHTML = `
                         <div class="d-flex justify-content-start mb-3">
                             <div style="max-width: 80%;">
                                 <div class="p-3 rounded-3 text-dark fw-bold" style="background-color: #e2e8f0;">
-                                    Bonjour ! ⚽<br>Je suis l'IA experte de la FIFA. Posez-moi une question !
+                                    Bonjour ! ⚽ Je suis l'Assistant FIFA. Comment puis-je vous aider ?
                                 </div>
-                                <div class="text-muted small mt-1">Assistant FIFA</div>
                             </div>
                         </div>
                     `;
@@ -108,10 +128,8 @@
                     `;
                 });
                 
-                if(chatBox.innerHTML !== html) {
-                    chatBox.innerHTML = html;
-                    chatBox.scrollTop = chatBox.scrollHeight;
-                }
+                chatBox.innerHTML = html;
+                chatBox.scrollTop = chatBox.scrollHeight;
             });
     }
 
@@ -119,9 +137,8 @@
         e.preventDefault();
         const content = messageInput.value;
         if(!content.trim()) return;
+        messageInput.value = '';
 
-        messageInput.value = ''; 
-        
         const tempHtml = `
             <div class="d-flex justify-content-end mb-3">
                 <div style="max-width: 80%;">
@@ -133,7 +150,7 @@
         `;
         chatBox.insertAdjacentHTML('beforeend', tempHtml);
         chatBox.scrollTop = chatBox.scrollHeight;
-
+        
         fetch("{{ route('chat.send') }}", {
             method: "POST",
             headers: {
@@ -146,7 +163,7 @@
         });
     });
 
-    setInterval(fetchMessages, 3000);
+    setInterval(fetchMessages, 2000);
     fetchMessages();
 </script>
 @endsection
