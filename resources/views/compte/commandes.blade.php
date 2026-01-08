@@ -14,7 +14,12 @@
                     <th>Date</th>
                     <th>Montant</th>
                     <th>Type</th>
-                    <th>État</th>
+                    <th>État 
+    <a href="{{ route('aide') }}#sav" target="_blank" style="color: white;" 
+       data-bs-toggle="tooltip" title="Un problème ? Cliquez ici pour voir comment émettre une réserve.">
+        <i class="fas fa-question-circle"></i>
+    </a>
+</th>
                     <th>Livraison</th>
                 </tr>
             </thead>

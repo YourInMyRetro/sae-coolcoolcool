@@ -14,7 +14,12 @@
         {{-- COLONNE GAUCHE : FILTRES (Sidebar) --}}
         <aside class="shop-sidebar">
             <div class="sidebar-header">
-                <h3>Filtrer par</h3>
+                <h3>Filtrer par 
+    <a href="{{ route('aide') }}#boutique" target="_blank" style="font-size: 0.8em; color: #666;" 
+       data-bs-toggle="tooltip" title="Comment utiliser les filtres cumulés ?">
+        <i class="fas fa-question-circle"></i>
+    </a>
+</h3>
                 <a href="{{ route('produits.index') }}" class="reset-filters">Tout effacer</a>
             </div>
 

@@ -14,6 +14,8 @@ use App\Http\Controllers\ServiceExpeditionController;
 use App\Http\Controllers\DirecteurController;
 use App\Http\Controllers\ChatController;
 
+Route::view('/aide', 'aide.index')->name('aide');
+
 Route::view('/cgu', 'legal.cgu')->name('cgu');
 Route::view('/privacy', 'legal.privacy')->name('privacy');
 Route::view('/mentions-legales', 'legal.mentions')->name('mentions');

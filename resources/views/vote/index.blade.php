@@ -2,7 +2,12 @@
 
 @section('content')
 <div class="container" style="padding: 50px 0; text-align: center;">
-    <h1>Espace de Vote FIFA</h1>
+    <h1>Espace de Vote FIFA 
+    <a href="{{ route('aide') }}#votes" target="_blank" style="font-size: 0.5em; color: #326295; vertical-align: middle;" 
+       data-bs-toggle="tooltip" title="Règlement des votes The Best">
+        <i class="fas fa-question-circle"></i>
+    </a>
+</h1>
     <p>Sélectionnez un événement pour voter pour vos candidats préférés.</p>
 
     <div style="display: flex; justify-content: center; gap: 30px; margin-top: 40px; flex-wrap: wrap;">

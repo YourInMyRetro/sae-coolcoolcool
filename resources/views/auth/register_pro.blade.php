@@ -119,7 +119,12 @@
                     </div>
 
                     <div class="fifa-form-group">
-                        <label for="numero_tva">Numéro de TVA Intracommunautaire *</label>
+                        <label for="numero_tva">Numéro de TVA Intracommunautaire *
+                            <a href="{{ route('aide') }}#pro" target="_blank" class="ms-2" style="color: #326295;" 
+                            data-bs-toggle="tooltip" title="Nécessaire pour la facturation HT intracommunautaire.">
+                                <i class="fas fa-question-circle"></i>
+                            </a>
+                        </label>
                         <input type="text" name="numero_tva" id="numero_tva" class="fifa-input" 
                                value="{{ $errors->has('numero_tva') ? '' : old('numero_tva') }}" 
                                required minlength="5" maxlength="30"

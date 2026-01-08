@@ -37,6 +37,19 @@ class ChatController extends Controller
             'is_admin' => false,
         ]);
 
+        $history = Message::where('session_id', $sessionId)
+            ->orderBy('created_at', 'desc')
+            ->skip(1)
+            ->take(5)
+            ->get()
+            ->reverse();
+
+        $historyString = "";
+        foreach($history as $oldMsg) {
+            $role = $oldMsg->is_admin ? "Assistant" : "Client";
+            $historyString .= "{$role}: {$oldMsg->content}\n";
+        }
+
         try {
             $apiKey = env('GEMINI_API_KEY');
             $userName = Auth::check() ? Auth::user()->prenom : 'Visiteur';
@@ -58,15 +71,15 @@ class ChatController extends Controller
                             - Connexion : /login
                             - Mon compte : /compte
 
+                            HISTORIQUE RÉCENT DES ÉCHANGES :
+                            " . $historyString . "
+
                             CONSIGNE CRITIQUE :
-                            Tu dois impérativement envoyer les routes sous forme de liens HTML.
-                            Exemple : <a href='/boutique' style='color: #00cfb7; font-weight: bold;'>Cliquer ici pour la boutique</a>
+                            Réponds au dernier message en tenant compte de l'historique. 
+                            Envoie les routes sous forme de liens HTML : <a href='/route' style='color: #00cfb7; font-weight: bold;'>Texte</a>.
+                            Sois passionné (⚽, 🏆) et court (2 phrases max).
 
-                            DIRECTIVES :
-                            1. Sois passionné (⚽, 🏆).
-                            2. Réponses de 2 phrases maximum.
-
-                            MESSAGE CLIENT :
+                            DERNIER MESSAGE CLIENT :
                             " . $request->content]
                         ]
                     ]
@@ -77,10 +90,10 @@ class ChatController extends Controller
                 $data = $response->json();
                 $aiReply = $data['candidates'][0]['content']['parts'][0]['text'] ?? "Désolé, je ne parviens pas à formuler une réponse.";
             } else {
-                $aiReply = "Erreur API Google (" . $response->status() . ") : " . $response->body();
+                $aiReply = "Service momentanément indisponible.";
             }
         } catch (\Exception $e) {
-            $aiReply = "Erreur technique Laravel : " . $e->getMessage();
+            $aiReply = "Erreur technique.";
         }
 
         Message::create([

@@ -4,7 +4,10 @@
 <div class="container" style="padding: 40px 20px; max-width: 1200px; margin: 0 auto;">
     
     <h1 style="color: #003366; border-bottom: 2px solid #ddd; padding-bottom: 15px; margin-bottom: 30px;">
-        <i class="fas fa-shopping-cart"></i> Mon Panier
+        <a href="{{ route('aide') }}#panier" target="_blank" style="font-size: 0.6em; vertical-align: middle; color: #326295; margin-left: 10px;" 
+   data-bs-toggle="tooltip" title="Aide sur les quantités et frais de port">
+    <i class="fas fa-question-circle"></i>
+</a>
     </h1>
 
     @if(session('success'))
