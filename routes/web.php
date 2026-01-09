@@ -138,3 +138,5 @@ use App\Http\Controllers\BlogController;
 Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
 Route::get('/blog/{id}', [BlogController::class, 'show'])->name('blog.show');
 Route::post('/blog/{id}/comment', [BlogController::class, 'storeComment'])->name('blog.comment.store');
+
+Route::view('/aide', 'aide.index')->name('aide');
