@@ -142,3 +142,6 @@ Route::post('/blog/{id}/comment', [BlogController::class, 'storeComment'])->name
 Route::view('/aide', 'aide.index')->name('aide');
 
 Route::delete('/compte/supprimer', [CompteController::class, 'destroy'])->name('compte.destroy');
+
+Route::post('/vente/produit/{id}/photo/add', [App\Http\Controllers\ServiceVenteController::class, 'addPhoto'])->name('vente.produit.photo.add');
+Route::delete('/vente/photo/{id}/delete', [App\Http\Controllers\ServiceVenteController::class, 'deletePhoto'])->name('vente.produit.photo.delete');

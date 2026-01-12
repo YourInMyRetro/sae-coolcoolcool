@@ -139,4 +139,50 @@ class ServiceVenteController extends Controller
 
         return back()->with('success', 'Visibilité mise à jour pour ' . $produit->nom_produit);
     }
+
+    public function addPhoto(Request $request, $id)
+    {
+        $request->validate([
+            'photo' => 'required|image|max:2048'
+        ]);
+
+        $produit = Produit::findOrFail($id);
+
+        
+        $image = $request->file('photo');
+        $fileName = time() . '_' . uniqid() . '_' . $image->getClientOriginalName();
+        $image->move(public_path('img/produits'), $fileName);
+
+        
+        $photo = new PhotoProduit();
+        $photo->id_produit = $produit->id_produit;
+        $photo->url_photo = 'img/produits/' . $fileName;
+        $photo->save();
+
+        return back()->with('success', 'Photo ajoutée avec succès !');
+    }
+
+    
+    public function deletePhoto($id)
+    {
+        $photo = PhotoProduit::findOrFail($id);
+        $produitId = $photo->id_produit;
+
+        
+        $count = PhotoProduit::where('id_produit', $produitId)->count();
+
+        if ($count <= 1) {
+            return back()->with('error', 'Impossible de supprimer : le produit doit avoir au moins une photo.');
+        }
+
+        
+        if (file_exists(public_path($photo->url_photo))) {
+            unlink(public_path($photo->url_photo));
+        }
+
+        
+        $photo->delete();
+
+        return back()->with('success', 'Photo supprimée.');
+    }
 }
