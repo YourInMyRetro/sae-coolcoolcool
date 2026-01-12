@@ -30,11 +30,13 @@
                 @foreach($produits as $produit)
                     <tr>
                         <td>
-                            <img src="{{ asset($produit->photos->first()->url_photo ?? 'img/placeholder.jpg') }}" 
-                                 class="rounded" style="width: 50px; height: 50px; object-fit: cover;">
+                            @php
+                                $photoUrl = $produit->photos->first() ? asset($produit->photos->first()->url_photo) : asset('img/placeholder.jpg');
+                            @endphp
+                            <img src="{{ $photoUrl }}" class="rounded" style="width: 50px; height: 50px; object-fit: cover;">
                         </td>
                         <td class="text-white fw-bold">{{ $produit->nom_produit }}</td>
-                        <td class="text-muted">{{ $produit->categorie->nom_categorie ?? 'N/A' }}</td>
+                        <td class="text-muted">{{ optional($produit->categorie)->nom_categorie ?? 'N/A' }}</td>
                         <td class="text-warning fw-bold">{{ number_format($produit->prix_actuel(), 2) }} €</td>
                         <td>
                             <span class="badge {{ $produit->visibilite == 'visible' ? 'bg-success' : 'bg-danger' }}">
@@ -42,13 +44,11 @@
                             </span>
                         </td>
                         <td class="text-end">
-                            {{-- Bouton Gestion Photos --}}
                             <button onclick="openPhotoModal({{ $produit->id_produit }}, {{ json_encode($produit->photos) }}, '{{ addslashes($produit->nom_produit) }}')" 
                                     class="btn btn-sm btn-info me-2" title="Gérer les photos">
                                 <i class="fas fa-images"></i>
                             </button>
 
-                            {{-- Bouton Visibilité --}}
                             <form action="{{ route('vente.produit.toggle', $produit->id_produit) }}" method="POST" class="d-inline">
                                 @csrf
                                 <button type="submit" class="btn btn-sm btn-outline-light" title="Changer visibilité">
@@ -64,61 +64,179 @@
 </div>
 
 <div id="photoModal" class="modal-overlay" style="display: none;">
-    <div class="modal-content bg-dark border border-secondary text-white p-4 rounded-3" style="max-width: 600px; margin: 10% auto; position: relative;">
-        <button onclick="closePhotoModal()" class="btn-close btn-close-white position-absolute top-0 end-0 m-3"></button>
+    <div class="modal-content-premium">
+        <div class="modal-header-custom">
+            <h3 class="m-0">Photos : <span id="modalProductName" class="text-fifa-cyan"></span></h3>
+            <button onclick="closePhotoModal()" class="btn-close-custom"><i class="fas fa-times"></i></button>
+        </div>
         
-        <h3 class="mb-4">Photos : <span id="modalProductName" class="text-info"></span></h3>
+        <div class="modal-body-custom">
+            <div class="row g-3" id="photoListContainer"></div>
 
-        <div class="row g-3 mb-4" id="photoListContainer">
+            <div class="upload-area mt-4">
+                <form id="addPhotoForm" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <label for="file-upload" class="custom-file-upload">
+                        <i class="fas fa-cloud-upload-alt fa-2x mb-2"></i>
+                        <span>Cliquez pour choisir une photo</span>
+                    </label>
+                    <input id="file-upload" type="file" name="photo" accept="image/*" onchange="this.form.submit()"/>
+                </form>
             </div>
-
-        <hr class="border-secondary">
-
-        <form id="addPhotoForm" method="POST" enctype="multipart/form-data" class="mt-3">
-            @csrf
-            <label class="form-label text-muted small text-uppercase fw-bold">Ajouter une nouvelle image</label>
-            <div class="input-group">
-                <input type="file" name="photo" class="form-control bg-dark text-white border-secondary" accept="image/*" required>
-                <button type="submit" class="btn btn-success fw-bold"><i class="fas fa-plus me-2"></i>Ajouter</button>
-            </div>
-        </form>
+        </div>
     </div>
 </div>
 
 <style>
+    :root {
+        --fifa-dark: #0f1623;
+        --fifa-card: #1a202c;
+        --fifa-cyan: #00cfb7;
+        --fifa-red: #e74c3c;
+    }
+
     .modal-overlay {
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0,0,0,0.8); z-index: 9999;
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(5px);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
-    .photo-item { position: relative; }
-    .btn-delete-photo {
-        position: absolute; top: 5px; right: 5px;
-        background: rgba(220, 53, 69, 0.9); color: white; border: none;
-        width: 25px; height: 25px; border-radius: 50%;
+
+    .modal-content-premium {
+        background-color: var(--fifa-dark);
+        border: 1px solid #2d3748;
+        width: 90%;
+        max-width: 700px;
+        border-radius: 16px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        overflow: hidden;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    .modal-header-custom {
+        padding: 20px 30px;
+        background-color: #151c2a;
+        border-bottom: 1px solid #2d3748;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .modal-header-custom h3 {
+        color: white;
+        font-size: 1.25rem;
+        font-weight: 700;
+    }
+
+    .text-fifa-cyan { color: var(--fifa-cyan); }
+
+    .btn-close-custom {
+        background: none;
+        border: none;
+        color: #a0aec0;
+        font-size: 1.5rem;
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+    .btn-close-custom:hover { color: white; }
+
+    .modal-body-custom { padding: 30px; }
+
+    .photo-card {
+        background: #1a202c;
+        padding: 10px;
+        border-radius: 12px;
+        position: relative;
+        border: 1px solid #2d3748;
+        transition: transform 0.2s;
+    }
+    .photo-card:hover { border-color: var(--fifa-cyan); }
+
+    .photo-img {
+        width: 100%;
+        height: 150px;
+        object-fit: cover;
+        border-radius: 8px;
+        background-color: #000; 
+    }
+
+    .btn-delete-absolute {
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        background-color: var(--fifa-red);
+        color: white;
+        border: 2px solid var(--fifa-dark);
+        width: 30px; height: 30px;
+        border-radius: 50%;
         display: flex; align-items: center; justify-content: center;
-        cursor: pointer; transition: 0.2s;
+        cursor: pointer;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        transition: transform 0.2s;
     }
-    .btn-delete-photo:hover { transform: scale(1.1); background: red; }
+    .btn-delete-absolute:hover { transform: scale(1.1); background-color: #c0392b; }
+
+    input[type="file"] { display: none; }
+
+    .custom-file-upload {
+        border: 2px dashed #2d3748;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 40px;
+        cursor: pointer;
+        border-radius: 12px;
+        color: #a0aec0;
+        transition: all 0.3s;
+        background-color: rgba(255,255,255,0.02);
+    }
+
+    .custom-file-upload:hover {
+        border-color: var(--fifa-cyan);
+        color: var(--fifa-cyan);
+        background-color: rgba(0, 207, 183, 0.05);
+    }
+
+    @keyframes slideIn {
+        from { opacity: 0; transform: translateY(-20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
 </style>
 
 <script>
     function openPhotoModal(id, photos, name) {
         document.getElementById('modalProductName').innerText = name;
-        document.getElementById('addPhotoForm').action = "/vente/produit/" + id + "/photo/add";
+        document.getElementById('addPhotoForm').action = "/service-vente/produit/" + id + "/photo/add";
         
         const container = document.getElementById('photoListContainer');
         container.innerHTML = '';
 
+        if (photos.length === 0) {
+            container.innerHTML = '<div class="text-center text-muted py-3">Aucune photo pour ce produit.</div>';
+        }
+
         photos.forEach(photo => {
+            // Construction propre de l'URL
+            let imgSrc = photo.url_photo;
+            if (!imgSrc.startsWith('http') && !imgSrc.startsWith('/')) {
+                imgSrc = '/' + imgSrc;
+            }
+
             const html = `
-                <div class="col-4 photo-item">
-                    <div class="card bg-transparent border-0">
-                        <img src="/${photo.url_photo}" class="rounded border border-secondary" style="width: 100%; height: 100px; object-fit: cover;">
-                        <form action="/vente/photo/${photo.id_photo_produit}/delete" method="POST" onsubmit="return confirm('Supprimer cette photo ?')">
+                <div class="col-md-4 col-6">
+                    <div class="photo-card">
+                        <img src="${imgSrc}" class="photo-img" onerror="this.src='/img/placeholder.jpg'">
+                        <form action="/service-vente/photo/${photo.id_photo_produit}/delete" method="POST" onsubmit="return confirm('Supprimer cette photo ?')">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="btn-delete-photo" title="Supprimer">
-                                <i class="fas fa-times" style="font-size: 12px;"></i>
+                            <button type="submit" class="btn-delete-absolute" title="Supprimer">
+                                <i class="fas fa-trash-alt" style="font-size: 14px;"></i>
                             </button>
                         </form>
                     </div>
@@ -127,14 +245,13 @@
             container.innerHTML += html;
         });
 
-        document.getElementById('photoModal').style.display = 'block';
+        document.getElementById('photoModal').style.display = 'flex';
     }
 
     function closePhotoModal() {
         document.getElementById('photoModal').style.display = 'none';
     }
 
-    // Fermer si on clique dehors
     window.onclick = function(event) {
         const modal = document.getElementById('photoModal');
         if (event.target == modal) {
@@ -142,4 +259,4 @@
         }
     }
 </script>
-@endsection 
+@endsection

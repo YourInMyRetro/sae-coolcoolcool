@@ -77,4 +77,9 @@ class Produit extends Model
     {
         return $this->hasMany(ProduitCouleur::class, 'id_produit', 'id_produit');
     }
+
+    public function prix_actuel()
+    {
+        return $this->premierPrix ? $this->premierPrix->prix_total : 0;
+    }
 }

@@ -20,4 +20,16 @@ class Candidat extends Model
         'poids_joueur', 
         'nombre_selection'
     ];
+
+    
+    public function competitions()
+    {
+        return $this->belongsToMany(Competition::class, 'participation', 'id_joueur', 'id_competition');
+    }
+    
+    
+    public function club()
+    {
+        return $this->belongsTo(Club::class, 'idclub');
+    }
 }

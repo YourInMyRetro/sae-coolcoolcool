@@ -11,6 +11,8 @@ use App\Models\ProduitCouleur;
 use App\Models\StockArticle;
 use App\Models\PhotoProduit;
 use Illuminate\Support\Facades\DB;
+use App\Models\Candidat;
+use App\Models\Competition;
 
 class ServiceVenteController extends Controller
 {
@@ -148,12 +150,10 @@ class ServiceVenteController extends Controller
 
         $produit = Produit::findOrFail($id);
 
-        
         $image = $request->file('photo');
         $fileName = time() . '_' . uniqid() . '_' . $image->getClientOriginalName();
         $image->move(public_path('img/produits'), $fileName);
 
-        
         $photo = new PhotoProduit();
         $photo->id_produit = $produit->id_produit;
         $photo->url_photo = 'img/produits/' . $fileName;
@@ -162,27 +162,43 @@ class ServiceVenteController extends Controller
         return back()->with('success', 'Photo ajoutée avec succès !');
     }
 
-    
     public function deletePhoto($id)
     {
         $photo = PhotoProduit::findOrFail($id);
         $produitId = $photo->id_produit;
 
-        
         $count = PhotoProduit::where('id_produit', $produitId)->count();
 
         if ($count <= 1) {
             return back()->with('error', 'Impossible de supprimer : le produit doit avoir au moins une photo.');
         }
 
-        
         if (file_exists(public_path($photo->url_photo))) {
             unlink(public_path($photo->url_photo));
         }
 
-        
         $photo->delete();
 
         return back()->with('success', 'Photo supprimée.');
     }
+public function editCandidats($id)
+    {
+        $competition = Competition::findOrFail($id);
+        
+        $tousLesJoueurs = Candidat::orderBy('nom_joueur')->get();
+        
+        $selectedJoueurs = $competition->candidats->pluck('idjoueur')->toArray();
+
+        return view('vente.votation_candidats', compact('competition', 'tousLesJoueurs', 'selectedJoueurs'));
+    }
+
+    public function updateCandidats(Request $request, $id)
+    {
+        $competition = Competition::findOrFail($id);
+        
+        $competition->candidats()->sync($request->joueurs ?? []);
+
+        return redirect()->route('vente.votation.list')->with('success', 'Liste des candidats mise à jour avec succès !');
+    }
+
 }
