@@ -251,6 +251,24 @@
                 </div>
             </div>
 
+            <div class="account-card" style="background: #fff5f5; padding: 25px; border-radius: 10px; border: 1px solid #fc8181; grid-column: 1 / -1;">
+                <h2 style="color: #c53030; font-size: 1.4rem; margin-top: 0; margin-bottom: 15px;">
+                    <i class="fas fa-user-slash"></i> Zone de Danger (RGPD)
+                </h2>
+                <p style="color: #742a2a; margin-bottom: 20px;">
+                    Conformément à la réglementation, vous pouvez demander la suppression et l'anonymisation de vos données personnelles.
+                    <strong>Attention : Cette action est irréversible.</strong> Vous perdrez l'accès à votre historique.
+                </p>
+                
+                <form action="{{ route('compte.destroy') }}" method="POST" onsubmit="return confirm('Êtes-vous ABSOLUMENT sûr ? Cette action est définitive et immédiate.');">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn-fifa-danger" style="background: #c53030; color: white; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer;">
+                        SUPPRIMER MON COMPTE
+                    </button>
+                </form>
+            </div>
+
         </div>
     </div>
 </div>

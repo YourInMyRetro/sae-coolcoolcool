@@ -140,3 +140,5 @@ Route::get('/blog/{id}', [BlogController::class, 'show'])->name('blog.show');
 Route::post('/blog/{id}/comment', [BlogController::class, 'storeComment'])->name('blog.comment.store');
 
 Route::view('/aide', 'aide.index')->name('aide');
+
+Route::delete('/compte/supprimer', [CompteController::class, 'destroy'])->name('compte.destroy');

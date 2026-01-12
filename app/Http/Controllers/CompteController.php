@@ -223,4 +223,38 @@ class CompteController extends Controller
 
         return back()->with('success', 'Double Authentification désactivée.');
     }
+
+    public function destroy(Request $request)
+    {
+        $user = Auth::user();
+
+        // 1. Suppression des données sensibles (Cartes bancaires)
+        // On supprime physiquement les CB car on n'a pas le droit de les garder
+        \App\Models\CarteBancaire::where('id_utilisateur', $user->id_utilisateur)->delete();
+
+        // 2. Anonymisation du profil
+        // On utilise time() pour garantir l'unicité du mail (contrainte SQL unique)
+        $user->nom = 'ANONYME';
+        $user->prenom = 'Utilisateur';
+        $user->mail = 'deleted_' . $user->id_utilisateur . '_' . time() . '@fifa.void'; // Email bidon unique
+        $user->surnom = 'Deleted_' . $user->id_utilisateur;
+        $user->telephone = null; // On efface le tel
+        
+        // On change le mot de passe pour bloquer l'accès futur
+        $user->mot_de_passe_chiffre = Hash::make(\Illuminate\Support\Str::random(30));
+        
+        // On désactive le statut pro si besoin
+        if($user->professionel) {
+            $user->professionel->delete();
+        }
+
+        $user->save();
+
+        // 3. Déconnexion et destruction de la session
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect('/')->with('success', 'Votre compte a été supprimé et vos données anonymisées conformément au RGPD.');
+    }
 }
