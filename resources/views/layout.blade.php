@@ -377,5 +377,7 @@
         });
     </script>
 
+    @include('partials.cinematic_transition')
+    @include('partials.hyper_transition')
 </body>
 </html>

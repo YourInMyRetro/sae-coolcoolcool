@@ -104,11 +104,18 @@ Route::middleware(['auth'])->prefix('service-vente')->name('vente.')->group(func
     Route::get('/produit/create', [ServiceVenteController::class, 'createProduit'])->name('produit.create');
     Route::post('/produit', [ServiceVenteController::class, 'storeProduit'])->name('produit.store');
     Route::get('/produits', [ServiceVenteController::class, 'listProduits'])->name('produits.list');
+    Route::post('/produit/{id}/visibilite', [ServiceVenteController::class, 'toggleVisibilite'])->name('produit.visibilite');
     
-    Route::post('/produit/{id}/toggle', [ServiceVenteController::class, 'toggleVisibilite'])->name('produit.toggle');
-
     Route::post('/produit/{id}/photo/add', [ServiceVenteController::class, 'addPhoto'])->name('produit.photo.add');
     Route::delete('/photo/{id}/delete', [ServiceVenteController::class, 'deletePhoto'])->name('produit.photo.delete');
+
+    Route::get('/votations', [ServiceVenteController::class, 'listVotations'])->name('votation.list');
+    Route::get('/votation/create', [ServiceVenteController::class, 'createVotation'])->name('votation.create');
+    Route::post('/votation', [ServiceVenteController::class, 'storeVotation'])->name('votation.store');
+    Route::post('/votation/{id}/statut', [ServiceVenteController::class, 'toggleStatutVotation'])->name('votation.statut');
+    Route::delete('/votation/{id}/delete', [ServiceVenteController::class, 'destroyVotation'])->name('votation.delete');
+    Route::get('/votation/{id}/candidats', [ServiceVenteController::class, 'editCandidats'])->name('votation.candidats.edit');
+    Route::post('/votation/{id}/candidats', [ServiceVenteController::class, 'updateCandidats'])->name('votation.candidats.update');
 });
 
 Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
