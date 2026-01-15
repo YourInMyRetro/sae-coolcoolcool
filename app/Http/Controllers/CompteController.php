@@ -224,37 +224,137 @@ class CompteController extends Controller
         return back()->with('success', 'Double Authentification désactivée.');
     }
 
+    public function anonymiser(Request $request)
+    {
+        $user = Auth::user();
+        $this->processAnonymisation($user); // Appel de la fonction commune
+
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect('/')->with('success', 'Compte anonymisé (vos commandes sont conservées anonymement).');
+    }
+
+    /**
+     * ACTION 2 : SUPPRIMER
+     * On tente de supprimer la ligne SQL. Si ça bloque (factures existantes), on anonymise à la place.
+     */
     public function destroy(Request $request)
     {
         $user = Auth::user();
 
-        // 1. Suppression des données sensibles (Cartes bancaires)
-        // On supprime physiquement les CB car on n'a pas le droit de les garder
-        \App\Models\CarteBancaire::where('id_utilisateur', $user->id_utilisateur)->delete();
+        try {
+            // 1. On tente de supprimer les Cartes Bancaires
+            $cbs = \App\Models\CarteBancaire::where('id_utilisateur', $user->id_utilisateur)->get();
+            foreach ($cbs as $cb) {
+                try {
+                    $cb->delete(); // Tentative de suppression réelle
+                } catch (\Exception $e) {
+                    // Si bloqué par un règlement, on anonymise la CB
+                    $cb->numero_chiffre = 'SUPPRIME_' . rand(1000,9999);
+                    $cb->expiration = '1970-01-01';
+                    $cb->save();
+                }
+            }
 
-        // 2. Anonymisation du profil
-        // On utilise time() pour garantir l'unicité du mail (contrainte SQL unique)
+            // 2. On tente de supprimer l'utilisateur complètement
+            $user->delete();
+            $message = 'Votre compte et toutes vos données ont été supprimés définitivement.';
+
+        } catch (\Illuminate\Database\QueryException $e) {
+            // SI ERREUR (ex: Le client a des commandes qu'on ne peut pas supprimer légalement)
+            // => On bascule sur l'anonymisation
+            $this->processAnonymisation($user);
+            $message = 'Compte anonymisé (La suppression totale est impossible car vous avez des factures liées).';
+        }
+
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect('/')->with('success', $message);
+    }
+
+    /**
+     * Fonction privée pour gérer l'anonymisation (utilisée par les deux actions)
+     */
+    private function processAnonymisation($user)
+    {
+        // 1. Masquage des Cartes Bancaires
+        $cbs = \App\Models\CarteBancaire::where('id_utilisateur', $user->id_utilisateur)->get();
+        foreach($cbs as $cb) {
+            $cb->numero_chiffre = 'ANONYME_' . rand(1000, 9999);
+            $cb->ccv_chiffre = 'XXX';
+            $cb->expiration = '1970-01-01';
+            $cb->save();
+        }
+
+        // 2. Masquage Utilisateur
         $user->nom = 'ANONYME';
         $user->prenom = 'Utilisateur';
-        $user->mail = 'deleted_' . $user->id_utilisateur . '_' . time() . '@fifa.void'; // Email bidon unique
+        // Email unique pour ne pas bloquer la base
+        $user->mail = 'deleted_' . $user->id_utilisateur . '_' . time() . '@fifa.void';
         $user->surnom = 'Deleted_' . $user->id_utilisateur;
-        $user->telephone = null; // On efface le tel
-        
-        // On change le mot de passe pour bloquer l'accès futur
+        $user->telephone = null;
         $user->mot_de_passe_chiffre = Hash::make(\Illuminate\Support\Str::random(30));
         
-        // On désactive le statut pro si besoin
         if($user->professionel) {
             $user->professionel->delete();
         }
 
         $user->save();
-
-        // 3. Déconnexion et destruction de la session
-        Auth::logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        return redirect('/')->with('success', 'Votre compte a été supprimé et vos données anonymisées conformément au RGPD.');
     }
+
+public function exportData()
+{
+    $user = Auth::user();
+    
+    // On charge toutes les relations pour avoir toutes les données
+    $user->load(['adresses', 'commandes', 'votes', 'commentaires', 'professionel']);
+
+    // On prépare un tableau structuré
+    $data = [
+        'profil' => [
+            'nom' => $user->nom,
+            'prenom' => $user->prenom,
+            'mail' => $user->mail,
+            'telephone' => $user->telephone,
+            'naissance' => $user->date_naissance,
+            'role' => $user->role,
+        ],
+        'adresses' => $user->adresses->toArray(),
+        'commandes' => $user->commandes->map(function($cmd) {
+            return [
+                'date' => $cmd->date_commande,
+                'montant' => $cmd->montant_total,
+                'statut' => $cmd->statut_livraison
+            ];
+        }),
+        'historique_votes' => $user->votes->map(function($vote) {
+            return [
+                'id_vote' => $vote->id_vote,
+                'date' => $vote->date_vote,
+                // Idéalement on ajouterait le thème ici si la relation est définie
+            ];
+        }),
+        'commentaires_postes' => $user->commentaires->map(function($com) {
+            return [
+                'date' => $com->date_depot,
+                'contenu' => $com->texte_commentaire
+            ];
+        }),
+    ];
+
+    if ($user->estProfessionnel()) {
+        $data['infos_pro'] = $user->professionel->toArray();
+    }
+
+    // On force le téléchargement d'un fichier JSON
+    $filename = 'mes_donnees_fifa_' . date('Y-m-d') . '.json';
+    
+    return response()->streamDownload(function () use ($data) {
+        echo json_encode($data, JSON_PRETTY_PRINT);
+    }, $filename);
+}
 }

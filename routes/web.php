@@ -35,6 +35,8 @@ Route::get('/panier/supprimer/{id}', [PanierController::class, 'supprimer'])->na
 Route::get('/panier/vider', [PanierController::class, 'vider'])->name('panier.vider');
 Route::patch('/panier/update/{id}', [PanierController::class, 'update'])->name('panier.update');
 
+
+
 Route::get('/votes', [VoteController::class, 'index'])->name('vote.index');
 Route::get('/votes/{id}', [VoteController::class, 'show'])->name('vote.show');
 Route::post('/votes/{id}', [VoteController::class, 'store'])->middleware('auth')->name('vote.store');
@@ -70,6 +72,8 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/compte/supprimer', [CompteController::class, 'destroy'])->name('compte.destroy');
     Route::get('/compte/commandes', [CompteController::class, 'mesCommandes'])->name('compte.commandes');
 
+    
+    Route::get('/compte/export', [CompteController::class, 'exportData'])->name('compte.export');
     Route::get('/commande/livraison', [CommandeController::class, 'livraison'])->name('commande.livraison');
     Route::post('/commande/livraison', [CommandeController::class, 'validerLivraison'])->name('commande.validerLivraison');
     Route::get('/commande/paiement', [CommandeController::class, 'paiement'])->name('commande.paiement');
@@ -78,6 +82,9 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/votes/{id_competition}', [VoteController::class, 'show'])->name('vote.competition.show');
     Route::post('/votes/{id_competition}/voter', [VoteController::class, 'store'])->name('vote.competition.store');
+
+    Route::delete('/compte/supprimer', [App\Http\Controllers\CompteController::class, 'destroy'])->name('compte.destroy');
+    Route::delete('/compte/anonymiser', [App\Http\Controllers\CompteController::class, 'anonymiser'])->name('compte.anonymiser');
 });
 
 Route::middleware(['auth', 'directeur'])->group(function () {

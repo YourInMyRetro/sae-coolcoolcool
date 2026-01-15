@@ -44,6 +44,12 @@ class User extends Authenticatable
     }
 
 
+    public function commentaires() 
+    {
+        return $this->hasMany(Commentaire::class, 'id_utilisateur', 'id_utilisateur');
+    }
+
+
 
 
     public function professionel() { 

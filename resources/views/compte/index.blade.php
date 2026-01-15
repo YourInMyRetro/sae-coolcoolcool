@@ -251,22 +251,59 @@
                 </div>
             </div>
 
+            <div class="account-card" style="background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); border-top: 4px solid #17a2b8; grid-column: 1 / -1;">
+                <h2 style="color: #138496; font-size: 1.4rem; margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 20px;">
+                    <i class="fas fa-file-download"></i> Mes Données (RGPD)
+                </h2>
+                <p style="color: #666;">
+                    Vous souhaitez savoir exactement ce que nous savons sur vous ? Téléchargez une copie complète de vos données personnelles.
+                </p>
+                <a href="{{ route('compte.export') }}" class="btn-fifa-secondary" style="display: inline-block; padding: 10px 20px; background: #e0f7fa; color: #006064; text-decoration: none; border-radius: 5px; font-weight: bold; border: 1px solid #b2ebf2;">
+                    <i class="fas fa-download"></i> Exporter mes données (JSON)
+                </a>
+            </div>
+
             <div class="account-card" style="background: #fff5f5; padding: 25px; border-radius: 10px; border: 1px solid #fc8181; grid-column: 1 / -1;">
                 <h2 style="color: #c53030; font-size: 1.4rem; margin-top: 0; margin-bottom: 15px;">
                     <i class="fas fa-user-slash"></i> Zone de Danger (RGPD)
                 </h2>
                 <p style="color: #742a2a; margin-bottom: 20px;">
-                    Conformément à la réglementation, vous pouvez demander la suppression et l'anonymisation de vos données personnelles.
-                    <strong>Attention : Cette action est irréversible.</strong> Vous perdrez l'accès à votre historique.
+                    Vous avez le droit à l'oubli. Choisissez l'option qui vous convient :
                 </p>
                 
-                <form action="{{ route('compte.destroy') }}" method="POST" onsubmit="return confirm('Êtes-vous ABSOLUMENT sûr ? Cette action est définitive et immédiate.');">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn-fifa-danger" style="background: #c53030; color: white; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer;">
-                        SUPPRIMER MON COMPTE
-                    </button>
-                </form>
+                <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                    
+                    <div style="flex: 1; min-width: 280px;">
+                        <h4 style="margin: 0 0 10px 0; color: #c53030;">Option A : Anonymiser</h4>
+                        <p style="font-size: 0.9em; color: #666; margin-bottom: 15px;">
+                            Vos données personnelles (nom, email, téléphone) seront remplacées par des valeurs anonymes.
+                            Votre historique de commande est conservé pour les statistiques.
+                        </p>
+                        <form action="{{ route('compte.anonymiser') }}" method="POST" onsubmit="return confirm('Confirmer l\'anonymisation ?');">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn-fifa-secondary" style="background: white; color: #c53030; border: 1px solid #c53030; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; width: 100%;">
+                                <i class="fas fa-user-secret"></i> Anonymiser mes données
+                            </button>
+                        </form>
+                    </div>
+
+                    <div style="flex: 1; min-width: 280px; border-left: 1px solid #fecaca; padding-left: 20px;">
+                        <h4 style="margin: 0 0 10px 0; color: #c53030;">Option B : Supprimer</h4>
+                        <p style="font-size: 0.9em; color: #666; margin-bottom: 15px;">
+                            Nous tenterons de supprimer définitivement votre compte de la base de données.
+                            <br><em>(Si vous avez des factures en cours, le compte sera anonymisé à la place).</em>
+                        </p>
+                        <form action="{{ route('compte.destroy') }}" method="POST" onsubmit="return confirm('ATTENTION : Action irréversible. Êtes-vous sûr ?');">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn-fifa-danger" style="background: #c53030; color: white; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; width: 100%;">
+                                <i class="fas fa-trash"></i> Supprimer mon compte
+                            </button>
+                        </form>
+                    </div>
+
+                </div>
             </div>
 
         </div>
