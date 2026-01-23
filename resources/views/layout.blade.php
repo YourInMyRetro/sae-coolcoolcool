@@ -9,11 +9,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
 
-    {{-- STYLE DU SYSTÈME D'AIDE (TOOLTIPS) --}}
     <style>
-        /* Le point d'interrogation ou l'icône déclencheur */
         .help-trigger {
-            color: #00cfb7; /* Couleur FIFA Turquoise */
+            color: #00cfb7;
             cursor: pointer;
             margin-left: 5px;
             font-size: 0.9em;
@@ -30,32 +28,30 @@
             filter: drop-shadow(0 0 5px rgba(0,255,135,0.5));
         }
 
-        /* L'écran sombre semi-transparent */
         .help-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.6); /* Assombri le fond */
-            backdrop-filter: blur(2px); /* Flou artistique */
-            z-index: 99998; /* Très haut */
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(2px);
+            z-index: 99998;
             display: none;
             opacity: 0;
             transition: opacity 0.3s ease;
         }
 
-        /* La bulle d'aide (Popup) */
         .help-popup {
             position: absolute;
             background: white;
-            border-top: 5px solid #326295; /* Bordure bleue en haut */
+            border-top: 5px solid #326295;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            z-index: 99999; /* Au-dessus de l'overlay */
+            z-index: 99999;
             display: none;
-            width: 350px; /* Largeur confortable */
+            width: 350px;
             font-family: 'Open Sans', sans-serif;
             font-size: 0.95rem;
             color: #333;
@@ -95,7 +91,6 @@
             background-color: #244a75;
         }
         
-        /* Petite flèche CSS */
         .help-popup::after {
             content: '';
             position: absolute;
@@ -106,7 +101,6 @@
             border-color: transparent transparent #326295 transparent;
         }
         
-        /* Ajustement flèche si la bulle est à droite */
         .help-popup.right-aligned::after {
             left: auto;
             right: 20px;
@@ -262,7 +256,6 @@
         <button onclick="refuseCookies()" style="background-color: #e74c3c; border: none; padding: 10px 20px; cursor: pointer; color: white; font-weight: bold; margin-left: 10px; border-radius: 4px;">Refuser</button>
     </div>
 
-    {{-- Chat Flottant --}}
     <a href="{{ route('chat.index') }}" 
        style="position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; background-color: #00cfb7; color: #000; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 9999; text-decoration: none; transition: transform 0.3s;"
        onmouseover="this.style.transform='scale(1.1)'" 
@@ -270,7 +263,6 @@
         <i class="fas fa-comments fa-2x"></i>
     </a>
 
-    {{-- Overlay pour le système d'aide (Ajouté) --}}
     <div id="global-help-overlay" class="help-overlay"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -294,7 +286,6 @@
 
         window.onload = checkCookies;
 
-        // Activation des infobulles Bootstrap (si utilisées ailleurs)
         document.addEventListener('DOMContentLoaded', function () {
             var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
             var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
@@ -302,9 +293,6 @@
             })
         });
 
-        // ==========================================
-        // SYSTEME DE POPUPS D'AIDE INTELLIGENT
-        // ==========================================
         document.addEventListener('DOMContentLoaded', function () {
             const triggers = document.querySelectorAll('.help-trigger');
             const overlay = document.getElementById('global-help-overlay');
@@ -328,12 +316,10 @@
 
                     if (activePopup) closePopup();
 
-                    // Récupération des données
                     const title = this.getAttribute('data-title');
                     const content = this.getAttribute('data-content');
                     const link = this.getAttribute('data-link');
 
-                    // Création de la popup
                     const popup = document.createElement('div');
                     popup.className = 'help-popup';
                     
@@ -345,23 +331,19 @@
                     popup.innerHTML = htmlContent;
                     document.body.appendChild(popup);
 
-                    // Positionnement
                     const rect = this.getBoundingClientRect();
                     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
                     const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
 
-                    // On positionne 15px sous l'élément cliqué
                     popup.style.top = (rect.bottom + scrollTop + 15) + 'px';
                     
-                    // Si on est à droite de l'écran, on aligne à droite pour ne pas déborder
                     if (rect.left > window.innerWidth / 2) {
-                        popup.style.left = (rect.left + scrollLeft - 300) + 'px'; // 300px = largeur approx de la popup
+                        popup.style.left = (rect.left + scrollLeft - 300) + 'px'; 
                         popup.classList.add('right-aligned');
                     } else {
                         popup.style.left = (rect.left + scrollLeft - 20) + 'px';
                     }
                     
-                    // Affichage
                     popup.style.display = 'block';
                     overlay.style.display = 'block';
                     setTimeout(() => overlay.style.opacity = '1', 10);
@@ -371,13 +353,3 @@
             });
 
             overlay.addEventListener('click', closePopup);
-            document.addEventListener('keydown', function(e) {
-                if (e.key === "Escape") closePopup();
-            });
-        });
-    </script>
-
-    @include('partials.cinematic_transition')
-    @include('partials.hyper_transition')
-</body>
-</html>

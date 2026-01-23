@@ -35,6 +35,7 @@ class ProduitController extends Controller
         // Catégorie
         if ($request->filled('categorie')) {
             $query->where('id_categorie', $request->categorie);
+
         }
 
         // Nation (Brésil, France...)
@@ -114,9 +115,8 @@ class ProduitController extends Controller
         return view('boutique', compact('produits', 'allColors', 'allSizes', 'allNations', 'categoryGroups'));
     }
 
-    // (Tes fonctions show et home restent inchangées)
+
     public function show(Request $request, $id) {
-        // ... Garde ton code existant ici ...
         $produit = Produit::with(['variantes.couleur', 'variantes.stocks.taille', 'nations', 'categorie', 'photos', 'premierPrix'])->findOrFail($id);
         $viewed = session()->get('viewed_products', []);
         if(!in_array($id, $viewed)) session()->push('viewed_products', $id);

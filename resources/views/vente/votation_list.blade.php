@@ -51,10 +51,8 @@
                     <div class="shine"></div>
                     </a>-->
 
-                    <a href="#" onclick="launchHyperJump('{{ route('vente.votation.create') }}'); return false;" class="btn-glass-primary">
-                    <span class="icon-box"><i class="fas fa-meteor"></i></span>
-                    <span class="text">LANCER CAMPAGNE</span>
-                    <div class="shine"></div>
+                    <a href="{{ route('vente.votation.create') }}" class="btn-kickoff">
+                        LANCER UNE CAMPAGNE <i class="fas fa-plus-circle ms-2"></i>
                     </a>
                 </div>
             </div>
